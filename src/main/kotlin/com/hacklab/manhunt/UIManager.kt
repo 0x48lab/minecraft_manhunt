@@ -244,8 +244,108 @@ class UIManager(
         addPlayerScoreboardLine(playerObjective, "§f/manhunt help", line--)
         addPlayerScoreboardLine(playerObjective, "§7でコマンド確認", line--)
         
+        // プレイヤーリスト（Tabキー）表示を設定
+        setupPlayerListDisplay(player, playerScoreboard)
+        
         // プレイヤーにスコアボードを適用
         player.scoreboard = playerScoreboard
+    }
+    
+    private fun setupPlayerListDisplay(viewer: Player, scoreboard: Scoreboard) {
+        // プレイヤーリスト用のObjectiveを作成
+        val playerListObjective = scoreboard.registerNewObjective("playerlist", "dummy", "§6プレイヤー情報")
+        playerListObjective.displaySlot = DisplaySlot.PLAYER_LIST
+        
+        val viewerRole = gameManager.getPlayerRole(viewer)
+        val viewerParty = if (::partyManager.isInitialized) partyManager.getPlayerParty(viewer.name) else null
+        
+        // 全オンラインプレイヤーに対して表示を設定
+        Bukkit.getOnlinePlayers().forEach { target ->
+            if (target.world == viewer.world) {
+                val targetRole = gameManager.getPlayerRole(target)
+                val displayInfo = getPlayerListDisplayInfo(viewer, target, viewerRole, targetRole, viewerParty)
+                
+                // プレイヤー名に色とアイコンを設定
+                val coloredName = getColoredPlayerName(viewer, target, viewerRole, targetRole, viewerParty)
+                
+                // チーム設定で名前の色を変更
+                val teamName = getTeamName(viewer, target, viewerRole, targetRole, viewerParty)
+                var team = scoreboard.getTeam(teamName)
+                if (team == null) {
+                    team = scoreboard.registerNewTeam(teamName)
+                    team.color = getPlayerNameColor(viewer, target, viewerRole, targetRole, viewerParty)
+                }
+                team.addEntry(target.name)
+                
+                // スコア表示（相対座標）
+                playerListObjective.getScore(target.name).score = displayInfo
+            }
+        }
+    }
+    
+    private fun getPlayerListDisplayInfo(viewer: Player, target: Player, viewerRole: PlayerRole?, targetRole: PlayerRole?, viewerParty: Party?): Int {
+        return if (target == viewer) {
+            0 // 自分は0で表示
+        } else {
+            try {
+                // 距離を整数で返す（スコア表示用）
+                viewer.location.distance(target.location).toInt()
+            } catch (e: Exception) {
+                -1
+            }
+        }
+    }
+    
+    private fun getColoredPlayerName(viewer: Player, target: Player, viewerRole: PlayerRole?, targetRole: PlayerRole?, viewerParty: Party?): String {
+        val roleIcon = when (targetRole) {
+            PlayerRole.HUNTER -> "🗡"
+            PlayerRole.RUNNER -> "🏃"
+            PlayerRole.SPECTATOR -> "👁"
+            null -> "❓"
+        }
+        
+        val relationIcon = when {
+            target == viewer -> "⭐"
+            viewerParty?.isMember(target.name) == true -> "🤝"
+            isAlly(viewerRole, targetRole) -> "💙"
+            isEnemy(viewerRole, targetRole) -> "❤️"
+            else -> "⚪"
+        }
+        
+        return "$relationIcon$roleIcon ${target.name}"
+    }
+    
+    private fun getTeamName(viewer: Player, target: Player, viewerRole: PlayerRole?, targetRole: PlayerRole?, viewerParty: Party?): String {
+        return when {
+            target == viewer -> "self"
+            viewerParty?.isMember(target.name) == true -> "party"
+            isAlly(viewerRole, targetRole) -> "ally"
+            isEnemy(viewerRole, targetRole) -> "enemy"
+            else -> "neutral"
+        }
+    }
+    
+    private fun getPlayerNameColor(viewer: Player, target: Player, viewerRole: PlayerRole?, targetRole: PlayerRole?, viewerParty: Party?): org.bukkit.ChatColor {
+        return when {
+            target == viewer -> org.bukkit.ChatColor.YELLOW // 自分：黄色
+            viewerParty?.isMember(target.name) == true -> org.bukkit.ChatColor.GREEN // パーティー：緑
+            isAlly(viewerRole, targetRole) -> org.bukkit.ChatColor.BLUE // 味方：青
+            isEnemy(viewerRole, targetRole) -> org.bukkit.ChatColor.RED // 敵：赤
+            else -> org.bukkit.ChatColor.GRAY // その他：灰色
+        }
+    }
+    
+    private fun isAlly(viewerRole: PlayerRole?, targetRole: PlayerRole?): Boolean {
+        return viewerRole != null && targetRole != null && 
+               viewerRole == targetRole && 
+               viewerRole != PlayerRole.SPECTATOR
+    }
+    
+    private fun isEnemy(viewerRole: PlayerRole?, targetRole: PlayerRole?): Boolean {
+        return viewerRole != null && targetRole != null && 
+               viewerRole != targetRole && 
+               viewerRole != PlayerRole.SPECTATOR && 
+               targetRole != PlayerRole.SPECTATOR
     }
     
     private fun addPlayerScoreboardLine(objective: Objective, text: String, score: Int) {
