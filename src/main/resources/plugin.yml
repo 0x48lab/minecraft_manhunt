@@ -1,0 +1,20 @@
+name: minecraft_manhunt_latest
+version: '1.0-SNAPSHOT'
+main: com.hacklab.manhunt.Main
+api-version: '1.21'
+authors: [ masafumi terazono ]
+description: Minecraft Manhunt game plugin
+
+commands:
+  manhunt:
+    description: Manhunt game commands
+    usage: /manhunt <join|leave|role|start|compass|status|help>
+    aliases: [mh]
+
+permissions:
+  manhunt.admin:
+    description: Administrator permissions for Manhunt
+    default: op
+  manhunt.use:
+    description: Basic usage permissions for Manhunt
+    default: true

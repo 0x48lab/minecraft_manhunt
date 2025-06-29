@@ -1,0 +1,67 @@
+# Manhunt プラグイン設定ファイル
+
+# ゲーム設定
+game:
+  # ゲーム開始に必要な最小プレイヤー数
+  min-players: 2
+  
+  # 近接警告の距離設定（チャンク単位）
+  proximity-warning:
+    level-1: 1  # 1チャンク以内で赤色警告
+    level-2: 2  # 2チャンク以内で橙色警告
+    level-3: 3  # 3チャンク以内で黄色警告
+    # 警告頻度制御（秒）- 同じレベルの警告を再送する間隔
+    cooldown-seconds: 5
+  
+  # コンパス更新間隔（秒）
+  compass-update-interval: 1
+  
+  # 近接チェック間隔（秒）
+  proximity-check-interval: 1
+  
+  # ゲーム開始カウントダウン（秒）
+  start-countdown: 10
+  
+  # リスポン設定
+  respawn:
+    # ランナーのリスポンタイム（秒）
+    runner-respawn-time: 300
+    # ハンターの即座リスポン有効
+    hunter-instant-respawn: true
+
+# UI表示設定
+ui:
+  # スコアボード表示の有効/無効
+  scoreboard-enabled: true
+  
+  # ActionBar表示の有効/無効
+  actionbar-enabled: true
+  
+  # BossBar表示の有効/無効
+  bossbar-enabled: true
+  
+  # タイトル表示の有効/無効
+  title-enabled: true
+  
+  # スコアボード更新間隔（秒）
+  scoreboard-update-interval: 1
+  
+  # ActionBar更新間隔（秒）
+  actionbar-update-interval: 2
+  
+  # 距離表示設定
+  distance-display:
+    # 最小表示距離（メートル）- この値未満は設定値で表示
+    minimum-distance: 5
+
+# メッセージ設定
+messages:
+  game-start: "§6[Manhunt] ゲーム開始！"
+  hunter-win: "§c追う人の勝利！逃げる人を全員倒しました！"
+  runner-win: "§a逃げる人の勝利！エンダードラゴンを倒しました！"
+  game-reset: "§6[Manhunt] 新しいゲームの準備ができました！"
+  
+  proximity-warnings:
+    level-1: "§c§l[警告] 追う人が1チャンク以内にいます！"
+    level-2: "§6§l[警告] 追う人が2チャンク以内にいます！"
+    level-3: "§e§l[警告] 追う人が3チャンク以内にいます！"
