@@ -554,9 +554,9 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager) {
         while (attempts < maxAttempts) {
             attempts++
             
-            // ランダムな座標を生成（-2000 ~ +2000の範囲）
-            val x = Random.nextDouble(-2000.0, 2000.0)
-            val z = Random.nextDouble(-2000.0, 2000.0)
+            // ランダムな座標を生成（-1500 ~ +1500の範囲）
+            val x = Random.nextDouble(-1500.0, 1500.0)
+            val z = Random.nextDouble(-1500.0, 1500.0)
             
             // 安全な高度を見つける
             val safeY = findSafeY(world, x.toInt(), z.toInt())
