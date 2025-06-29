@@ -10,6 +10,10 @@ commands:
     description: Manhunt game commands
     usage: /manhunt <role|start|compass|status|spectate|help>
     aliases: [mh]
+  r:
+    description: Team chat command for Manhunt
+    usage: /r <message>
+    aliases: [teamchat]
 
 permissions:
   manhunt.admin:
