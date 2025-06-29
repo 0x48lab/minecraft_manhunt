@@ -276,7 +276,13 @@ class ManhuntCommand(
     private fun handleParty(sender: CommandSender, args: Array<out String>) {
         // パーティーコマンドに処理を委譲
         val partyArgs = if (args.size > 1) args.drop(1).toTypedArray() else emptyArray()
-        partyCommand.onCommand(sender, org.bukkit.command.Command("party", "", "", emptyList()), "party", partyArgs)
+        // 仮のCommandオブジェクトを作成してパーティーコマンドに渡す
+        val dummyCommand = object : org.bukkit.command.Command("party") {
+            override fun execute(sender: CommandSender, commandLabel: String, args: Array<out String>): Boolean {
+                return true
+            }
+        }
+        partyCommand.onCommand(sender, dummyCommand, "party", partyArgs)
     }
     
     private fun showHelp(sender: CommandSender) {

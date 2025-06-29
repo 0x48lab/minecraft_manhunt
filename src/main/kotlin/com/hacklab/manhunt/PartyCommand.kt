@@ -141,7 +141,7 @@ class PartyCommand(
         }
         
         // 役割チェック（ゲーム中の場合）
-        if (gameManager.getCurrentState() == GameState.RUNNING) {
+        if (gameManager.getGameState() == GameState.RUNNING) {
             val playerRole = gameManager.getPlayerRole(player)
             val targetRole = gameManager.getPlayerRole(target)
             

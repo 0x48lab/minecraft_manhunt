@@ -87,7 +87,7 @@ class PartyManager(private val plugin: Main, private val gameManager: GameManage
         }
         
         // 役割が異なる場合は招待不可（ゲーム中）
-        if (gameManager.getCurrentState() == GameState.RUNNING) {
+        if (gameManager.getGameState() == GameState.RUNNING) {
             val inviterRole = gameManager.getPlayerRole(inviter)
             val inviteeRole = gameManager.getPlayerRole(invitee)
             
@@ -315,7 +315,7 @@ class PartyManager(private val plugin: Main, private val gameManager: GameManage
         cancelPendingInvite(playerName)
         
         // ゲーム中でない場合、パーティーから脱退
-        if (gameManager.getCurrentState() != GameState.RUNNING) {
+        if (gameManager.getGameState() != GameState.RUNNING) {
             val party = getPlayerParty(playerName)
             if (party != null) {
                 if (party.isLeader(playerName)) {
