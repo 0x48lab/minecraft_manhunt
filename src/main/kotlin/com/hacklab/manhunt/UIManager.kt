@@ -130,45 +130,67 @@ class UIManager(
         addScoreboardLine("§f/manhunt help", line--)
         addScoreboardLine("§7でコマンド確認", line--)
         
-        // 全プレイヤーにスコアボード適用（個別にパーティー情報を追加）
+        // 各プレイヤーに個別のスコアボードを作成・適用
         onlinePlayers.forEach { player ->
-            updatePlayerSpecificScoreboard(player, line)
+            createPlayerScoreboard(player)
         }
     }
     
-    private fun updatePlayerSpecificScoreboard(player: Player, baseLine: Int) {
-        // プレイヤー専用のスコアボードを作成
+    private fun createPlayerScoreboard(player: Player) {
+        // 各プレイヤー用の完全なスコアボードを作成
         val playerScoreboard = Bukkit.getScoreboardManager()?.newScoreboard ?: return
         val playerObjective = playerScoreboard.registerNewObjective("manhunt", "dummy", "§6🏃 MANHUNT")
         playerObjective.displaySlot = DisplaySlot.SIDEBAR
         
-        // 共通スコアボードの内容を先にコピー
-        objective?.let { originalObjective ->
-            originalObjective.scoreboard?.getEntries()?.forEach { entry ->
-                val score = originalObjective.getScore(entry).score
-                addPlayerScoreboardLine(playerObjective, entry, score)
-            }
-        }
-        
+        val gameState = gameManager.getGameState()
+        val hunters = gameManager.getAllHunters().filter { it.isOnline }
+        val runners = gameManager.getAllRunners().filter { it.isOnline }
+        val spectators = gameManager.getAllSpectators().filter { it.isOnline }
         val role = gameManager.getPlayerRole(player)
         
-        // パーティーに参加している場合は、パーティー情報を追加
-        if (::partyManager.isInitialized) {
+        var line = 15
+        
+        // ゲーム状態表示
+        addPlayerScoreboardLine(playerObjective, "§r", line--) // 空行
+        addPlayerScoreboardLine(playerObjective, "§f状態: ${getGameStateDisplay(gameState)}", line--)
+        addPlayerScoreboardLine(playerObjective, "§r ", line--) // 空行
+        
+        // ゲーム状態に応じた詳細情報
+        if (gameState == GameState.RUNNING) {
+            // ゲーム中：生存数・死亡数を表示
+            val aliveHunters = hunters.filter { !it.isDead }
+            val aliveRunners = runners.filter { !it.isDead }
+            val deadHunters = hunters.filter { it.isDead }
+            val deadRunners = runners.filter { it.isDead }
+            
+            addPlayerScoreboardLine(playerObjective, "§c🗡 ハンター生存: §f${aliveHunters.size}", line--)
+            addPlayerScoreboardLine(playerObjective, "§c💀 ハンター死亡: §f${deadHunters.size}", line--)
+            addPlayerScoreboardLine(playerObjective, "§a🏃 ランナー生存: §f${aliveRunners.size}", line--)
+            addPlayerScoreboardLine(playerObjective, "§a💀 ランナー死亡: §f${deadRunners.size}", line--)
+            addPlayerScoreboardLine(playerObjective, "§r   ", line--) // 空行
+        } else {
+            // ゲーム開始前：プレイヤー数表示
+            addPlayerScoreboardLine(playerObjective, "§c🗡 ハンター: §f${hunters.size}", line--)
+            addPlayerScoreboardLine(playerObjective, "§a🏃 ランナー: §f${runners.size}", line--)
+            addPlayerScoreboardLine(playerObjective, "§7👁 観戦者: §f${spectators.size}", line--)
+            addPlayerScoreboardLine(playerObjective, "§r  ", line--) // 空行
+        }
+        
+        // パーティー情報を表示（観戦者以外）
+        if (::partyManager.isInitialized && role != PlayerRole.SPECTATOR) {
             val party = partyManager.getPlayerParty(player.name)
-            if (party != null && role != PlayerRole.SPECTATOR) {
+            if (party != null) {
                 val otherMembers = party.getOtherMembers(player.name)
                 
                 if (otherMembers.isNotEmpty()) {
-                    var partyLine = baseLine + 10 // パーティー情報用のライン
-                    
                     // パーティーヘッダー
                     val roleColor = when (role) {
                         PlayerRole.HUNTER -> "§c"
                         PlayerRole.RUNNER -> "§a"
                         else -> "§7"
                     }
-                    addPlayerScoreboardLine(playerObjective, "${roleColor}🤝 パーティーメンバー", partyLine--)
-                    addPlayerScoreboardLine(playerObjective, "§r", partyLine--) // 空行
+                    addPlayerScoreboardLine(playerObjective, "${roleColor}🤝 パーティーメンバー", line--)
+                    addPlayerScoreboardLine(playerObjective, "§r", line--) // 空行
                     
                     // メンバー情報表示（最大2人、パーティーサイズ3のため）
                     otherMembers.take(2).forEach { memberName ->
@@ -179,35 +201,48 @@ class UIManager(
                             val deltaY = member.location.blockY - player.location.blockY
                             val deltaZ = member.location.blockZ - player.location.blockZ
                             
-                            addPlayerScoreboardLine(playerObjective, "§f${memberName}:", partyLine--)
+                            addPlayerScoreboardLine(playerObjective, "§f${memberName}:", line--)
                             
                             // 座標表示を2行に分ける
                             if (deltaX >= 0) {
-                                addPlayerScoreboardLine(playerObjective, "§7X:+${deltaX} Y:${deltaY}", partyLine--)
+                                addPlayerScoreboardLine(playerObjective, "§7X:+${deltaX} Y:${deltaY}", line--)
                             } else {
-                                addPlayerScoreboardLine(playerObjective, "§7X:${deltaX} Y:${deltaY}", partyLine--)
+                                addPlayerScoreboardLine(playerObjective, "§7X:${deltaX} Y:${deltaY}", line--)
                             }
                             
                             if (deltaZ >= 0) {
-                                addPlayerScoreboardLine(playerObjective, "§7Z:+${deltaZ}", partyLine--)
+                                addPlayerScoreboardLine(playerObjective, "§7Z:+${deltaZ}", line--)
                             } else {
-                                addPlayerScoreboardLine(playerObjective, "§7Z:${deltaZ}", partyLine--)
+                                addPlayerScoreboardLine(playerObjective, "§7Z:${deltaZ}", line--)
                             }
                         } else if (member?.isOnline == true) {
                             // オンラインだが別ワールド
-                            addPlayerScoreboardLine(playerObjective, "§f${memberName}:", partyLine--)
-                            addPlayerScoreboardLine(playerObjective, "§e別ワールド", partyLine--)
+                            addPlayerScoreboardLine(playerObjective, "§f${memberName}:", line--)
+                            addPlayerScoreboardLine(playerObjective, "§e別ワールド", line--)
                         } else {
                             // オフライン
-                            addPlayerScoreboardLine(playerObjective, "§f${memberName}:", partyLine--)
-                            addPlayerScoreboardLine(playerObjective, "§cオフライン", partyLine--)
+                            addPlayerScoreboardLine(playerObjective, "§f${memberName}:", line--)
+                            addPlayerScoreboardLine(playerObjective, "§cオフライン", line--)
                         }
                     }
                     
-                    addPlayerScoreboardLine(playerObjective, "§r ", partyLine--) // 空行
+                    addPlayerScoreboardLine(playerObjective, "§r ", line--) // 空行
                 }
             }
         }
+        
+        // 待機中の場合は追加情報
+        if (gameState == GameState.WAITING) {
+            val minPlayers = gameManager.getMinPlayers()
+            val totalPlayers = hunters.size + runners.size
+            addPlayerScoreboardLine(playerObjective, "§e必要人数: §f${totalPlayers}/${minPlayers}", line--)
+            addPlayerScoreboardLine(playerObjective, "§r    ", line--) // 空行
+        }
+        
+        // コマンド情報
+        addPlayerScoreboardLine(playerObjective, "§7━━━━━━━━━━━━━", line--)
+        addPlayerScoreboardLine(playerObjective, "§f/manhunt help", line--)
+        addPlayerScoreboardLine(playerObjective, "§7でコマンド確認", line--)
         
         // プレイヤーにスコアボードを適用
         player.scoreboard = playerScoreboard
