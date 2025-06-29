@@ -163,8 +163,8 @@ class UIManager(
                     addPlayerScoreboardLine(playerObjective, "${roleColor}🤝 パーティーメンバー", line--)
                     addPlayerScoreboardLine(playerObjective, "§r", line--) // 空行
                     
-                    // メンバー情報表示（最大1人、パーティーサイズ2のため）
-                    otherMembers.take(1).forEach { memberName ->
+                    // メンバー情報表示（最大2人、パーティーサイズ3のため）
+                    otherMembers.take(2).forEach { memberName ->
                         val member = plugin.server.getPlayer(memberName)
                         if (member?.isOnline == true && member.world == player.world) {
                             // 座標差分計算

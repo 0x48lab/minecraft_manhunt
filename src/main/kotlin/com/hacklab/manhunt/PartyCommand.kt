@@ -318,7 +318,7 @@ class PartyCommand(
         player.sendMessage("§e/manhunt party kick <名前> §7- メンバーを除名（リーダーのみ）")
         player.sendMessage("§e/manhunt party list §7- パーティー情報を表示")
         player.sendMessage("§e/manhunt party gui §7- GUI管理画面（実装予定）")
-        player.sendMessage("§7最大 §e${Party.MAX_PARTY_SIZE}人 §7まで同じ役割でパーティーを組めます")
+        player.sendMessage("§7最大 §e${Party.MAX_PARTY_SIZE}人 §7まで同じ役割でトリオを組めます")
         player.sendMessage("§7パーティーメンバーの位置はサイドバーに表示されます")
     }
     

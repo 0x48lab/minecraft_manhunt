@@ -54,7 +54,7 @@ data class Party(
     var role: PlayerRole? = null
 ) {
     companion object {
-        const val MAX_PARTY_SIZE = 2
+        const val MAX_PARTY_SIZE = 3
     }
     
     init {
