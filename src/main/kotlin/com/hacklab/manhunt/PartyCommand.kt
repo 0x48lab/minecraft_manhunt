@@ -376,7 +376,6 @@ class PartyCommand(
         if (party != null) {
             // 仮想メンバーを追加（実際には存在しない）
             party.addMember("TestPlayer1")
-            party.addMember("TestPlayer2")
             
             player.sendMessage("§a[デバッグ] 仮想パーティーを作成しました")
             player.sendMessage("§7メンバー: ${party.members.joinToString(", ")}")
@@ -452,6 +451,7 @@ class PartyCommand(
             player.sendMessage("§c/manhunt party debug §7- デバッグ機能（管理者のみ）")
         }
         player.sendMessage("§7最大 §e${Party.MAX_PARTY_SIZE}人 §7まで同じ役割でパーティーを組めます")
+        player.sendMessage("§7パーティーメンバーの位置はサイドバーに表示されます")
     }
     
     // 脱退確認システム（簡易版）

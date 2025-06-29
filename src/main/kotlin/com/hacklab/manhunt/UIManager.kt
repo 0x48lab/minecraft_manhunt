@@ -96,28 +96,15 @@ class UIManager(
         addScoreboardLine("§f状態: ${getGameStateDisplay(gameState)}", line--)
         addScoreboardLine("§r ", line--) // 空行
         
-        // プレイヤー数表示
-        addScoreboardLine("§c🗡 ハンター: §f${hunters.size}", line--)
-        addScoreboardLine("§a🏃 ランナー: §f${runners.size}", line--)
-        addScoreboardLine("§7👁 観戦者: §f${spectators.size}", line--)
-        addScoreboardLine("§r  ", line--) // 空行
-        
         // ゲーム中の詳細情報
         if (gameState == GameState.RUNNING) {
-            val aliveHunters = hunters.filter { !it.isDead }
-            val aliveRunners = runners.filter { !it.isDead }
-            
-            // リスポン待ちランナーの数を取得
-            val deadRunnersCount = getDeadRunnersCount()
-            
-            addScoreboardLine("§c生存ハンター: §f${aliveHunters.size}", line--)
-            addScoreboardLine("§a生存ランナー: §f${aliveRunners.size}", line--)
-            
-            if (deadRunnersCount > 0) {
-                addScoreboardLine("§6リスポン待ち: §f${deadRunnersCount}", line--)
-            }
-            
             addScoreboardLine("§r   ", line--) // 空行
+        } else {
+            // 待機中はプレイヤー数表示
+            addScoreboardLine("§c🗡 ハンター: §f${hunters.size}", line--)
+            addScoreboardLine("§a🏃 ランナー: §f${runners.size}", line--)
+            addScoreboardLine("§7👁 観戦者: §f${spectators.size}", line--)
+            addScoreboardLine("§r  ", line--) // 空行
         }
         
         // 待機中の場合
@@ -133,10 +120,79 @@ class UIManager(
         addScoreboardLine("§f/manhunt help", line--)
         addScoreboardLine("§7でコマンド確認", line--)
         
-        // 全プレイヤーにスコアボード適用
+        // 全プレイヤーにスコアボード適用（個別にパーティー情報を追加）
         onlinePlayers.forEach { player ->
-            player.scoreboard = scoreboard ?: return@forEach
+            updatePlayerSpecificScoreboard(player, line)
         }
+    }
+    
+    private fun updatePlayerSpecificScoreboard(player: Player, baseLine: Int) {
+        // プレイヤー専用のスコアボードを作成
+        val playerScoreboard = Bukkit.getScoreboardManager()?.newScoreboard ?: return
+        val playerObjective = playerScoreboard.registerNewObjective("manhunt", "dummy", "§6🏃 MANHUNT")
+        playerObjective.displaySlot = DisplaySlot.SIDEBAR
+        
+        var line = baseLine
+        
+        val gameState = gameManager.getGameState()
+        val role = gameManager.getPlayerRole(player)
+        
+        // ゲーム中でパーティーに参加している場合は、パーティー情報を表示
+        if (gameState == GameState.RUNNING && ::partyManager.isInitialized) {
+            val party = partyManager.getPlayerParty(player.name)
+            if (party != null && role != PlayerRole.SPECTATOR) {
+                val otherMembers = party.getOtherMembers(player.name)
+                
+                if (otherMembers.isNotEmpty()) {
+                    // パーティーヘッダー
+                    val roleColor = when (role) {
+                        PlayerRole.HUNTER -> "§c"
+                        PlayerRole.RUNNER -> "§a"
+                        else -> "§7"
+                    }
+                    addPlayerScoreboardLine(playerObjective, "${roleColor}🤝 パーティーメンバー", line--)
+                    addPlayerScoreboardLine(playerObjective, "§r", line--) // 空行
+                    
+                    // メンバー情報表示（最大1人、パーティーサイズ2のため）
+                    otherMembers.take(1).forEach { memberName ->
+                        val member = plugin.server.getPlayer(memberName)
+                        if (member?.isOnline == true && member.world == player.world) {
+                            // 座標差分計算
+                            val deltaX = member.location.blockX - player.location.blockX
+                            val deltaY = member.location.blockY - player.location.blockY
+                            val deltaZ = member.location.blockZ - player.location.blockZ
+                            
+                            addPlayerScoreboardLine(playerObjective, "§f${memberName}:", line--)
+                            addPlayerScoreboardLine(playerObjective, "§7X:${deltaX} Y:${deltaY}", line--)
+                            addPlayerScoreboardLine(playerObjective, "§7Z:${deltaZ}", line--)
+                        } else {
+                            addPlayerScoreboardLine(playerObjective, "§f${memberName}:", line--)
+                            addPlayerScoreboardLine(playerObjective, "§cオフライン", line--)
+                        }
+                    }
+                    
+                    addPlayerScoreboardLine(playerObjective, "§r ", line--) // 空行
+                }
+            }
+        }
+        
+        // 共通のスコアボード内容をコピー
+        objective?.let { originalObjective ->
+            originalObjective.scoreboard?.getEntries()?.forEach { entry ->
+                val score = originalObjective.getScore(entry).score
+                if (score <= line) { // パーティー情報より下に表示
+                    addPlayerScoreboardLine(playerObjective, entry, score)
+                }
+            }
+        }
+        
+        // プレイヤーにスコアボードを適用
+        player.scoreboard = playerScoreboard
+    }
+    
+    private fun addPlayerScoreboardLine(objective: Objective, text: String, score: Int) {
+        val entry = if (text.length > 16) text.substring(0, 16) else text
+        objective.getScore(entry).score = score
     }
     
     private fun addScoreboardLine(text: String, score: Int) {
@@ -186,34 +242,22 @@ class UIManager(
                 gameState == GameState.RUNNING && role != null -> {
                     when (role) {
                         PlayerRole.HUNTER -> {
-                            // パーティー情報を優先表示
-                            val partyInfo = getPartyActionBarInfo(player)
-                            if (partyInfo.isNotEmpty()) {
-                                "§c🗡 ハンターモード §8| §f$partyInfo"
-                            } else {
-                                val nearestRunner = findNearestRunner(player)
-                                if (nearestRunner != null) {
-                                    val distance = try {
-                                        val actualDistance = player.location.distance(nearestRunner.location).toInt()
-                                        val minDistance = configManager.getMinimumDisplayDistance()
-                                        if (actualDistance <= minDistance) minDistance else actualDistance
-                                    } catch (e: Exception) {
-                                        -1
-                                    }
-                                    "§c🗡 ハンターモード §8| §f最寄りターゲット: §a${nearestRunner.name} §7(${distance}m)"
-                                } else {
-                                    "§c🗡 ハンターモード §8| §7ターゲットが見つかりません"
+                            val nearestRunner = findNearestRunner(player)
+                            if (nearestRunner != null) {
+                                val distance = try {
+                                    val actualDistance = player.location.distance(nearestRunner.location).toInt()
+                                    val minDistance = configManager.getMinimumDisplayDistance()
+                                    if (actualDistance <= minDistance) minDistance else actualDistance
+                                } catch (e: Exception) {
+                                    -1
                                 }
+                                "§c🗡 ハンターモード §8| §f最寄りターゲット: §a${nearestRunner.name} §7(${distance}m)"
+                            } else {
+                                "§c🗡 ハンターモード §8| §7ターゲットが見つかりません"
                             }
                         }
                         PlayerRole.RUNNER -> {
-                            // パーティー情報を優先表示
-                            val partyInfo = getPartyActionBarInfo(player)
-                            if (partyInfo.isNotEmpty()) {
-                                "§a🏃 ランナーモード §8| §f$partyInfo"
-                            } else {
-                                "§a🏃 ランナーモード §8| §7エンダードラゴンを倒そう！"
-                            }
+                            "§a🏃 ランナーモード §8| §7エンダードラゴンを倒そう！"
                         }
                         PlayerRole.SPECTATOR -> "§7👁 観戦モード §8| §eゲームを観戦中..."
                     }
@@ -367,6 +411,57 @@ class UIManager(
     }
     
     // ======== パーティー情報表示 ========
+    
+    private fun addPartyInfoToScoreboard(player: Player, startLine: Int) {
+        if (!::partyManager.isInitialized) return
+        
+        val party = partyManager.getPlayerParty(player.name) ?: return
+        val otherMembers = party.getOtherMembers(player.name)
+        
+        if (otherMembers.isEmpty()) return
+        
+        var line = startLine
+        
+        // パーティーヘッダー
+        val roleColor = when (gameManager.getPlayerRole(player)) {
+            PlayerRole.HUNTER -> "§c"
+            PlayerRole.RUNNER -> "§a"
+            else -> "§7"
+        }
+        addScoreboardLine("${roleColor}[${player.name}のパーティー]", line--)
+        
+        // メンバー情報表示（最大2人）
+        otherMembers.take(1).forEach { memberName ->
+            val member = plugin.server.getPlayer(memberName)
+            if (member?.isOnline == true) {
+                // 座標差分計算
+                val deltaX = member.location.blockX - player.location.blockX
+                val deltaY = member.location.blockY - player.location.blockY
+                val deltaZ = member.location.blockZ - player.location.blockZ
+                
+                addScoreboardLine("§f${memberName}:", line--)
+                addScoreboardLine("§7 X:${deltaX} Y:${deltaY} Z:${deltaZ}", line--)
+            } else {
+                addScoreboardLine("§f${memberName}: §cオフライン", line--)
+            }
+        }
+        
+        addScoreboardLine("§r", line--) // 空行
+    }
+    
+    private fun getPartyInfoLines(player: Player): Int {
+        if (!::partyManager.isInitialized) return 0
+        
+        val party = partyManager.getPlayerParty(player.name) ?: return 0
+        val otherMembers = party.getOtherMembers(player.name)
+        
+        if (otherMembers.isEmpty()) return 0
+        
+        // ヘッダー(1行) + メンバー情報(2行 per member) + 空行(1行)
+        return 1 + (otherMembers.take(1).size * 2) + 1
+    }
+    
+    // ======== ActionBar用パーティー情報（削除予定） ========
     
     private fun getPartyActionBarInfo(player: Player): String {
         // PartyManagerが初期化されていない場合は空文字を返す
