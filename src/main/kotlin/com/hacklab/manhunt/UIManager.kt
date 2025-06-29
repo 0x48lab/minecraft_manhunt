@@ -96,11 +96,21 @@ class UIManager(
         addScoreboardLine("§f状態: ${getGameStateDisplay(gameState)}", line--)
         addScoreboardLine("§r ", line--) // 空行
         
-        // ゲーム中の詳細情報
+        // ゲーム状態に応じた詳細情報
         if (gameState == GameState.RUNNING) {
+            // ゲーム中：生存数・死亡数を表示
+            val aliveHunters = hunters.filter { !it.isDead }
+            val aliveRunners = runners.filter { !it.isDead }
+            val deadHunters = hunters.filter { it.isDead }
+            val deadRunners = runners.filter { it.isDead }
+            
+            addScoreboardLine("§c🗡 ハンター生存: §f${aliveHunters.size}", line--)
+            addScoreboardLine("§c💀 ハンター死亡: §f${deadHunters.size}", line--)
+            addScoreboardLine("§a🏃 ランナー生存: §f${aliveRunners.size}", line--)
+            addScoreboardLine("§a💀 ランナー死亡: §f${deadRunners.size}", line--)
             addScoreboardLine("§r   ", line--) // 空行
         } else {
-            // 待機中はプレイヤー数表示
+            // ゲーム開始前：プレイヤー数表示
             addScoreboardLine("§c🗡 ハンター: §f${hunters.size}", line--)
             addScoreboardLine("§a🏃 ランナー: §f${runners.size}", line--)
             addScoreboardLine("§7👁 観戦者: §f${spectators.size}", line--)
@@ -137,8 +147,8 @@ class UIManager(
         val gameState = gameManager.getGameState()
         val role = gameManager.getPlayerRole(player)
         
-        // ゲーム中でパーティーに参加している場合は、パーティー情報を表示
-        if (gameState == GameState.RUNNING && ::partyManager.isInitialized) {
+        // パーティーに参加している場合は、パーティー情報を表示
+        if (::partyManager.isInitialized) {
             val party = partyManager.getPlayerParty(player.name)
             if (party != null && role != PlayerRole.SPECTATOR) {
                 val otherMembers = party.getOtherMembers(player.name)
@@ -163,9 +173,25 @@ class UIManager(
                             val deltaZ = member.location.blockZ - player.location.blockZ
                             
                             addPlayerScoreboardLine(playerObjective, "§f${memberName}:", line--)
-                            addPlayerScoreboardLine(playerObjective, "§7X:${deltaX} Y:${deltaY}", line--)
-                            addPlayerScoreboardLine(playerObjective, "§7Z:${deltaZ}", line--)
+                            
+                            // 座標表示を2行に分ける
+                            if (deltaX >= 0) {
+                                addPlayerScoreboardLine(playerObjective, "§7X:+${deltaX} Y:${deltaY}", line--)
+                            } else {
+                                addPlayerScoreboardLine(playerObjective, "§7X:${deltaX} Y:${deltaY}", line--)
+                            }
+                            
+                            if (deltaZ >= 0) {
+                                addPlayerScoreboardLine(playerObjective, "§7Z:+${deltaZ}", line--)
+                            } else {
+                                addPlayerScoreboardLine(playerObjective, "§7Z:${deltaZ}", line--)
+                            }
+                        } else if (member?.isOnline == true) {
+                            // オンラインだが別ワールド
+                            addPlayerScoreboardLine(playerObjective, "§f${memberName}:", line--)
+                            addPlayerScoreboardLine(playerObjective, "§e別ワールド", line--)
                         } else {
+                            // オフライン
                             addPlayerScoreboardLine(playerObjective, "§f${memberName}:", line--)
                             addPlayerScoreboardLine(playerObjective, "§cオフライン", line--)
                         }
