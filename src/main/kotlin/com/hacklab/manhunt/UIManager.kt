@@ -142,26 +142,33 @@ class UIManager(
         val playerObjective = playerScoreboard.registerNewObjective("manhunt", "dummy", "§6🏃 MANHUNT")
         playerObjective.displaySlot = DisplaySlot.SIDEBAR
         
-        var line = baseLine
+        // 共通スコアボードの内容を先にコピー
+        objective?.let { originalObjective ->
+            originalObjective.scoreboard?.getEntries()?.forEach { entry ->
+                val score = originalObjective.getScore(entry).score
+                addPlayerScoreboardLine(playerObjective, entry, score)
+            }
+        }
         
-        val gameState = gameManager.getGameState()
         val role = gameManager.getPlayerRole(player)
         
-        // パーティーに参加している場合は、パーティー情報を表示
+        // パーティーに参加している場合は、パーティー情報を追加
         if (::partyManager.isInitialized) {
             val party = partyManager.getPlayerParty(player.name)
             if (party != null && role != PlayerRole.SPECTATOR) {
                 val otherMembers = party.getOtherMembers(player.name)
                 
                 if (otherMembers.isNotEmpty()) {
+                    var partyLine = baseLine + 10 // パーティー情報用のライン
+                    
                     // パーティーヘッダー
                     val roleColor = when (role) {
                         PlayerRole.HUNTER -> "§c"
                         PlayerRole.RUNNER -> "§a"
                         else -> "§7"
                     }
-                    addPlayerScoreboardLine(playerObjective, "${roleColor}🤝 パーティーメンバー", line--)
-                    addPlayerScoreboardLine(playerObjective, "§r", line--) // 空行
+                    addPlayerScoreboardLine(playerObjective, "${roleColor}🤝 パーティーメンバー", partyLine--)
+                    addPlayerScoreboardLine(playerObjective, "§r", partyLine--) // 空行
                     
                     // メンバー情報表示（最大2人、パーティーサイズ3のため）
                     otherMembers.take(2).forEach { memberName ->
@@ -172,42 +179,32 @@ class UIManager(
                             val deltaY = member.location.blockY - player.location.blockY
                             val deltaZ = member.location.blockZ - player.location.blockZ
                             
-                            addPlayerScoreboardLine(playerObjective, "§f${memberName}:", line--)
+                            addPlayerScoreboardLine(playerObjective, "§f${memberName}:", partyLine--)
                             
                             // 座標表示を2行に分ける
                             if (deltaX >= 0) {
-                                addPlayerScoreboardLine(playerObjective, "§7X:+${deltaX} Y:${deltaY}", line--)
+                                addPlayerScoreboardLine(playerObjective, "§7X:+${deltaX} Y:${deltaY}", partyLine--)
                             } else {
-                                addPlayerScoreboardLine(playerObjective, "§7X:${deltaX} Y:${deltaY}", line--)
+                                addPlayerScoreboardLine(playerObjective, "§7X:${deltaX} Y:${deltaY}", partyLine--)
                             }
                             
                             if (deltaZ >= 0) {
-                                addPlayerScoreboardLine(playerObjective, "§7Z:+${deltaZ}", line--)
+                                addPlayerScoreboardLine(playerObjective, "§7Z:+${deltaZ}", partyLine--)
                             } else {
-                                addPlayerScoreboardLine(playerObjective, "§7Z:${deltaZ}", line--)
+                                addPlayerScoreboardLine(playerObjective, "§7Z:${deltaZ}", partyLine--)
                             }
                         } else if (member?.isOnline == true) {
                             // オンラインだが別ワールド
-                            addPlayerScoreboardLine(playerObjective, "§f${memberName}:", line--)
-                            addPlayerScoreboardLine(playerObjective, "§e別ワールド", line--)
+                            addPlayerScoreboardLine(playerObjective, "§f${memberName}:", partyLine--)
+                            addPlayerScoreboardLine(playerObjective, "§e別ワールド", partyLine--)
                         } else {
                             // オフライン
-                            addPlayerScoreboardLine(playerObjective, "§f${memberName}:", line--)
-                            addPlayerScoreboardLine(playerObjective, "§cオフライン", line--)
+                            addPlayerScoreboardLine(playerObjective, "§f${memberName}:", partyLine--)
+                            addPlayerScoreboardLine(playerObjective, "§cオフライン", partyLine--)
                         }
                     }
                     
-                    addPlayerScoreboardLine(playerObjective, "§r ", line--) // 空行
-                }
-            }
-        }
-        
-        // 共通のスコアボード内容をコピー
-        objective?.let { originalObjective ->
-            originalObjective.scoreboard?.getEntries()?.forEach { entry ->
-                val score = originalObjective.getScore(entry).score
-                if (score <= line) { // パーティー情報より下に表示
-                    addPlayerScoreboardLine(playerObjective, entry, score)
+                    addPlayerScoreboardLine(playerObjective, "§r ", partyLine--) // 空行
                 }
             }
         }
