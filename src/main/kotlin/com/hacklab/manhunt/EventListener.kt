@@ -12,8 +12,7 @@ import org.bukkit.event.player.PlayerQuitEvent
 
 class EventListener(
     private val gameManager: GameManager,
-    private val uiManager: UIManager,
-    private val partyManager: PartyManager
+    private val uiManager: UIManager
 ) : Listener {
     
     @EventHandler
@@ -68,8 +67,6 @@ class EventListener(
         // UIManagerにプレイヤー退出を通知
         uiManager.onPlayerQuit(player)
         
-        // パーティーシステムにプレイヤー退出を通知
-        partyManager.handlePlayerLogout(player.name)
         
         if (gameState == GameState.RUNNING && playerRole != null) {
             // ゲーム進行中にプレイヤーがサーバーから退出した場合（切断扱い）

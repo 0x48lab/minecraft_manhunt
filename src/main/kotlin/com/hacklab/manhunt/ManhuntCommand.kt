@@ -11,8 +11,7 @@ import kotlin.collections.listOf
 class ManhuntCommand(
     private val gameManager: GameManager,
     private val compassTracker: CompassTracker,
-    private val spectatorMenu: SpectatorMenu,
-    private val partyCommand: PartyCommand
+    private val spectatorMenu: SpectatorMenu
 ) : CommandExecutor, TabCompleter {
     
     private val configManager: ConfigManager
@@ -34,7 +33,6 @@ class ManhuntCommand(
             "reload" -> handleReload(sender)
             "ui" -> handleUI(sender, args)
             "spectate" -> handleSpectate(sender)
-            "party" -> handleParty(sender, args)
             "help" -> showHelp(sender)
             else -> {
                 sender.sendMessage("§c不明なコマンドです。/manhunt help で使用法を確認してください。")
@@ -273,17 +271,6 @@ class ManhuntCommand(
         spectatorMenu.openMenu(sender)
     }
     
-    private fun handleParty(sender: CommandSender, args: Array<out String>) {
-        // パーティーコマンドに処理を委譲
-        val partyArgs = if (args.size > 1) args.drop(1).toTypedArray() else emptyArray()
-        // 仮のCommandオブジェクトを作成してパーティーコマンドに渡す
-        val dummyCommand = object : org.bukkit.command.Command("party") {
-            override fun execute(sender: CommandSender, commandLabel: String, args: Array<out String>): Boolean {
-                return true
-            }
-        }
-        partyCommand.onCommand(sender, dummyCommand, "party", partyArgs)
-    }
     
     private fun showHelp(sender: CommandSender) {
         sender.sendMessage("§6=== Manhunt コマンド ===")
@@ -291,7 +278,6 @@ class ManhuntCommand(
         sender.sendMessage("§e/manhunt compass - 仮想追跡コンパスを有効化")
         sender.sendMessage("§e/manhunt status - ゲーム状況確認")
         sender.sendMessage("§e/manhunt spectate - 観戦メニューを開く（観戦者のみ）")
-        sender.sendMessage("§e/manhunt party - パーティー管理 (/manhunt party help で詳細)")
         sender.sendMessage("§7※ サーバー参加時に自動的にゲームに参加します")
         sender.sendMessage("")
         sender.sendMessage("§b=== 仮想コンパスの使い方 ===")
@@ -319,7 +305,7 @@ class ManhuntCommand(
         try {
             return when (args.size) {
                 1 -> {
-                    val subcommands = mutableListOf("role", "compass", "status", "spectate", "party", "help")
+                    val subcommands = mutableListOf("role", "compass", "status", "spectate", "help")
                     if (sender.hasPermission("manhunt.admin")) {
                         subcommands.addAll(listOf("start", "sethunter", "minplayers", "ui", "reload"))
                     }
@@ -331,7 +317,6 @@ class ManhuntCommand(
                     val input = args.getOrNull(1)?.lowercase() ?: ""
                     when (subcommand) {
                         "role" -> listOf("runner", "hunter", "spectator").filter { it.startsWith(input) }
-                        "party" -> partyCommand.onTabComplete(sender, command, alias, args.drop(1).toTypedArray()) ?: emptyList()
                         "sethunter" -> {
                             if (sender.hasPermission("manhunt.admin")) {
                                 Bukkit.getOnlinePlayers().mapNotNull { it?.name }.filter { it.lowercase().startsWith(input) }

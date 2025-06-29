@@ -21,11 +21,6 @@ class UIManager(
     private val configManager: ConfigManager
 ) {
     
-    private lateinit var partyManager: PartyManager
-    
-    fun setPartyManager(partyManager: PartyManager) {
-        this.partyManager = partyManager
-    }
     
     private var scoreboard: Scoreboard? = null
     private var objective: Objective? = null
@@ -176,60 +171,6 @@ class UIManager(
             addPlayerScoreboardLine(playerObjective, "§r  ", line--) // 空行
         }
         
-        // パーティー情報を表示（観戦者以外）
-        if (::partyManager.isInitialized && role != PlayerRole.SPECTATOR) {
-            val party = partyManager.getPlayerParty(player.name)
-            if (party != null) {
-                val otherMembers = party.getOtherMembers(player.name)
-                
-                if (otherMembers.isNotEmpty()) {
-                    // パーティーヘッダー
-                    val roleColor = when (role) {
-                        PlayerRole.HUNTER -> "§c"
-                        PlayerRole.RUNNER -> "§a"
-                        else -> "§7"
-                    }
-                    addPlayerScoreboardLine(playerObjective, "${roleColor}🤝 パーティーメンバー", line--)
-                    addPlayerScoreboardLine(playerObjective, "§r", line--) // 空行
-                    
-                    // メンバー情報表示（最大2人、パーティーサイズ3のため）
-                    otherMembers.take(2).forEach { memberName ->
-                        val member = plugin.server.getPlayer(memberName)
-                        if (member?.isOnline == true && member.world == player.world) {
-                            // 座標差分計算
-                            val deltaX = member.location.blockX - player.location.blockX
-                            val deltaY = member.location.blockY - player.location.blockY
-                            val deltaZ = member.location.blockZ - player.location.blockZ
-                            
-                            addPlayerScoreboardLine(playerObjective, "§f${memberName}:", line--)
-                            
-                            // 座標表示を2行に分ける
-                            if (deltaX >= 0) {
-                                addPlayerScoreboardLine(playerObjective, "§7X:+${deltaX} Y:${deltaY}", line--)
-                            } else {
-                                addPlayerScoreboardLine(playerObjective, "§7X:${deltaX} Y:${deltaY}", line--)
-                            }
-                            
-                            if (deltaZ >= 0) {
-                                addPlayerScoreboardLine(playerObjective, "§7Z:+${deltaZ}", line--)
-                            } else {
-                                addPlayerScoreboardLine(playerObjective, "§7Z:${deltaZ}", line--)
-                            }
-                        } else if (member?.isOnline == true) {
-                            // オンラインだが別ワールド
-                            addPlayerScoreboardLine(playerObjective, "§f${memberName}:", line--)
-                            addPlayerScoreboardLine(playerObjective, "§e別ワールド", line--)
-                        } else {
-                            // オフライン
-                            addPlayerScoreboardLine(playerObjective, "§f${memberName}:", line--)
-                            addPlayerScoreboardLine(playerObjective, "§cオフライン", line--)
-                        }
-                    }
-                    
-                    addPlayerScoreboardLine(playerObjective, "§r ", line--) // 空行
-                }
-            }
-        }
         
         // 待機中の場合は追加情報
         if (gameState == GameState.WAITING) {
@@ -257,23 +198,19 @@ class UIManager(
         playerListObjective.displaySlot = DisplaySlot.PLAYER_LIST
         
         val viewerRole = gameManager.getPlayerRole(viewer)
-        val viewerParty = if (::partyManager.isInitialized) partyManager.getPlayerParty(viewer.name) else null
         
         // 全オンラインプレイヤーに対して表示を設定
         Bukkit.getOnlinePlayers().forEach { target ->
             if (target.world == viewer.world) {
                 val targetRole = gameManager.getPlayerRole(target)
-                val displayInfo = getPlayerListDisplayInfo(viewer, target, viewerRole, targetRole, viewerParty)
-                
-                // プレイヤー名に色とアイコンを設定
-                val coloredName = getColoredPlayerName(viewer, target, viewerRole, targetRole, viewerParty)
+                val displayInfo = getPlayerListDisplayInfo(viewer, target)
                 
                 // チーム設定で名前の色を変更
-                val teamName = getTeamName(viewer, target, viewerRole, targetRole, viewerParty)
+                val teamName = getTeamName(viewer, target, viewerRole, targetRole)
                 var team = scoreboard.getTeam(teamName)
                 if (team == null) {
                     team = scoreboard.registerNewTeam(teamName)
-                    team.color = getPlayerNameColor(viewer, target, viewerRole, targetRole, viewerParty)
+                    team.color = getPlayerNameColor(viewer, target, viewerRole, targetRole)
                 }
                 team.addEntry(target.name)
                 
@@ -283,7 +220,7 @@ class UIManager(
         }
     }
     
-    private fun getPlayerListDisplayInfo(viewer: Player, target: Player, viewerRole: PlayerRole?, targetRole: PlayerRole?, viewerParty: Party?): Int {
+    private fun getPlayerListDisplayInfo(viewer: Player, target: Player): Int {
         return if (target == viewer) {
             0 // 自分は0で表示
         } else {
@@ -296,39 +233,19 @@ class UIManager(
         }
     }
     
-    private fun getColoredPlayerName(viewer: Player, target: Player, viewerRole: PlayerRole?, targetRole: PlayerRole?, viewerParty: Party?): String {
-        val roleIcon = when (targetRole) {
-            PlayerRole.HUNTER -> "🗡"
-            PlayerRole.RUNNER -> "🏃"
-            PlayerRole.SPECTATOR -> "👁"
-            null -> "❓"
-        }
-        
-        val relationIcon = when {
-            target == viewer -> "⭐"
-            viewerParty?.isMember(target.name) == true -> "🤝"
-            isAlly(viewerRole, targetRole) -> "💙"
-            isEnemy(viewerRole, targetRole) -> "❤️"
-            else -> "⚪"
-        }
-        
-        return "$relationIcon$roleIcon ${target.name}"
-    }
     
-    private fun getTeamName(viewer: Player, target: Player, viewerRole: PlayerRole?, targetRole: PlayerRole?, viewerParty: Party?): String {
+    private fun getTeamName(viewer: Player, target: Player, viewerRole: PlayerRole?, targetRole: PlayerRole?): String {
         return when {
             target == viewer -> "self"
-            viewerParty?.isMember(target.name) == true -> "party"
             isAlly(viewerRole, targetRole) -> "ally"
             isEnemy(viewerRole, targetRole) -> "enemy"
             else -> "neutral"
         }
     }
     
-    private fun getPlayerNameColor(viewer: Player, target: Player, viewerRole: PlayerRole?, targetRole: PlayerRole?, viewerParty: Party?): org.bukkit.ChatColor {
+    private fun getPlayerNameColor(viewer: Player, target: Player, viewerRole: PlayerRole?, targetRole: PlayerRole?): org.bukkit.ChatColor {
         return when {
             target == viewer -> org.bukkit.ChatColor.YELLOW // 自分：黄色
-            viewerParty?.isMember(target.name) == true -> org.bukkit.ChatColor.GREEN // パーティー：緑
             isAlly(viewerRole, targetRole) -> org.bukkit.ChatColor.BLUE // 味方：青
             isEnemy(viewerRole, targetRole) -> org.bukkit.ChatColor.RED // 敵：赤
             else -> org.bukkit.ChatColor.GRAY // その他：灰色
