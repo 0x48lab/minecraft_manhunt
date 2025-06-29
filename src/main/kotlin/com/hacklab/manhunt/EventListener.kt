@@ -12,7 +12,8 @@ import org.bukkit.event.player.PlayerQuitEvent
 
 class EventListener(
     private val gameManager: GameManager,
-    private val uiManager: UIManager
+    private val uiManager: UIManager,
+    private val messageManager: MessageManager
 ) : Listener {
     
     @EventHandler
@@ -33,8 +34,8 @@ class EventListener(
                 // ゲーム進行中は観戦者として参加
                 gameManager.addPlayer(player, PlayerRole.SPECTATOR)
                 player.gameMode = GameMode.SPECTATOR
-                player.sendMessage("§7ゲーム進行中のため、観戦者として参加しました。")
-                player.sendMessage("§e次回のゲームから役割を選択できます。")
+                player.sendMessage(messageManager.getMessage(player, "join.game-running"))
+                player.sendMessage(messageManager.getMessage(player, "join.next-game"))
                 
                 // ゲーム状況をタイトルで表示
                 uiManager.showTitle(player, "§6🏃 MANHUNT", "§7ゲーム進行中 - 観戦モード")
@@ -43,8 +44,8 @@ class EventListener(
                 // 待機中は観戦者として参加（後で役割変更可能）
                 gameManager.addPlayer(player, PlayerRole.SPECTATOR)
                 player.gameMode = GameMode.SPECTATOR
-                player.sendMessage("§6[Manhunt] ゲームに参加しました！")
-                player.sendMessage("§e/manhunt role <runner|hunter> で役割を選択してください。")
+                player.sendMessage(messageManager.getMessage(player, "join.welcome"))
+                player.sendMessage(messageManager.getMessage(player, "join.role-select"))
                 
                 // 参加案内をタイトルで表示
                 uiManager.showTitle(player, "§e🎮 MANHUNT", "§f/manhunt role で役割を選択しよう！")
@@ -53,7 +54,7 @@ class EventListener(
                 // その他の状態では観戦者として参加
                 gameManager.addPlayer(player, PlayerRole.SPECTATOR)
                 player.gameMode = GameMode.SPECTATOR
-                player.sendMessage("§7観戦者として参加しました。")
+                player.sendMessage(messageManager.getMessage(player, "join.spectator"))
             }
         }
     }

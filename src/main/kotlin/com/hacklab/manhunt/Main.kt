@@ -26,16 +26,16 @@ class Main : JavaPlugin() {
         messageManager = MessageManager(this)
         messageManager.initialize()
         
-        // Initialize managers (temporarily without MessageManager for other classes)
-        gameManager = GameManager(this, configManager)
+        // Initialize managers
+        gameManager = GameManager(this, configManager, messageManager)
         compassTracker = CompassTracker(this, gameManager, configManager, messageManager)
         uiManager = UIManager(this, gameManager, configManager)
         
         
-        eventListener = EventListener(gameManager, uiManager)
+        eventListener = EventListener(gameManager, uiManager, messageManager)
         spectatorMenu = SpectatorMenu(gameManager)
-        teamChatCommand = TeamChatCommand(gameManager)
-        positionShareCommand = PositionShareCommand(gameManager)
+        teamChatCommand = TeamChatCommand(gameManager, messageManager)
+        positionShareCommand = PositionShareCommand(gameManager, messageManager)
         
         // Register commands
         val manhuntCommand = ManhuntCommand(gameManager, compassTracker, spectatorMenu)

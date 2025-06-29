@@ -9,7 +9,7 @@ import org.bukkit.scheduler.BukkitRunnable
 import java.util.*
 import kotlin.random.Random
 
-class GameManager(private val plugin: Main, val configManager: ConfigManager) {
+class GameManager(private val plugin: Main, val configManager: ConfigManager, private val messageManager: MessageManager) {
     private var gameState = GameState.WAITING
     private val players = mutableMapOf<UUID, ManhuntPlayer>()
     private val fixedHunters = mutableSetOf<UUID>()
@@ -63,7 +63,7 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager) {
             if (isIntentionalLeave) {
                 // 意図的な退出の場合はSpectatorにする
                 setPlayerRole(player, PlayerRole.SPECTATOR)
-                player.sendMessage("§7ゲームから退出したため、観戦者になりました。")
+                player.sendMessage(messageManager.getMessage(player, "quit.changed-to-spectator"))
                 Bukkit.broadcastMessage("§e${player.name}がゲームから退出し、観戦者になりました。")
             } else {
                 // 切断の場合は元の役割を保存（ネットワークエラーの可能性）

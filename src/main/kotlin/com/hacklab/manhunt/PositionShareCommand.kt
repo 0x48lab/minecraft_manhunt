@@ -10,24 +10,25 @@ import org.bukkit.entity.Player
  * /pos コマンドで現在の座標を同じ役割のプレイヤーに送信
  */
 class PositionShareCommand(
-    private val gameManager: GameManager
+    private val gameManager: GameManager,
+    private val messageManager: MessageManager
 ) : CommandExecutor {
     
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
         if (sender !is Player) {
-            sender.sendMessage("§cこのコマンドはプレイヤーのみが実行できます。")
+            sender.sendMessage(messageManager.getMessage(null, "position.player-only"))
             return true
         }
         
         // ゲーム中のみ使用可能
         if (gameManager.getGameState() != GameState.RUNNING) {
-            sender.sendMessage("§c座標共有はゲーム中のみ使用できます。")
+            sender.sendMessage(messageManager.getMessage(sender, "position.game-only"))
             return true
         }
         
         val senderRole = gameManager.getPlayerRole(sender)
         if (senderRole == null || senderRole == PlayerRole.SPECTATOR) {
-            sender.sendMessage("§c観戦者は座標共有を使用できません。")
+            sender.sendMessage(messageManager.getMessage(sender, "position.spectator-cannot-use"))
             return true
         }
         
@@ -42,7 +43,7 @@ class PositionShareCommand(
         val teammates = getTeammates(sender, senderRole)
         
         if (teammates.isEmpty()) {
-            sender.sendMessage("§c現在チームメンバーがいません。")
+            sender.sendMessage(messageManager.getMessage(sender, "position.no-teammates"))
             return true
         }
         
@@ -78,19 +79,33 @@ class PositionShareCommand(
         teammates: List<Player>
     ) {
         val rolePrefix = when (senderRole) {
-            PlayerRole.HUNTER -> "§c[🗡座標]"
-            PlayerRole.RUNNER -> "§a[🏃座標]"
-            PlayerRole.SPECTATOR -> "§7[👁座標]" // 実際は使用されない
+            PlayerRole.HUNTER -> messageManager.getMessage(sender, "position.hunter-prefix")
+            PlayerRole.RUNNER -> messageManager.getMessage(sender, "position.runner-prefix")
+            PlayerRole.SPECTATOR -> "" // 実際は使用されない
         }
         
-        // 座標をクリック可能な形式で作成
-        val formattedMessage = "$rolePrefix §f${sender.name}: §bX:$x Y:$y Z:$z §7($world)"
-        
         // 送信者自身にも表示（確認用）
-        sender.sendMessage("$formattedMessage §7(味方${teammates.size}人に送信)")
+        val sentMessage = messageManager.getMessage(sender, "position.sent-format",
+            "prefix" to rolePrefix,
+            "sender" to sender.name,
+            "x" to x,
+            "y" to y,
+            "z" to z,
+            "world" to world,
+            "count" to teammates.size
+        )
+        sender.sendMessage(sentMessage)
         
         // チームメンバーに送信
         teammates.forEach { teammate ->
+            val formattedMessage = messageManager.getMessage(teammate, "position.format",
+                "prefix" to rolePrefix,
+                "sender" to sender.name,
+                "x" to x,
+                "y" to y,
+                "z" to z,
+                "world" to world
+            )
             teammate.sendMessage(formattedMessage)
             
             // 相対座標も表示（便利機能）
@@ -104,9 +119,15 @@ class PositionShareCommand(
                 val relativeY = if (deltaY >= 0) "+$deltaY" else "$deltaY"
                 val relativeZ = if (deltaZ >= 0) "+$deltaZ" else "$deltaZ"
                 
-                teammate.sendMessage("§7  └→ 相対座標: X:$relativeX Y:$relativeY Z:$relativeZ (距離: ${distance}m)")
+                val relativeMessage = messageManager.getMessage(teammate, "position.relative",
+                    "x" to relativeX,
+                    "y" to relativeY,
+                    "z" to relativeZ,
+                    "distance" to distance
+                )
+                teammate.sendMessage(relativeMessage)
             } else {
-                teammate.sendMessage("§7  └→ §e別ワールドにいます")
+                teammate.sendMessage(messageManager.getMessage(teammate, "position.different-world"))
             }
         }
         

@@ -11,37 +11,38 @@ import org.bukkit.entity.Player
  * /r <メッセージ> コマンドで同じ役割のプレイヤー間でのみチャット可能
  */
 class TeamChatCommand(
-    private val gameManager: GameManager
+    private val gameManager: GameManager,
+    private val messageManager: MessageManager
 ) : CommandExecutor, TabCompleter {
     
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
         if (sender !is Player) {
-            sender.sendMessage("§cこのコマンドはプレイヤーのみが実行できます。")
+            sender.sendMessage(messageManager.getMessage(null, "teamchat.player-only"))
             return true
         }
         
         // ゲーム中のみ使用可能
         if (gameManager.getGameState() != GameState.RUNNING) {
-            sender.sendMessage("§cチームチャットはゲーム中のみ使用できます。")
+            sender.sendMessage(messageManager.getMessage(sender, "teamchat.game-only"))
             return true
         }
         
         val senderRole = gameManager.getPlayerRole(sender)
         if (senderRole == null || senderRole == PlayerRole.SPECTATOR) {
-            sender.sendMessage("§c観戦者はチームチャットを使用できません。")
+            sender.sendMessage(messageManager.getMessage(sender, "teamchat.spectator-cannot-use"))
             return true
         }
         
         if (args.isEmpty()) {
-            sender.sendMessage("§c使用法: /r <メッセージ>")
-            sender.sendMessage("§7味方同士でのみメッセージを送信します。")
+            sender.sendMessage(messageManager.getMessage(sender, "teamchat.usage"))
+            sender.sendMessage(messageManager.getMessage(sender, "teamchat.usage-hint"))
             return true
         }
         
         // メッセージを結合
         val message = args.joinToString(" ")
         if (message.isBlank()) {
-            sender.sendMessage("§cメッセージが空です。")
+            sender.sendMessage(messageManager.getMessage(sender, "teamchat.empty-message"))
             return true
         }
         
@@ -49,7 +50,7 @@ class TeamChatCommand(
         val teammates = getTeammates(sender, senderRole)
         
         if (teammates.isEmpty()) {
-            sender.sendMessage("§c現在チームメンバーがいません。")
+            sender.sendMessage(messageManager.getMessage(sender, "teamchat.no-teammates"))
             return true
         }
         
@@ -87,19 +88,29 @@ class TeamChatCommand(
      */
     private fun sendTeamMessage(sender: Player, senderRole: PlayerRole, message: String, teammates: List<Player>) {
         val rolePrefix = when (senderRole) {
-            PlayerRole.HUNTER -> "§c[🗡チーム]"
-            PlayerRole.RUNNER -> "§a[🏃チーム]"
-            PlayerRole.SPECTATOR -> "§7[👁観戦]" // 実際は使用されない
+            PlayerRole.HUNTER -> messageManager.getMessage(sender, "teamchat.hunter-prefix")
+            PlayerRole.RUNNER -> messageManager.getMessage(sender, "teamchat.runner-prefix")
+            PlayerRole.SPECTATOR -> "" // 実際は使用されない
         }
         
-        val formattedMessage = "$rolePrefix §f${sender.name}: §7$message"
+        val formattedMessage = messageManager.getMessage(sender, "teamchat.format", 
+            "prefix" to rolePrefix, 
+            "sender" to sender.name, 
+            "message" to message
+        )
         
         // 送信者自身にも表示
         sender.sendMessage(formattedMessage)
         
         // チームメンバーに送信
         teammates.forEach { teammate ->
-            teammate.sendMessage(formattedMessage)
+            // 各チームメイトの言語設定に応じたメッセージを送信
+            val teammateMessage = messageManager.getMessage(teammate, "teamchat.format",
+                "prefix" to rolePrefix,
+                "sender" to sender.name,
+                "message" to message
+            )
+            teammate.sendMessage(teammateMessage)
         }
         
         // ログに記録

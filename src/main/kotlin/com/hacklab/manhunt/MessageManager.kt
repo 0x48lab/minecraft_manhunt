@@ -235,6 +235,50 @@ class MessageManager(private val plugin: Main) {
         config.set("help.compass-display", "§7• パーティクルと矢印で方向を表示")
         config.set("help.compass-benefits", "§7• アイテムドロップや重複の心配なし")
         config.set("help.admin-header", "§c=== 管理者コマンド ===")
+        
+        // チームチャットメッセージ
+        config.set("teamchat.player-only", "§cこのコマンドはプレイヤーのみが実行できます。")
+        config.set("teamchat.game-only", "§cチームチャットはゲーム中のみ使用できます。")
+        config.set("teamchat.spectator-cannot-use", "§c観戦者はチームチャットを使用できません。")
+        config.set("teamchat.usage", "§c使用法: /r <メッセージ>")
+        config.set("teamchat.usage-hint", "§7味方同士でのみメッセージを送信します。")
+        config.set("teamchat.empty-message", "§cメッセージが空です。")
+        config.set("teamchat.no-teammates", "§c現在チームメンバーがいません。")
+        config.set("teamchat.hunter-prefix", "§c[🗡チーム]")
+        config.set("teamchat.runner-prefix", "§a[🏃チーム]")
+        config.set("teamchat.format", "{prefix} §f{sender}: §7{message}")
+        
+        // 座標共有メッセージ
+        config.set("position.player-only", "§cこのコマンドはプレイヤーのみが実行できます。")
+        config.set("position.game-only", "§c座標共有はゲーム中のみ使用できます。")
+        config.set("position.spectator-cannot-use", "§c観戦者は座標共有を使用できません。")
+        config.set("position.no-teammates", "§c現在チームメンバーがいません。")
+        config.set("position.hunter-prefix", "§c[🗡座標]")
+        config.set("position.runner-prefix", "§a[🏃座標]")
+        config.set("position.format", "{prefix} §f{sender}: §bX:{x} Y:{y} Z:{z} §7({world})")
+        config.set("position.sent-format", "{prefix} §f{sender}: §bX:{x} Y:{y} Z:{z} §7({world}) §7(味方{count}人に送信)")
+        config.set("position.relative", "§7  └→ 相対座標: X:{x} Y:{y} Z:{z} (距離: {distance}m)")
+        config.set("position.different-world", "§7  └→ §e別ワールドにいます")
+        
+        // 退出メッセージ
+        config.set("quit.changed-to-spectator", "§7ゲームから退出したため、観戦者になりました。")
+        
+        // 再接続メッセージ
+        config.set("rejoin.success", "§aネットワークエラーから復帰しました！役割: {role}")
+        
+        // 自動割り当てメッセージ
+        config.set("auto-assign.hunter", "§cハンターが不足のため、自動的にハンターに割り当てられました！")
+        config.set("auto-assign.runner", "§aランナーが不足のため、自動的にランナーに割り当てられました！")
+        
+        // ゲーム開始メッセージ
+        config.set("game.hunter-start", "§c[ハンター] 逃げる人を追いかけろ！")
+        config.set("game.runner-start", "§a[ランナー] エンダードラゴンを倒せ！")
+        config.set("game.spectator-start", "§7[観戦者] ゲームを観戦してください。")
+        
+        // リスポンメッセージ
+        config.set("respawn.hunter", "§c[ハンター] リスポンしました！追跡を続けてください。")
+        config.set("respawn.runner-death", "§c[ランナー] 死亡しました。{time}秒後にリスポンします...")
+        config.set("respawn.waiting", "§7[リスポン待ち] スペクテーターモードでゲームを観戦できます。")
     }
     
     private fun addEnglishMessages(config: YamlConfiguration) {
@@ -321,6 +365,50 @@ class MessageManager(private val plugin: Main) {
         config.set("help.compass-display", "§7• Particles and arrows show direction")
         config.set("help.compass-benefits", "§7• No item drops or duplication issues")
         config.set("help.admin-header", "§c=== Admin Commands ===")
+        
+        // Team Chat messages
+        config.set("teamchat.player-only", "§cThis command can only be used by players.")
+        config.set("teamchat.game-only", "§cTeam chat can only be used during the game.")
+        config.set("teamchat.spectator-cannot-use", "§cSpectators cannot use team chat.")
+        config.set("teamchat.usage", "§cUsage: /r <message>")
+        config.set("teamchat.usage-hint", "§7Send message to teammates only.")
+        config.set("teamchat.empty-message", "§cMessage is empty.")
+        config.set("teamchat.no-teammates", "§cNo teammates online.")
+        config.set("teamchat.hunter-prefix", "§c[🗡Team]")
+        config.set("teamchat.runner-prefix", "§a[🏃Team]")
+        config.set("teamchat.format", "{prefix} §f{sender}: §7{message}")
+        
+        // Position Share messages
+        config.set("position.player-only", "§cThis command can only be used by players.")
+        config.set("position.game-only", "§cPosition sharing can only be used during the game.")
+        config.set("position.spectator-cannot-use", "§cSpectators cannot share position.")
+        config.set("position.no-teammates", "§cNo teammates online.")
+        config.set("position.hunter-prefix", "§c[🗡Pos]")
+        config.set("position.runner-prefix", "§a[🏃Pos]")
+        config.set("position.format", "{prefix} §f{sender}: §bX:{x} Y:{y} Z:{z} §7({world})")
+        config.set("position.sent-format", "{prefix} §f{sender}: §bX:{x} Y:{y} Z:{z} §7({world}) §7(Sent to {count} teammates)")
+        config.set("position.relative", "§7  └→ Relative: X:{x} Y:{y} Z:{z} (Distance: {distance}m)")
+        config.set("position.different-world", "§7  └→ §eIn different world")
+        
+        // Quit messages
+        config.set("quit.changed-to-spectator", "§7You became a spectator after leaving the game.")
+        
+        // Rejoin messages
+        config.set("rejoin.success", "§aRecovered from network error! Role: {role}")
+        
+        // Auto-assign messages
+        config.set("auto-assign.hunter", "§cAutomatically assigned as Hunter due to shortage!")
+        config.set("auto-assign.runner", "§aAutomatically assigned as Runner due to shortage!")
+        
+        // Game start messages
+        config.set("game.hunter-start", "§c[Hunter] Chase the runners!")
+        config.set("game.runner-start", "§a[Runner] Defeat the Ender Dragon!")
+        config.set("game.spectator-start", "§7[Spectator] Please spectate the game.")
+        
+        // Respawn messages
+        config.set("respawn.hunter", "§c[Hunter] Respawned! Continue the chase.")
+        config.set("respawn.runner-death", "§c[Runner] You died. Respawning in {time} seconds...")
+        config.set("respawn.waiting", "§7[Waiting] You can spectate in spectator mode.")
     }
     
     fun getMessage(player: Player?, key: String, vararg args: Any): String {
