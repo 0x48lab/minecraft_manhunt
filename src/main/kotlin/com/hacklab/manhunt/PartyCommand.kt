@@ -35,6 +35,7 @@ class PartyCommand(
             "kick" -> handleKickCommand(sender, args)
             "list", "info" -> handleListCommand(sender)
             "gui" -> handleGuiCommand(sender)
+            "debug" -> handleDebugCommand(sender, args)
             "help" -> sendHelpMessage(sender)
             else -> {
                 sender.sendMessage("§c不明なサブコマンドです。 /manhunt party help を実行してください。")
@@ -75,6 +76,9 @@ class PartyCommand(
                         } else {
                             emptyList()
                         }
+                    }
+                    "debug" -> {
+                        listOf("actionbar", "fake", "distance", "direction").filter { it.startsWith(args[1], ignoreCase = true) }
                     }
                     else -> emptyList()
                 }
@@ -308,6 +312,132 @@ class PartyCommand(
         player.sendMessage("§eGUI機能は実装予定です。現在は /manhunt party list でパーティー情報を確認できます。")
     }
     
+    private fun handleDebugCommand(player: Player, args: Array<out String>) {
+        if (!player.hasPermission("manhunt.admin")) {
+            player.sendMessage("§cこのコマンドは管理者のみが実行できます。")
+            return
+        }
+        
+        if (args.size < 2) {
+            player.sendMessage("§6=== パーティーデバッグコマンド ===")
+            player.sendMessage("§e/manhunt party debug actionbar §7- ActionBar表示テスト")
+            player.sendMessage("§e/manhunt party debug fake §7- 仮想パーティーメンバー作成")
+            player.sendMessage("§e/manhunt party debug distance §7- 距離計算テスト")
+            player.sendMessage("§e/manhunt party debug direction §7- 方向矢印テスト")
+            return
+        }
+        
+        when (args[1].lowercase()) {
+            "actionbar" -> debugActionBar(player)
+            "fake" -> debugCreateFakeParty(player)
+            "distance" -> debugDistanceCalculation(player)
+            "direction" -> debugDirectionTest(player)
+            else -> {
+                player.sendMessage("§c不明なデバッグコマンドです。")
+            }
+        }
+    }
+    
+    private fun debugActionBar(player: Player) {
+        val uiManager = plugin.getUIManager()
+        
+        player.sendMessage("§a[デバッグ] ActionBar表示テストを開始します...")
+        
+        // 5秒間、様々なパターンのActionBarを表示
+        val patterns = listOf(
+            "§c🗡 ハンターモード §8| §f🤝 TestPlayer: 45m↗",
+            "§a🏃 ランナーモード §8| §f🤝 TestPlayer: 123m←",
+            "§c🗡 ハンターモード §8| §f🤝 TestPlayer: 89m↓ +1人",
+            "§a🏃 ランナーモード §8| §f🤝 FarPlayer: 256m→",
+            "§c🗡 ハンターモード §8| §f🤝 NearPlayer: 12m↖"
+        )
+        
+        patterns.forEachIndexed { index, pattern ->
+            plugin.server.scheduler.runTaskLater(plugin, Runnable {
+                uiManager.sendActionBar(player, pattern)
+                player.sendMessage("§7[${index + 1}/${patterns.size}] $pattern")
+            }, (index * 20L)) // 1秒間隔
+        }
+        
+        // 元の表示に戻す
+        plugin.server.scheduler.runTaskLater(plugin, Runnable {
+            player.sendMessage("§a[デバッグ] ActionBarテスト完了")
+        }, (patterns.size * 20L))
+    }
+    
+    private fun debugCreateFakeParty(player: Player) {
+        // 既存のパーティーから脱退
+        partyManager.getPlayerParty(player.name)?.let { 
+            partyManager.leaveParty(player)
+        }
+        
+        // 新しいパーティーを作成
+        val party = partyManager.createParty(player)
+        if (party != null) {
+            // 仮想メンバーを追加（実際には存在しない）
+            party.addMember("TestPlayer1")
+            party.addMember("TestPlayer2")
+            
+            player.sendMessage("§a[デバッグ] 仮想パーティーを作成しました")
+            player.sendMessage("§7メンバー: ${party.members.joinToString(", ")}")
+            player.sendMessage("§7※ ActionBarでの表示をテストできます")
+            player.sendMessage("§e移動して位置表示の更新を確認してください")
+        } else {
+            player.sendMessage("§c仮想パーティーの作成に失敗しました")
+        }
+    }
+    
+    private fun debugDistanceCalculation(player: Player) {
+        val testLocations = listOf(
+            player.location.clone().add(10.0, 0.0, 0.0) to "東10m",
+            player.location.clone().add(0.0, 0.0, 20.0) to "南20m", 
+            player.location.clone().add(-15.0, 0.0, 0.0) to "西15m",
+            player.location.clone().add(0.0, 0.0, -25.0) to "北25m",
+            player.location.clone().add(50.0, 0.0, 50.0) to "南東71m"
+        )
+        
+        player.sendMessage("§a[デバッグ] 距離計算テスト")
+        testLocations.forEach { (location, expected) ->
+            val distance = player.location.distance(location).toInt()
+            player.sendMessage("§7予想: $expected → 計算結果: ${distance}m")
+        }
+    }
+    
+    private fun debugDirectionTest(player: Player) {
+        val directions = listOf(
+            "東" to player.location.clone().add(10.0, 0.0, 0.0),
+            "南東" to player.location.clone().add(10.0, 0.0, 10.0),
+            "南" to player.location.clone().add(0.0, 0.0, 10.0),
+            "南西" to player.location.clone().add(-10.0, 0.0, 10.0),
+            "西" to player.location.clone().add(-10.0, 0.0, 0.0),
+            "北西" to player.location.clone().add(-10.0, 0.0, -10.0),
+            "北" to player.location.clone().add(0.0, 0.0, -10.0),
+            "北東" to player.location.clone().add(10.0, 0.0, -10.0)
+        )
+        
+        player.sendMessage("§a[デバッグ] 方向矢印テスト")
+        directions.forEach { (expected, location) ->
+            val deltaX = location.x - player.location.x
+            val deltaZ = location.z - player.location.z
+            val angle = Math.atan2(deltaZ, deltaX) * 180 / Math.PI
+            val normalizedAngle = (angle + 360) % 360
+            
+            val arrow = when (normalizedAngle.toInt()) {
+                in 0..22, in 338..360 -> "→"
+                in 23..67 -> "↘"
+                in 68..112 -> "↓"
+                in 113..157 -> "↙"
+                in 158..202 -> "←"
+                in 203..247 -> "↖"
+                in 248..292 -> "↑"
+                in 293..337 -> "↗"
+                else -> "?"
+            }
+            
+            player.sendMessage("§7${expected}: $arrow (角度: ${normalizedAngle.toInt()}°)")
+        }
+    }
+    
     private fun sendHelpMessage(player: Player) {
         player.sendMessage("§6═══ パーティーコマンド ═══")
         player.sendMessage("§e/manhunt party create §7- パーティーを作成")
@@ -318,6 +448,9 @@ class PartyCommand(
         player.sendMessage("§e/manhunt party kick <名前> §7- メンバーを除名（リーダーのみ）")
         player.sendMessage("§e/manhunt party list §7- パーティー情報を表示")
         player.sendMessage("§e/manhunt party gui §7- GUI管理画面（実装予定）")
+        if (player.hasPermission("manhunt.admin")) {
+            player.sendMessage("§c/manhunt party debug §7- デバッグ機能（管理者のみ）")
+        }
         player.sendMessage("§7最大 §e${Party.MAX_PARTY_SIZE}人 §7まで同じ役割でパーティーを組めます")
     }
     

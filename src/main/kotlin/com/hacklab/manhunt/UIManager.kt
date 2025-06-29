@@ -225,7 +225,7 @@ class UIManager(
         }
     }
     
-    private fun sendActionBar(player: Player, message: String) {
+    fun sendActionBar(player: Player, message: String) {
         try {
             player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent(message))
         } catch (e: Exception) {
