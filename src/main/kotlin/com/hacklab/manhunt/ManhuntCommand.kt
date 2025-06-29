@@ -10,7 +10,8 @@ import kotlin.collections.listOf
 
 class ManhuntCommand(
     private val gameManager: GameManager,
-    private val compassTracker: CompassTracker
+    private val compassTracker: CompassTracker,
+    private val spectatorMenu: SpectatorMenu
 ) : CommandExecutor, TabCompleter {
     
     private val configManager: ConfigManager
@@ -31,6 +32,7 @@ class ManhuntCommand(
             "minplayers" -> handleMinPlayers(sender, args)
             "reload" -> handleReload(sender)
             "ui" -> handleUI(sender, args)
+            "spectate" -> handleSpectate(sender)
             "help" -> showHelp(sender)
             else -> {
                 sender.sendMessage("§c不明なコマンドです。/manhunt help で使用法を確認してください。")
@@ -260,11 +262,21 @@ class ManhuntCommand(
         }
     }
     
+    private fun handleSpectate(sender: CommandSender) {
+        if (sender !is Player) {
+            sender.sendMessage("§cプレイヤーのみが実行できるコマンドです。")
+            return
+        }
+        
+        spectatorMenu.openMenu(sender)
+    }
+    
     private fun showHelp(sender: CommandSender) {
         sender.sendMessage("§6=== Manhunt コマンド ===")
         sender.sendMessage("§e/manhunt role <runner|hunter|spectator> - 役割変更")
         sender.sendMessage("§e/manhunt compass - 追跡コンパスを取得")
         sender.sendMessage("§e/manhunt status - ゲーム状況確認")
+        sender.sendMessage("§e/manhunt spectate - 観戦メニューを開く（観戦者のみ）")
         sender.sendMessage("§7※ サーバー参加時に自動的にゲームに参加します")
         
         if (sender.hasPermission("manhunt.admin")) {
@@ -286,7 +298,7 @@ class ManhuntCommand(
         try {
             return when (args.size) {
                 1 -> {
-                    val subcommands = mutableListOf("role", "compass", "status", "help")
+                    val subcommands = mutableListOf("role", "compass", "status", "spectate", "help")
                     if (sender.hasPermission("manhunt.admin")) {
                         subcommands.addAll(listOf("start", "sethunter", "minplayers", "ui", "reload"))
                     }
