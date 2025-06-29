@@ -14,6 +14,10 @@ commands:
     description: Team chat command for Manhunt
     usage: /r <message>
     aliases: [teamchat]
+  pos:
+    description: Share your position with teammates
+    usage: /pos
+    aliases: [position, coords]
 
 permissions:
   manhunt.admin:

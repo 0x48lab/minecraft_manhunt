@@ -12,6 +12,7 @@ class Main : JavaPlugin() {
     private lateinit var uiManager: UIManager
     private lateinit var spectatorMenu: SpectatorMenu
     private lateinit var teamChatCommand: TeamChatCommand
+    private lateinit var positionShareCommand: PositionShareCommand
 
     override fun onEnable() {
         // Save default config
@@ -34,6 +35,7 @@ class Main : JavaPlugin() {
         eventListener = EventListener(gameManager, uiManager)
         spectatorMenu = SpectatorMenu(gameManager)
         teamChatCommand = TeamChatCommand(gameManager)
+        positionShareCommand = PositionShareCommand(gameManager)
         
         // Register commands
         val manhuntCommand = ManhuntCommand(gameManager, compassTracker, spectatorMenu)
@@ -43,6 +45,9 @@ class Main : JavaPlugin() {
         // Register team chat command
         getCommand("r")?.setExecutor(teamChatCommand)
         getCommand("r")?.tabCompleter = teamChatCommand
+        
+        // Register position share command
+        getCommand("pos")?.setExecutor(positionShareCommand)
         
         // Register events
         server.pluginManager.registerEvents(eventListener, this)
