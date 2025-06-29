@@ -5,6 +5,7 @@ import org.bukkit.plugin.java.JavaPlugin
 class Main : JavaPlugin() {
     
     private lateinit var configManager: ConfigManager
+    private lateinit var messageManager: MessageManager
     private lateinit var gameManager: GameManager
     private lateinit var compassTracker: CompassTracker
     private lateinit var eventListener: EventListener
@@ -19,9 +20,13 @@ class Main : JavaPlugin() {
         configManager = ConfigManager(this)
         configManager.validateAndFixConfig()
         
-        // Initialize managers
+        // Initialize message manager
+        messageManager = MessageManager(this)
+        messageManager.initialize()
+        
+        // Initialize managers (temporarily without MessageManager for other classes)
         gameManager = GameManager(this, configManager)
-        compassTracker = CompassTracker(this, gameManager, configManager)
+        compassTracker = CompassTracker(this, gameManager, configManager, messageManager)
         uiManager = UIManager(this, gameManager, configManager)
         eventListener = EventListener(gameManager, uiManager)
         spectatorMenu = SpectatorMenu(gameManager)
@@ -43,6 +48,7 @@ class Main : JavaPlugin() {
     
     fun getCompassTracker(): CompassTracker = compassTracker
     fun getConfigManager(): ConfigManager = configManager
+    fun getMessageManager(): MessageManager = messageManager
     fun getUIManager(): UIManager = uiManager
     fun getSpectatorMenu(): SpectatorMenu = spectatorMenu
 

@@ -8,7 +8,7 @@ description: Minecraft Manhunt game plugin
 commands:
   manhunt:
     description: Manhunt game commands
-    usage: /manhunt <join|leave|role|start|compass|status|help>
+    usage: /manhunt <role|start|compass|status|spectate|help>
     aliases: [mh]
 
 permissions:

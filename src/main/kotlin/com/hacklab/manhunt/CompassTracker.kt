@@ -1,33 +1,38 @@
 package com.hacklab.manhunt
 
-import org.bukkit.Bukkit
-import org.bukkit.Location
-import org.bukkit.Material
 import org.bukkit.entity.Player
-import org.bukkit.inventory.ItemStack
-import org.bukkit.inventory.meta.CompassMeta
 import org.bukkit.scheduler.BukkitRunnable
+import net.md_5.bungee.api.ChatMessageType
+import net.md_5.bungee.api.chat.TextComponent
 
-class CompassTracker(private val plugin: Main, private val gameManager: GameManager, private val configManager: ConfigManager) {
+class CompassTracker(
+    private val plugin: Main, 
+    private val gameManager: GameManager, 
+    private val configManager: ConfigManager,
+    private val messageManager: MessageManager
+) {
     
     private var trackingTask: BukkitRunnable? = null
-    private val hunterCompasses = mutableMapOf<Player, ItemStack>()
-    private var lastCompassUpdate = 0L
+    private var virtualCompass: VirtualCompass? = null
     
     fun startTracking() {
         stopTracking()
+        
+        // VirtualCompassを初期化
+        virtualCompass = VirtualCompass(plugin, gameManager, configManager, messageManager)
+        plugin.server.pluginManager.registerEvents(virtualCompass!!, plugin)
+        
+        // ハンターへのヒント表示タスク
         trackingTask = object : BukkitRunnable() {
             override fun run() {
-                // スロットリングで更新頻度を制限
-                val currentTime = System.currentTimeMillis()
-                if (currentTime - lastCompassUpdate >= 1000) { // 1秒ごと
-                    updateAllHunterCompasses()
-                    lastCompassUpdate = currentTime
+                if (gameManager.getGameState() == GameState.RUNNING) {
+                    showHunterHints()
                 }
             }
         }
-        val checkInterval = (configManager.getCompassUpdateInterval() / 2).coerceAtLeast(1L)
-        trackingTask?.runTaskTimer(plugin, 0L, checkInterval)
+        
+        // 30秒ごとにヒントを表示
+        trackingTask?.runTaskTimer(plugin, 0L, 600L)
     }
     
     fun stopTracking() {
@@ -37,136 +42,62 @@ class CompassTracker(private val plugin: Main, private val gameManager: GameMana
             plugin.logger.warning("Error stopping compass tracking task: ${e.message}")
         } finally {
             trackingTask = null
-            hunterCompasses.clear() // キャッシュをクリア
-            lastCompassUpdate = 0L
         }
+        
+        // VirtualCompassのクリーンアップ
+        virtualCompass?.cleanup()
+        virtualCompass = null
     }
     
-    private fun updateAllHunterCompasses() {
+    private fun showHunterHints() {
         val hunters = gameManager.getAllHunters()
-        val runners = gameManager.getAllRunners()
-        
-        if (runners.isEmpty()) return
-        
         for (hunter in hunters) {
-            updateHunterCompass(hunter, runners)
-        }
-    }
-    
-    private fun updateHunterCompass(hunter: Player, runners: List<Player>) {
-        val compass = getOrCreateCompass(hunter)
-        if (compass != null) {
-            val nearestRunner = findNearestRunner(hunter, runners)
-            if (nearestRunner != null && nearestRunner.world != null && hunter.world != null && 
-                nearestRunner.world == hunter.world) {
-                setCompassTarget(compass, nearestRunner.location)
-            }
-        }
-    }
-    
-    private fun getOrCreateCompass(hunter: Player): ItemStack? {
-        // キャッシュされたコンパスをチェック
-        hunterCompasses[hunter]?.let { cachedCompass ->
-            // インベントリにまだあるか確認
-            if (hunter.inventory.contains(cachedCompass)) {
-                return cachedCompass
-            } else {
-                hunterCompasses.remove(hunter)
-            }
-        }
-        
-        // インベントリからコンパスを検索（高速化）
-        val inventory = hunter.inventory
-        val hotbar = inventory.storageContents.take(9) // ホットバーのみチェック
-        for (item in hotbar) {
-            if (item?.type == Material.COMPASS) {
-                hunterCompasses[hunter] = item
-                return item
-            }
-        }
-        
-        // 新しいコンパスを作成
-        val compass = ItemStack(Material.COMPASS)
-        val meta = compass.itemMeta
-        if (meta !is CompassMeta) {
-            plugin.logger.warning("Failed to create compass meta for ${hunter.name}")
-            return null
-        }
-        
-        meta.setDisplayName("§6追跡コンパス")
-        meta.lore = listOf("§7最も近い逃げる人を指します")
-        compass.itemMeta = meta
-        
-        // ホットバーの空きスロットに優先的に配置
-        for (i in 0..8) {
-            if (inventory.getItem(i) == null) {
-                inventory.setItem(i, compass)
-                hunterCompasses[hunter] = compass
-                return compass
-            }
-        }
-        
-        // ホットバーに空きがない場合は通常の追加
-        val remainingItems = inventory.addItem(compass)
-        return if (remainingItems.isEmpty()) {
-            hunterCompasses[hunter] = compass
-            compass
-        } else {
-            null
-        }
-    }
-    
-    private fun findNearestRunner(hunter: Player, runners: List<Player>): Player? {
-        val hunterWorld = hunter.world ?: return null
-        return runners
-            .filter { runner -> 
-                val runnerWorld = runner.world
-                runnerWorld != null && runnerWorld == hunterWorld && !runner.isDead
-            }
-            .minByOrNull { runner ->
-                try {
-                    hunter.location.distance(runner.location)
-                } catch (e: Exception) {
-                    Double.MAX_VALUE
+            if (hunter.isOnline) {
+                // 一定確率でヒントを表示（スパム防止）
+                if (Math.random() < 0.3) { // 30%の確率
+                    val hintMessage = messageManager.getMessage(hunter, "compass.actionbar-use")
+                    hunter.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent(hintMessage))
                 }
             }
-    }
-    
-    private fun setCompassTarget(compass: ItemStack, target: Location) {
-        val meta = compass.itemMeta
-        if (meta !is CompassMeta) return
-        
-        try {
-            meta.lodestone = target
-            meta.isLodestoneTracked = false // Allow tracking without lodestone block
-            compass.itemMeta = meta
-        } catch (e: Exception) {
-            plugin.logger.warning("Failed to set compass target: ${e.message}")
         }
     }
     
     fun giveCompass(hunter: Player) {
         if (gameManager.getPlayerRole(hunter) != PlayerRole.HUNTER) {
-            hunter.sendMessage("§c追う人のみがコンパスを使用できます！")
+            hunter.sendMessage(messageManager.getMessage(hunter, "compass.hunter-only"))
             return
         }
         
-        val compass = ItemStack(Material.COMPASS)
-        val meta = compass.itemMeta
-        if (meta !is CompassMeta) {
-            hunter.sendMessage("§cコンパスの作成に失敗しました。")
+        if (gameManager.getGameState() != GameState.RUNNING) {
+            hunter.sendMessage(messageManager.getMessage(hunter, "compass.game-only"))
             return
         }
         
-        meta.setDisplayName("§6追跡コンパス")
-        meta.lore = listOf("§7最も近い逃げる人を指します")
-        compass.itemMeta = meta
+        // 仮想コンパスの使い方を説明
+        hunter.sendMessage(messageManager.getMessage(hunter, "compass.activated"))
+        hunter.sendMessage(messageManager.getMessage(hunter, "compass.usage"))
+        hunter.sendMessage(messageManager.getMessage(hunter, "compass.slot-hint"))
         
-        val remainingItems = hunter.inventory.addItem(compass)
-        if (remainingItems.isEmpty()) {
-            hunter.sendMessage("§a追跡コンパスを受け取りました！")
-        } else {
-            hunter.sendMessage("§cインベントリに空きがありません！")
+        // ヒント表示
+        virtualCompass?.showHunterHint(hunter)
+        
+        // タイトルでガイド表示
+        val titleMessage = messageManager.getMessage(hunter, "compass.title-activated")
+        val subtitleMessage = messageManager.getMessage(hunter, "compass.subtitle-activated")
+        hunter.sendTitle(titleMessage, subtitleMessage, 10, 60, 10)
+    }
+    
+    fun removePhysicalCompasses(player: Player) {
+        // 既存の物理コンパスを削除（移行用）
+        val inventory = player.inventory
+        for (i in 0 until inventory.size) {
+            val item = inventory.getItem(i)
+            if (item?.type == org.bukkit.Material.COMPASS) {
+                val meta = item.itemMeta
+                if (meta?.displayName?.contains("追跡") == true) {
+                    inventory.setItem(i, null)
+                }
+            }
         }
     }
 }

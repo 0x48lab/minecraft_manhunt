@@ -274,12 +274,18 @@ class ManhuntCommand(
     private fun showHelp(sender: CommandSender) {
         sender.sendMessage("§6=== Manhunt コマンド ===")
         sender.sendMessage("§e/manhunt role <runner|hunter|spectator> - 役割変更")
-        sender.sendMessage("§e/manhunt compass - 追跡コンパスを取得")
+        sender.sendMessage("§e/manhunt compass - 仮想追跡コンパスを有効化")
         sender.sendMessage("§e/manhunt status - ゲーム状況確認")
         sender.sendMessage("§e/manhunt spectate - 観戦メニューを開く（観戦者のみ）")
         sender.sendMessage("§7※ サーバー参加時に自動的にゲームに参加します")
+        sender.sendMessage("")
+        sender.sendMessage("§b=== 仮想コンパスの使い方 ===")
+        sender.sendMessage("§7• 空手で右クリック = 最寄りランナーを追跡")
+        sender.sendMessage("§7• パーティクルと矢印で方向を表示")
+        sender.sendMessage("§7• アイテムドロップや重複の心配なし")
         
         if (sender.hasPermission("manhunt.admin")) {
+            sender.sendMessage("")
             sender.sendMessage("§c=== 管理者コマンド ===")
             sender.sendMessage("§c/manhunt start - ゲーム強制開始")
             sender.sendMessage("§c/manhunt sethunter <プレイヤー> - 追う人に指定")
