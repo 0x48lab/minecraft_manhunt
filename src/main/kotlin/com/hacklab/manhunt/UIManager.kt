@@ -382,19 +382,24 @@ class UIManager(
         }
         
         val partyInfo = StringBuilder("🤝 ")
-        val maxDisplay = 2 // 最大2人まで表示
+        val maxDisplay = 1 // デバッグ用: 最大1人まで表示
         
         val onlineMembers = otherMembers.take(maxDisplay).mapNotNull { memberName ->
             val member = plugin.server.getPlayer(memberName)
             if (member?.isOnline == true) {
                 val distance = try {
-                    player.location.distance(member.location).toInt()
+                    val actualDistance = player.location.distance(member.location)
+                    if (actualDistance < 0) -1 else actualDistance.toInt()
                 } catch (e: Exception) {
                     -1
                 }
                 
                 val direction = getDirectionSymbol(player, member)
-                "${memberName}:${distance}m${direction}"
+                if (distance >= 0) {
+                    "${memberName}: ${distance}m${direction}"
+                } else {
+                    "${memberName}: ?m?"
+                }
             } else {
                 null
             }
@@ -406,8 +411,11 @@ class UIManager(
         
         partyInfo.append(onlineMembers.joinToString(" | "))
         
-        // 表示しきれないメンバーがいる場合
-        val remainingCount = otherMembers.size - onlineMembers.size
+        // 表示しきれないメンバーがいる場合（オンライン人数ベース）
+        val onlineMembersInParty = otherMembers.count { memberName ->
+            plugin.server.getPlayer(memberName)?.isOnline == true
+        }
+        val remainingCount = onlineMembersInParty - onlineMembers.size
         if (remainingCount > 0) {
             partyInfo.append(" +${remainingCount}人")
         }
