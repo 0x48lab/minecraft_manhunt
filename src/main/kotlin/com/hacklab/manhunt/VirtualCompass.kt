@@ -9,6 +9,8 @@ import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerItemHeldEvent
+import org.bukkit.event.entity.PlayerDeathEvent
+import org.bukkit.event.player.PlayerPickupItemEvent
 import org.bukkit.scheduler.BukkitRunnable
 import org.bukkit.util.Vector
 import kotlin.math.atan2
@@ -45,12 +47,11 @@ class VirtualCompass(
             return
         }
         
-        // メインハンドが空の場合、または通常のコンパスを持っている場合
+        // コンパスを持っている場合のみ
         val itemInHand = player.inventory.itemInMainHand
-        val isEmptyHand = itemInHand.type == Material.AIR && player.inventory.heldItemSlot == compassSlot
         val isCompass = itemInHand.type == Material.COMPASS
         
-        if (!isEmptyHand && !isCompass) {
+        if (!isCompass) {
             return
         }
         
@@ -64,12 +65,8 @@ class VirtualCompass(
             return
         }
         
-        // ターゲットを決定（コンパス持ちの場合は循環選択、空手の場合は最寄り）
-        val targetRunner = if (isCompass) {
-            getNextTarget(player)
-        } else {
-            findNearestRunner(player)
-        }
+        // ターゲットを決定（循環選択）
+        val targetRunner = getNextTarget(player)
         
         if (targetRunner == null) {
             player.sendMessage(messageManager.getMessage(player, "compass.no-target"))
@@ -90,14 +87,10 @@ class VirtualCompass(
         val direction = calculateDirection(player, targetRunner)
         val distance = player.location.distance(targetRunner.location)
         
-        // ビジュアルフィードバック（ターゲット切り替えの場合は特別表示）
-        if (isCompass) {
-            val allRunners = getAllValidRunners(player)
-            val currentIndex = targetIndex[player] ?: 0
-            showTargetSwitchEffect(player, direction, targetRunner, distance, currentIndex + 1, allRunners.size)
-        } else {
-            showCompassEffect(player, direction, targetRunner, distance)
-        }
+        // ビジュアルフィードバック（ターゲット切り替え表示）
+        val allRunners = getAllValidRunners(player)
+        val currentIndex = targetIndex[player] ?: 0
+        showTargetSwitchEffect(player, direction, targetRunner, distance, currentIndex + 1, allRunners.size)
         
         // クールダウン設定
         cooldowns[player] = now
@@ -113,11 +106,15 @@ class VirtualCompass(
             return
         }
         
-        // コンパススロットに切り替えた場合
-        if (event.newSlot == compassSlot) {
-            // ActionBarでヒントを表示
-            val hintMessage = messageManager.getMessage(player, "compass.actionbar-hint")
-            player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent(hintMessage))
+        // コンパスを持っているスロットに切り替えた場合
+        val newItem = player.inventory.getItem(event.newSlot)
+        if (newItem?.type == Material.COMPASS) {
+            val meta = newItem.itemMeta
+            if (meta?.displayName?.contains("追跡") == true) {
+                // ActionBarでヒントを表示
+                val hintMessage = messageManager.getMessage(player, "compass.actionbar-hint")
+                player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent(hintMessage))
+            }
         }
     }
     
@@ -315,6 +312,77 @@ class VirtualCompass(
         player.sendMessage(messageManager.getMessage(player, "compass.hint"))
         val actionBarMessage = messageManager.getMessage(player, "compass.actionbar-use")
         player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent(actionBarMessage))
+    }
+    
+    @EventHandler
+    fun onPlayerDeath(event: PlayerDeathEvent) {
+        val player = event.entity
+        
+        // ハンターが死亡した場合、追跡コンパスのみ保持する
+        if (gameManager.getPlayerRole(player) == PlayerRole.HUNTER) {
+            // 追跡コンパスを一時保存
+            var savedCompass: org.bukkit.inventory.ItemStack? = null
+            
+            val iterator = event.drops.iterator()
+            while (iterator.hasNext()) {
+                val item = iterator.next()
+                if (item.type == Material.COMPASS) {
+                    val meta = item.itemMeta
+                    if (meta?.displayName?.contains("追跡") == true) {
+                        savedCompass = item.clone()
+                        iterator.remove() // ドロップから削除
+                        break
+                    }
+                }
+            }
+            
+            // リスポン後にコンパスを復元
+            savedCompass?.let { compass ->
+                plugin.server.scheduler.runTaskLater(plugin, Runnable {
+                    if (player.isOnline && gameManager.getPlayerRole(player) == PlayerRole.HUNTER) {
+                        // ホットバーの最初のスロットに復元
+                        player.inventory.setItem(0, compass)
+                        player.sendMessage("§a追跡コンパスが復元されました")
+                    }
+                }, 1L) // 1tick後に実行
+            }
+        }
+    }
+    
+    @EventHandler
+    fun onPlayerPickupItem(event: PlayerPickupItemEvent) {
+        val player = event.player
+        val item = event.item.itemStack
+        
+        // 追跡コンパスの拾得を制限
+        if (item.type == Material.COMPASS) {
+            val meta = item.itemMeta
+            if (meta?.displayName?.contains("追跡") == true) {
+                // ハンター以外は拾えない
+                if (gameManager.getPlayerRole(player) != PlayerRole.HUNTER) {
+                    event.isCancelled = true
+                    return
+                }
+                
+                // 既にコンパスを持っているハンターは拾えない
+                val inventory = player.inventory
+                var compassCount = 0
+                
+                for (invItem in inventory.contents) {
+                    if (invItem?.type == Material.COMPASS) {
+                        val invMeta = invItem.itemMeta
+                        if (invMeta?.displayName?.contains("追跡") == true) {
+                            compassCount++
+                        }
+                    }
+                }
+                
+                if (compassCount >= 1) {
+                    event.isCancelled = true
+                    player.sendMessage("§e既に追跡コンパスを持っているため拾えません")
+                }
+            }
+        }
     }
     
     fun cleanup() {

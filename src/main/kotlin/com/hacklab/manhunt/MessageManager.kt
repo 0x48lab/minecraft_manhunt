@@ -19,8 +19,11 @@ class MessageManager(private val plugin: Main) {
     }
     
     fun initialize() {
+        plugin.logger.info("Initializing MessageManager...")
         loadConfiguration()
         loadMessageFiles()
+        plugin.logger.info("MessageManager initialized with languages: ${messages.keys}")
+        plugin.logger.info("Default language message count: ${messages[defaultLanguage]?.size ?: 0}")
     }
     
     private fun loadConfiguration() {
@@ -37,7 +40,10 @@ class MessageManager(private val plugin: Main) {
     
     private fun loadMessageFiles() {
         val messagesDir = File(plugin.dataFolder, MESSAGES_FOLDER)
+        plugin.logger.info("Messages directory: ${messagesDir.absolutePath}")
+        
         if (!messagesDir.exists()) {
+            plugin.logger.info("Creating messages directory...")
             messagesDir.mkdirs()
             createDefaultMessageFiles()
         }
@@ -46,6 +52,8 @@ class MessageManager(private val plugin: Main) {
         
         for (language in SUPPORTED_LANGUAGES) {
             val messageFile = File(messagesDir, "$language.yml")
+            plugin.logger.info("Loading message file: ${messageFile.absolutePath}")
+            
             if (messageFile.exists()) {
                 try {
                     val config = YamlConfiguration.loadConfiguration(messageFile)
@@ -53,10 +61,19 @@ class MessageManager(private val plugin: Main) {
                     plugin.logger.info("Loaded ${messages[language]?.size ?: 0} messages for language: $language")
                 } catch (e: Exception) {
                     plugin.logger.severe("Failed to load message file for language $language: ${e.message}")
+                    e.printStackTrace()
                 }
             } else {
-                plugin.logger.warning("Message file not found for language: $language")
+                plugin.logger.warning("Message file not found for language: $language, creating default...")
                 createDefaultMessageFile(language, messageFile)
+                // 作成後に再読み込み
+                try {
+                    val config = YamlConfiguration.loadConfiguration(messageFile)
+                    messages[language] = loadMessagesFromConfig(config)
+                    plugin.logger.info("Created and loaded ${messages[language]?.size ?: 0} messages for language: $language")
+                } catch (e: Exception) {
+                    plugin.logger.severe("Failed to load newly created message file for language $language: ${e.message}")
+                }
             }
         }
     }
@@ -67,17 +84,23 @@ class MessageManager(private val plugin: Main) {
         return result
     }
     
-    private fun loadMessagesRecursive(section: FileConfiguration, prefix: String, result: MutableMap<String, String>) {
-        for (key in section.getKeys(false)) {
+    private fun loadMessagesRecursive(section: Any, prefix: String, result: MutableMap<String, String>) {
+        val config = when (section) {
+            is FileConfiguration -> section
+            is org.bukkit.configuration.ConfigurationSection -> section
+            else -> return
+        }
+        
+        for (key in config.getKeys(false)) {
             val fullKey = if (prefix.isEmpty()) key else "$prefix.$key"
-            val value = section.get(key)
+            val value = config.get(key)
             
             when {
                 value is String -> result[fullKey] = value
-                section.isConfigurationSection(key) -> {
-                    val subSection = section.getConfigurationSection(key)
+                config.isConfigurationSection(key) -> {
+                    val subSection = config.getConfigurationSection(key)
                     if (subSection != null) {
-                        loadMessagesRecursive(subSection as FileConfiguration, fullKey, result)
+                        loadMessagesRecursive(subSection, fullKey, result)
                     }
                 }
             }
@@ -91,17 +114,40 @@ class MessageManager(private val plugin: Main) {
     
     private fun createDefaultMessageFile(language: String, file: File) {
         try {
+            plugin.logger.info("Creating default message file for language: $language at ${file.absolutePath}")
+            
+            // 親ディレクトリが存在することを確認
+            file.parentFile?.let { parent ->
+                if (!parent.exists()) {
+                    parent.mkdirs()
+                    plugin.logger.info("Created parent directory: ${parent.absolutePath}")
+                }
+            }
+            
             val config = YamlConfiguration()
             
             when (language) {
-                "ja" -> addJapaneseMessages(config)
-                "en" -> addEnglishMessages(config)
+                "ja" -> {
+                    plugin.logger.info("Adding Japanese messages...")
+                    addJapaneseMessages(config)
+                }
+                "en" -> {
+                    plugin.logger.info("Adding English messages...")
+                    addEnglishMessages(config)
+                }
             }
             
             config.save(file)
-            plugin.logger.info("Created default message file: ${file.name}")
+            plugin.logger.info("Successfully created default message file: ${file.name} (${file.length()} bytes)")
+            
+            // ファイルが実際に作成されたか確認
+            if (!file.exists()) {
+                plugin.logger.severe("File was not created despite successful save: ${file.absolutePath}")
+            }
+            
         } catch (e: Exception) {
             plugin.logger.severe("Failed to create default message file for $language: ${e.message}")
+            e.printStackTrace()
         }
     }
     
@@ -122,9 +168,9 @@ class MessageManager(private val plugin: Main) {
         config.set("role.game-running", "§cゲーム開始後は役割を変更できません。")
         
         // コンパスメッセージ
-        config.set("compass.activated", "§6[仮想コンパス] §a有効化されました！")
-        config.set("compass.usage", "§e使い方: §7空手で右クリックして最寄りのランナーを追跡")
-        config.set("compass.slot-hint", "§e§lまたは、ホットバーの最初のスロットで右クリック")
+        config.set("compass.activated", "§6[追跡コンパス] §a有効化されました！")
+        config.set("compass.usage", "§e使い方: §7コンパスを持って右クリックでランナーを追跡")
+        config.set("compass.slot-hint", "§e§l※コンパスが必要です（重複不可）")
         config.set("compass.hunter-only", "§c追う人のみがコンパスを使用できます！")
         config.set("compass.game-only", "§cゲーム進行中のみコンパスを使用できます。")
         config.set("compass.cooldown", "§cコンパスのクールダウン中... ({time}秒)")
@@ -132,9 +178,9 @@ class MessageManager(private val plugin: Main) {
         config.set("compass.different-world", "§cランナーは別のワールドにいます: §e{world}")
         config.set("compass.tracking", "§6[コンパス] §e{player} §7- {distance}")
         config.set("compass.target-switched", "§b[ターゲット切り替え] §7[{index}/{total}] §e{player} §7- {distance}")
-        config.set("compass.hint", "§6[ヒント] §e空手で右クリックすると最寄りのランナーを追跡できます！")
-        config.set("compass.actionbar-hint", "§e§l右クリックで最寄りのランナーを追跡")
-        config.set("compass.actionbar-use", "§e§l右クリックで追跡コンパスを使用")
+        config.set("compass.hint", "§6[ヒント] §eコンパスを持って右クリックでランナーを追跡できます！")
+        config.set("compass.actionbar-hint", "§e§lコンパス右クリックでランナーを追跡")
+        config.set("compass.actionbar-use", "§e§lコンパス右クリックで追跡開始")
         config.set("compass.title-activated", "§6§l仮想コンパス")
         config.set("compass.subtitle-activated", "§e右クリックで追跡開始")
         
@@ -208,9 +254,9 @@ class MessageManager(private val plugin: Main) {
         config.set("role.game-running", "§cCannot change role after the game has started.")
         
         // Compass messages
-        config.set("compass.activated", "§6[Virtual Compass] §aActivated!")
-        config.set("compass.usage", "§eUsage: §7Right-click with empty hand to track nearest runner")
-        config.set("compass.slot-hint", "§e§lOr right-click in the first hotbar slot")
+        config.set("compass.activated", "§6[Tracking Compass] §aActivated!")
+        config.set("compass.usage", "§eUsage: §7Hold compass and right-click to track runners")
+        config.set("compass.slot-hint", "§e§l※Compass required (no duplicates allowed)")
         config.set("compass.hunter-only", "§cOnly hunters can use the compass!")
         config.set("compass.game-only", "§cCompass can only be used during the game.")
         config.set("compass.cooldown", "§cCompass on cooldown... ({time}s)")
@@ -218,9 +264,9 @@ class MessageManager(private val plugin: Main) {
         config.set("compass.different-world", "§cRunner is in a different world: §e{world}")
         config.set("compass.tracking", "§6[Compass] §e{player} §7- {distance}")
         config.set("compass.target-switched", "§b[Target Switch] §7[{index}/{total}] §e{player} §7- {distance}")
-        config.set("compass.hint", "§6[Hint] §eRight-click with empty hand to track the nearest runner!")
-        config.set("compass.actionbar-hint", "§e§lRight-click to track nearest runner")
-        config.set("compass.actionbar-use", "§e§lRight-click to use tracking compass")
+        config.set("compass.hint", "§6[Hint] §eHold compass and right-click to track runners!")
+        config.set("compass.actionbar-hint", "§e§lCompass right-click to track runners")
+        config.set("compass.actionbar-use", "§e§lCompass right-click to start tracking")
         config.set("compass.title-activated", "§6§lVirtual Compass")
         config.set("compass.subtitle-activated", "§eRight-click to start tracking")
         
@@ -285,7 +331,12 @@ class MessageManager(private val plugin: Main) {
     fun getMessage(language: String, key: String, vararg args: Any): String {
         val message = messages[language]?.get(key) 
             ?: messages[defaultLanguage]?.get(key)
-            ?: "§c[Missing message: $key]"
+            ?: run {
+                plugin.logger.warning("Missing message key: $key for language: $language (default: $defaultLanguage)")
+                plugin.logger.warning("Available languages: ${messages.keys}")
+                plugin.logger.warning("Available keys for $defaultLanguage: ${messages[defaultLanguage]?.keys?.take(5)}")
+                "§c[Missing message: $key]"
+            }
         
         return formatMessage(message, *args)
     }

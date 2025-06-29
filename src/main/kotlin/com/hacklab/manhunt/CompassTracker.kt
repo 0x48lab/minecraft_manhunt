@@ -73,6 +73,9 @@ class CompassTracker(
             return
         }
         
+        // 物理的なコンパスアイテムを提供（ターゲット切り替え用）
+        givePhysicalCompass(hunter)
+        
         // 仮想コンパスの使い方を説明
         hunter.sendMessage(messageManager.getMessage(hunter, "compass.activated"))
         hunter.sendMessage(messageManager.getMessage(hunter, "compass.usage"))
@@ -85,6 +88,49 @@ class CompassTracker(
         val titleMessage = messageManager.getMessage(hunter, "compass.title-activated")
         val subtitleMessage = messageManager.getMessage(hunter, "compass.subtitle-activated")
         hunter.sendTitle(titleMessage, subtitleMessage, 10, 60, 10)
+    }
+    
+    private fun givePhysicalCompass(hunter: Player) {
+        // 既存のコンパス数をチェック
+        val inventory = hunter.inventory
+        var compassCount = 0
+        
+        for (item in inventory.contents) {
+            if (item?.type == org.bukkit.Material.COMPASS) {
+                val meta = item.itemMeta
+                if (meta?.displayName?.contains("追跡") == true) {
+                    compassCount++
+                }
+            }
+        }
+        
+        // 既に1個以上持っている場合は追加しない
+        if (compassCount >= 1) {
+            hunter.sendMessage("§e既に追跡コンパスを持っています")
+            return
+        }
+        
+        // 新しいコンパスを作成
+        val compass = org.bukkit.inventory.ItemStack(org.bukkit.Material.COMPASS)
+        val meta = compass.itemMeta
+        meta?.setDisplayName("§6仮想追跡コンパス")
+        meta?.lore = listOf(
+            "§7右クリックでターゲット切り替え",
+            "§7ランナーの位置を追跡します",
+            "§8※コンパス必須・重複不可"
+        )
+        compass.itemMeta = meta
+        
+        // ホットバーの最初のスロットに優先配置
+        if (inventory.getItem(0) == null) {
+            inventory.setItem(0, compass)
+        } else {
+            // 空きスロットに配置
+            val remainingItems = inventory.addItem(compass)
+            if (remainingItems.isNotEmpty()) {
+                hunter.sendMessage("§eインベントリが満杯のため、コンパスを配置できませんでした")
+            }
+        }
     }
     
     fun removePhysicalCompasses(player: Player) {

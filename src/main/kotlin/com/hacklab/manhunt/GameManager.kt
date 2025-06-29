@@ -873,10 +873,27 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager) {
         // Start compass tracking
         plugin.getCompassTracker().startTracking()
         
+        // ハンターに仮想コンパスの使い方を自動通知
+        getAllHunters().forEach { hunter ->
+            if (hunter.isOnline) {
+                try {
+                    plugin.getCompassTracker().giveCompass(hunter)
+                } catch (e: Exception) {
+                    plugin.logger.warning("ハンターへのコンパス説明でエラー: ${e.message}")
+                }
+            }
+        }
+        
         // 開始完了タイトル
         Bukkit.getOnlinePlayers().forEach { player ->
             try {
-                plugin.getUIManager().showTitle(player, "§a🚀 ゲーム開始！", "§f頑張って！", 10, 30, 10)
+                val roleSpecificMessage = when (getPlayerRole(player)) {
+                    PlayerRole.HUNTER -> "§c右クリックで追跡開始！"
+                    PlayerRole.RUNNER -> "§aエンダードラゴンを倒せ！"
+                    PlayerRole.SPECTATOR -> "§7観戦を楽しもう！"
+                    null -> "§f頑張って！"
+                }
+                plugin.getUIManager().showTitle(player, "§a🚀 ゲーム開始！", roleSpecificMessage, 10, 40, 10)
             } catch (e: Exception) {
                 // タイトル表示エラーは無視
             }
