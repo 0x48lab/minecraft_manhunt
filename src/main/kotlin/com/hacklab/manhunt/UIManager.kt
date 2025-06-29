@@ -199,37 +199,50 @@ class UIManager(
         
         val viewerRole = gameManager.getPlayerRole(viewer)
         
-        // 全オンラインプレイヤーに対して表示を設定
+        // 味方プレイヤーのみに対して表示を設定
         Bukkit.getOnlinePlayers().forEach { target ->
             if (target.world == viewer.world) {
                 val targetRole = gameManager.getPlayerRole(target)
-                val displayInfo = getPlayerListDisplayInfo(viewer, target)
                 
-                // チーム設定で名前の色を変更
-                val teamName = getTeamName(viewer, target, viewerRole, targetRole)
-                var team = scoreboard.getTeam(teamName)
-                if (team == null) {
-                    team = scoreboard.registerNewTeam(teamName)
-                    team.color = getPlayerNameColor(viewer, target, viewerRole, targetRole)
+                if (target == viewer) {
+                    // 自分自身を黄色で表示
+                    val selfTeam = scoreboard.getTeam("self_${target.name}") ?: scoreboard.registerNewTeam("self_${target.name}")
+                    selfTeam.color = org.bukkit.ChatColor.YELLOW
+                    selfTeam.prefix = "⭐"
+                    selfTeam.suffix = " §f(自分)"
+                    selfTeam.addEntry(target.name)
+                } else if (isAlly(viewerRole, targetRole)) {
+                    // 味方同士のみ表示（同じ役割かつ観戦者以外）
+                    val coordsText = getRelativeCoordinates(viewer, target)
+                    
+                    // チーム設定で名前の色を変更（味方は青色）
+                    val teamName = "ally_${target.name}"
+                    var team = scoreboard.getTeam(teamName)
+                    if (team == null) {
+                        team = scoreboard.registerNewTeam(teamName)
+                        team.color = org.bukkit.ChatColor.BLUE
+                    }
+                    team.prefix = "💙"
+                    team.suffix = " §7($coordsText)"
+                    team.addEntry(target.name)
                 }
-                team.addEntry(target.name)
-                
-                // スコア表示（相対座標）
-                playerListObjective.getScore(target.name).score = displayInfo
             }
         }
     }
     
-    private fun getPlayerListDisplayInfo(viewer: Player, target: Player): Int {
-        return if (target == viewer) {
-            0 // 自分は0で表示
-        } else {
-            try {
-                // 距離を整数で返す（スコア表示用）
-                viewer.location.distance(target.location).toInt()
-            } catch (e: Exception) {
-                -1
-            }
+    private fun getRelativeCoordinates(viewer: Player, target: Player): String {
+        return try {
+            val deltaX = target.location.blockX - viewer.location.blockX
+            val deltaY = target.location.blockY - viewer.location.blockY
+            val deltaZ = target.location.blockZ - viewer.location.blockZ
+            
+            val xSign = if (deltaX >= 0) "+" else ""
+            val ySign = if (deltaY >= 0) "+" else ""
+            val zSign = if (deltaZ >= 0) "+" else ""
+            
+            "X:$xSign$deltaX Y:$ySign$deltaY Z:$zSign$deltaZ"
+        } catch (e: Exception) {
+            "座標取得エラー"
         }
     }
     
