@@ -18,7 +18,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly("org.spigotmc:spigot-api:1.21.4-R0.1-SNAPSHOT")
+    compileOnly("org.spigotmc:spigot-api:1.21-R0.1-SNAPSHOT")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     
     // テスト依存関係
@@ -26,7 +26,7 @@ dependencies {
     testImplementation("org.mockito:mockito-core:5.1.1")
     testImplementation("org.mockito:mockito-inline:5.1.1")
     testImplementation("org.mockito.kotlin:mockito-kotlin:4.1.0")
-    testCompileOnly("org.spigotmc:spigot-api:1.21.4-R0.1-SNAPSHOT")
+    testImplementation("org.spigotmc:spigot-api:1.21-R0.1-SNAPSHOT")
 }
 
 tasks {
@@ -34,7 +34,7 @@ tasks {
         // Configure the Minecraft version for our task.
         // This is the only required configuration besides applying the plugin.
         // Your plugin's jar (or shadowJar if present) will be used automatically.
-        minecraftVersion("1.21")
+        minecraftVersion("1.21.5")
     }
     
     test {

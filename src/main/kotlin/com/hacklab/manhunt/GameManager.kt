@@ -180,22 +180,27 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager) {
     private fun checkStartConditions() {
         plugin.logger.info("開始条件チェック: ゲーム状態=${gameState}, プレイヤー数=${players.size}, 最小人数=${minPlayers}")
         
-        if (gameState == GameState.WAITING && players.size >= minPlayers) {
+        if (gameState == GameState.WAITING) {
             val hunters = getAllHunters()
             val runners = getAllRunners()
+            val activePlayerCount = hunters.size + runners.size // 観戦者を除外
             
-            plugin.logger.info("詳細チェック: ハンター数=${hunters.size}, ランナー数=${runners.size}")
+            plugin.logger.info("詳細チェック: ハンター数=${hunters.size}, ランナー数=${runners.size}, アクティブプレイヤー数=${activePlayerCount}")
             plugin.logger.info("ハンター: ${hunters.map { it.name }}")
             plugin.logger.info("ランナー: ${runners.map { it.name }}")
             
-            if (hunters.isNotEmpty() && runners.isNotEmpty()) {
+            if (activePlayerCount >= minPlayers && hunters.isNotEmpty() && runners.isNotEmpty()) {
                 plugin.logger.info("開始条件満了！ゲームを開始します。")
                 startGame()
             } else {
-                plugin.logger.info("開始条件未満足: ハンターまたはランナーが不足")
+                if (activePlayerCount < minPlayers) {
+                    plugin.logger.info("開始条件未満足: アクティブプレイヤー数不足（${activePlayerCount}/${minPlayers}）")
+                } else {
+                    plugin.logger.info("開始条件未満足: ハンター(${hunters.size})またはランナー(${runners.size})が不足")
+                }
             }
         } else {
-            plugin.logger.info("開始条件未満足: ゲーム状態=${gameState}, プレイヤー数不足=${players.size < minPlayers}")
+            plugin.logger.info("開始条件未満足: ゲーム状態=${gameState}がWAITINGではない")
         }
     }
     

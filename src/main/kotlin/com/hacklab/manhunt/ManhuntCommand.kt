@@ -29,6 +29,7 @@ class ManhuntCommand(
             "status" -> handleStatus(sender)
             "sethunter" -> handleSetHunter(sender, args)
             "minplayers" -> handleMinPlayers(sender, args)
+            "reload" -> handleReload(sender)
             "ui" -> handleUI(sender, args)
             "help" -> showHelp(sender)
             else -> {
