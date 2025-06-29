@@ -21,6 +21,12 @@ class UIManager(
     private val configManager: ConfigManager
 ) {
     
+    private lateinit var partyManager: PartyManager
+    
+    fun setPartyManager(partyManager: PartyManager) {
+        this.partyManager = partyManager
+    }
+    
     private var scoreboard: Scoreboard? = null
     private var objective: Objective? = null
     private var updateTask: BukkitTask? = null
@@ -180,22 +186,34 @@ class UIManager(
                 gameState == GameState.RUNNING && role != null -> {
                     when (role) {
                         PlayerRole.HUNTER -> {
-                            val nearestRunner = findNearestRunner(player)
-                            if (nearestRunner != null) {
-                                val distance = try {
-                                    val actualDistance = player.location.distance(nearestRunner.location).toInt()
-                                    val minDistance = configManager.getMinimumDisplayDistance()
-                                    if (actualDistance <= minDistance) minDistance else actualDistance
-                                } catch (e: Exception) {
-                                    -1
-                                }
-                                "§c🗡 ハンターモード §8| §f最寄りターゲット: §a${nearestRunner.name} §7(${distance}m)"
+                            // パーティー情報を優先表示
+                            val partyInfo = getPartyActionBarInfo(player)
+                            if (partyInfo.isNotEmpty()) {
+                                "§c🗡 ハンターモード §8| §f$partyInfo"
                             } else {
-                                "§c🗡 ハンターモード §8| §7ターゲットが見つかりません"
+                                val nearestRunner = findNearestRunner(player)
+                                if (nearestRunner != null) {
+                                    val distance = try {
+                                        val actualDistance = player.location.distance(nearestRunner.location).toInt()
+                                        val minDistance = configManager.getMinimumDisplayDistance()
+                                        if (actualDistance <= minDistance) minDistance else actualDistance
+                                    } catch (e: Exception) {
+                                        -1
+                                    }
+                                    "§c🗡 ハンターモード §8| §f最寄りターゲット: §a${nearestRunner.name} §7(${distance}m)"
+                                } else {
+                                    "§c🗡 ハンターモード §8| §7ターゲットが見つかりません"
+                                }
                             }
                         }
                         PlayerRole.RUNNER -> {
-                            "§a🏃 ランナーモード §8| §7エンダードラゴンを倒そう！"
+                            // パーティー情報を優先表示
+                            val partyInfo = getPartyActionBarInfo(player)
+                            if (partyInfo.isNotEmpty()) {
+                                "§a🏃 ランナーモード §8| §f$partyInfo"
+                            } else {
+                                "§a🏃 ランナーモード §8| §7エンダードラゴンを倒そう！"
+                            }
                         }
                         PlayerRole.SPECTATOR -> "§7👁 観戦モード §8| §eゲームを観戦中..."
                     }
@@ -345,6 +363,84 @@ class UIManager(
     fun updateScoreboardImmediately() {
         if (configManager.isScoreboardEnabled()) {
             updateScoreboardForAllPlayers()
+        }
+    }
+    
+    // ======== パーティー情報表示 ========
+    
+    private fun getPartyActionBarInfo(player: Player): String {
+        // PartyManagerが初期化されていない場合は空文字を返す
+        if (!::partyManager.isInitialized) {
+            return ""
+        }
+        
+        val party = partyManager.getPlayerParty(player.name) ?: return ""
+        val otherMembers = party.getOtherMembers(player.name)
+        
+        if (otherMembers.isEmpty()) {
+            return "" // パーティーに自分しかいない場合は表示しない
+        }
+        
+        val partyInfo = StringBuilder("🤝 ")
+        val maxDisplay = 2 // 最大2人まで表示
+        
+        val onlineMembers = otherMembers.take(maxDisplay).mapNotNull { memberName ->
+            val member = plugin.server.getPlayer(memberName)
+            if (member?.isOnline == true) {
+                val distance = try {
+                    player.location.distance(member.location).toInt()
+                } catch (e: Exception) {
+                    -1
+                }
+                
+                val direction = getDirectionSymbol(player, member)
+                "${memberName}:${distance}m${direction}"
+            } else {
+                null
+            }
+        }
+        
+        if (onlineMembers.isEmpty()) {
+            return "" // オンラインメンバーがいない場合は表示しない
+        }
+        
+        partyInfo.append(onlineMembers.joinToString(" | "))
+        
+        // 表示しきれないメンバーがいる場合
+        val remainingCount = otherMembers.size - onlineMembers.size
+        if (remainingCount > 0) {
+            partyInfo.append(" +${remainingCount}人")
+        }
+        
+        return partyInfo.toString()
+    }
+    
+    private fun getDirectionSymbol(from: Player, to: Player): String {
+        return try {
+            if (from.world != to.world) return "?"
+            
+            val fromLoc = from.location
+            val toLoc = to.location
+            
+            val deltaX = toLoc.x - fromLoc.x
+            val deltaZ = toLoc.z - fromLoc.z
+            
+            val angle = Math.atan2(deltaZ, deltaX) * 180 / Math.PI
+            val normalizedAngle = (angle + 360) % 360
+            
+            when (normalizedAngle.toInt()) {
+                in 0..22, in 338..360 -> "→" // 東
+                in 23..67 -> "↘" // 南東
+                in 68..112 -> "↓" // 南
+                in 113..157 -> "↙" // 南西
+                in 158..202 -> "←" // 西
+                in 203..247 -> "↖" // 北西
+                in 248..292 -> "↑" // 北
+                in 293..337 -> "↗" // 北東
+                else -> "?"
+            }
+        } catch (e: Exception) {
+            "?"
         }
     }
     

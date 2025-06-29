@@ -11,6 +11,8 @@ class Main : JavaPlugin() {
     private lateinit var eventListener: EventListener
     private lateinit var uiManager: UIManager
     private lateinit var spectatorMenu: SpectatorMenu
+    private lateinit var partyManager: PartyManager
+    private lateinit var partyCommand: PartyCommand
 
     override fun onEnable() {
         // Save default config
@@ -28,11 +30,19 @@ class Main : JavaPlugin() {
         gameManager = GameManager(this, configManager)
         compassTracker = CompassTracker(this, gameManager, configManager, messageManager)
         uiManager = UIManager(this, gameManager, configManager)
-        eventListener = EventListener(gameManager, uiManager)
+        
+        // Initialize party system
+        partyManager = PartyManager(this, gameManager)
+        partyCommand = PartyCommand(this, partyManager, gameManager)
+        
+        // Set party manager to UI manager
+        uiManager.setPartyManager(partyManager)
+        
+        eventListener = EventListener(gameManager, uiManager, partyManager)
         spectatorMenu = SpectatorMenu(gameManager)
         
         // Register commands
-        val manhuntCommand = ManhuntCommand(gameManager, compassTracker, spectatorMenu)
+        val manhuntCommand = ManhuntCommand(gameManager, compassTracker, spectatorMenu, partyCommand)
         getCommand("manhunt")?.setExecutor(manhuntCommand)
         getCommand("manhunt")?.tabCompleter = manhuntCommand
         
@@ -51,11 +61,13 @@ class Main : JavaPlugin() {
     fun getMessageManager(): MessageManager = messageManager
     fun getUIManager(): UIManager = uiManager
     fun getSpectatorMenu(): SpectatorMenu = spectatorMenu
+    fun getPartyManager(): PartyManager = partyManager
 
     override fun onDisable() {
         compassTracker.stopTracking()
         uiManager.stopDisplaySystem()
         spectatorMenu.cleanup()
+        partyManager.cleanup()
         logger.info("Manhunt プラグインが無効になりました。")
     }
 }
