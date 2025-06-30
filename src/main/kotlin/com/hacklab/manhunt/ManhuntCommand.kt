@@ -11,7 +11,8 @@ import kotlin.collections.listOf
 class ManhuntCommand(
     private val gameManager: GameManager,
     private val compassTracker: CompassTracker,
-    private val spectatorMenu: SpectatorMenu
+    private val spectatorMenu: SpectatorMenu,
+    private val messageManager: MessageManager
 ) : CommandExecutor, TabCompleter {
     
     private val configManager: ConfigManager
@@ -30,12 +31,12 @@ class ManhuntCommand(
             "status" -> handleStatus(sender)
             "sethunter" -> handleSetHunter(sender, args)
             "minplayers" -> handleMinPlayers(sender, args)
-            "reload" -> handleReload(sender)
+            "reload" -> handleReload(sender, args)
             "ui" -> handleUI(sender, args)
             "spectate" -> handleSpectate(sender)
             "help" -> showHelp(sender)
             else -> {
-                sender.sendMessage("§c不明なコマンドです。/manhunt help で使用法を確認してください。")
+                sender.sendMessage(messageManager.getMessage(sender as? Player, "command.unknown"))
             }
         }
         return true
@@ -44,17 +45,17 @@ class ManhuntCommand(
     
     private fun handleRole(sender: CommandSender, args: Array<out String>) {
         if (sender !is Player) {
-            sender.sendMessage("§cプレイヤーのみが実行できるコマンドです。")
+            sender.sendMessage(messageManager.getMessage(null, "command.player-only"))
             return
         }
         
         if (gameManager.getGameState() != GameState.WAITING) {
-            sender.sendMessage("§cゲーム開始後は役割を変更できません。")
+            sender.sendMessage(messageManager.getMessage(sender, "role.game-running"))
             return
         }
         
         if (args.size < 2) {
-            sender.sendMessage("§c使用法: /manhunt role <runner|hunter|spectator>")
+            sender.sendMessage(messageManager.getMessage(sender, "command.usage", "/manhunt role <runner|hunter|spectator>"))
             return
         }
         
@@ -63,43 +64,39 @@ class ManhuntCommand(
             "hunter", "追う" -> PlayerRole.HUNTER
             "spectator", "観戦" -> PlayerRole.SPECTATOR
             else -> {
-                sender.sendMessage("§c無効な役割です。runner, hunter, spectator のいずれかを指定してください。")
+                sender.sendMessage(messageManager.getMessage(sender, "role.invalid"))
                 return
             }
         }
         
         gameManager.setPlayerRole(sender, role)
-        val roleText = when (role) {
-            PlayerRole.RUNNER -> "逃げる人"
-            PlayerRole.HUNTER -> "追う人"
-            PlayerRole.SPECTATOR -> "観戦者"
-        }
-        sender.sendMessage("§a役割を${roleText}に変更しました！")
+        val roleText = messageManager.getMessage(sender, "role.${role.name.lowercase()}")
+        sender.sendMessage(messageManager.getMessage(sender, "role.changed", roleText))
     }
     
     private fun handleStart(sender: CommandSender) {
         if (!sender.hasPermission("manhunt.admin")) {
-            sender.sendMessage("§cこのコマンドを実行する権限がありません。")
+            sender.sendMessage(messageManager.getMessage(sender as? Player, "command.no-permission"))
             return
         }
         
         if (gameManager.getGameState() != GameState.WAITING) {
-            sender.sendMessage("§cゲームはすでに開始されているか、進行中です。")
+            sender.sendMessage(messageManager.getMessage(sender as? Player, "admin.game-already-started"))
             return
         }
         
         gameManager.forceStartGame()
-        sender.sendMessage("§aゲームを強制開始しました！")
+        sender.sendMessage(messageManager.getMessage(sender as? Player, "admin.force-start"))
     }
     
     private fun handleCompass(sender: CommandSender) {
         if (sender !is Player) {
-            sender.sendMessage("§cプレイヤーのみが実行できるコマンドです。")
+            sender.sendMessage(messageManager.getMessage(null, "command.player-only"))
             return
         }
         
         if (gameManager.getGameState() != GameState.RUNNING) {
-            sender.sendMessage("§cゲーム進行中のみコンパスを取得できます。")
+            sender.sendMessage(messageManager.getMessage(sender, "compass.game-only"))
             return
         }
         
@@ -218,15 +215,37 @@ class ManhuntCommand(
         sender.sendMessage("§a最小プレイヤー数を${count}に設定しました。")
     }
     
-    private fun handleReload(sender: CommandSender) {
+    private fun handleReload(sender: CommandSender, args: Array<out String>) {
         if (!sender.hasPermission("manhunt.admin")) {
             sender.sendMessage("§cこのコマンドを実行する権限がありません。")
             return
         }
         
+        val reloadType = if (args.size > 1) args[1].lowercase() else "all"
+        
         try {
-            sender.sendMessage("§7設定ファイルをリロードしています...")
-            sender.sendMessage("§a設定ファイルのリロードが完了しました。")
+            when (reloadType) {
+                "config" -> {
+                    sender.sendMessage("§7config.yml をリロードしています...")
+                    gameManager.configManager.reloadConfig()
+                    sender.sendMessage("§aconfig.yml のリロードが完了しました。")
+                }
+                "shop" -> {
+                    sender.sendMessage("§7shop.yml をリロードしています...")
+                    gameManager.getPlugin().getShopManager().reloadShopConfig()
+                    sender.sendMessage("§ashop.yml のリロードが完了しました。")
+                }
+                "all" -> {
+                    sender.sendMessage("§7全設定ファイルをリロードしています...")
+                    gameManager.configManager.reloadConfig()
+                    gameManager.getPlugin().getShopManager().reloadShopConfig()
+                    sender.sendMessage("§a全設定ファイルのリロードが完了しました。")
+                }
+                else -> {
+                    sender.sendMessage("§c使用法: /manhunt reload [config|shop|all]")
+                    return
+                }
+            }
             sender.sendMessage("§e注意: 一部の設定はゲーム再開始後に反映されます。")
         } catch (e: Exception) {
             sender.sendMessage("§c設定ファイルのリロードに失敗しました: ${e.message}")
@@ -297,7 +316,7 @@ class ManhuntCommand(
             sender.sendMessage("§c/manhunt start - ゲーム強制開始")
             sender.sendMessage("§c/manhunt sethunter <プレイヤー> - 追う人に指定")
             sender.sendMessage("§c/manhunt minplayers [数値] - 最小プレイヤー数設定")
-            sender.sendMessage("§c/manhunt reload - 設定ファイルをリロード")
+            sender.sendMessage("§c/manhunt reload [config|shop|all] - 設定ファイルをリロード")
             sender.sendMessage("§c/manhunt ui <toggle|status> - UI表示制御")
         }
     }
@@ -333,6 +352,13 @@ class ManhuntCommand(
                         "ui" -> {
                             if (sender.hasPermission("manhunt.admin")) {
                                 listOf("toggle", "status").filter { it.startsWith(input) }
+                            } else {
+                                emptyList()
+                            }
+                        }
+                        "reload" -> {
+                            if (sender.hasPermission("manhunt.admin")) {
+                                listOf("config", "shop", "all").filter { it.startsWith(input) }
                             } else {
                                 emptyList()
                             }

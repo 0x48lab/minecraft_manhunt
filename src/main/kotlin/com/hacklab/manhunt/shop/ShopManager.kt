@@ -20,10 +20,52 @@ class ShopManager(
     private val shopItems = mutableListOf<ShopItem>()
     private val purchaseHistory = mutableMapOf<UUID, MutableMap<String, PurchaseRecord>>()
     private val openShops = mutableMapOf<UUID, ShopCategory?>()
+    private val shopConfigManager = ShopConfigManager(plugin)
+    private var categories = mapOf<ShopCategory, ShopConfigManager.CategoryConfig>()
     
     init {
-        // デフォルトアイテムをロード
-        shopItems.addAll(ShopItem.getDefaultItems())
+        loadShopItems()
+    }
+    
+    /**
+     * ショップアイテムを読み込み（設定ファイル優先）
+     */
+    private fun loadShopItems() {
+        shopItems.clear()
+        
+        try {
+            // 設定ファイルからアイテムを読み込み
+            val configItems = shopConfigManager.loadShopItems()
+            if (configItems.isNotEmpty()) {
+                shopItems.addAll(configItems)
+                plugin.logger.info("shop.yml から ${configItems.size} 個のアイテムを読み込みました")
+            } else {
+                // フォールバック: ハードコーディングされたアイテムを使用
+                plugin.logger.warning("shop.yml からアイテムを読み込めませんでした。デフォルトアイテムを使用します")
+                shopItems.addAll(ShopItem.getDefaultItems())
+            }
+            
+            // カテゴリ設定を読み込み
+            categories = shopConfigManager.loadCategories()
+            
+        } catch (e: Exception) {
+            plugin.logger.severe("ショップアイテムの読み込みでエラー: ${e.message}")
+            // エラー時はデフォルトアイテムを使用
+            shopItems.addAll(ShopItem.getDefaultItems())
+        }
+    }
+    
+    /**
+     * ショップ設定をリロード
+     */
+    fun reloadShopConfig() {
+        try {
+            shopConfigManager.reloadShopConfig()
+            loadShopItems()
+            plugin.logger.info("ショップ設定をリロードしました")
+        } catch (e: Exception) {
+            plugin.logger.severe("ショップ設定のリロードでエラー: ${e.message}")
+        }
     }
     
     /**
@@ -58,16 +100,21 @@ class ShopManager(
         }
         
         // カテゴリアイコンを配置
-        val categories = ShopCategory.values()
+        val allCategories = ShopCategory.values()
         val startSlot = 10
-        categories.forEachIndexed { index, category ->
+        allCategories.forEachIndexed { index, category ->
             if (hasItemsInCategory(role, category)) {
-                val item = ItemStack(category.icon)
+                // 設定ファイルからカテゴリ情報を取得、なければデフォルト値
+                val categoryConfig = categories[category]
+                val displayName = categoryConfig?.displayName ?: category.displayName
+                val icon = categoryConfig?.icon ?: category.icon
+                
+                val item = ItemStack(icon)
                 val meta = item.itemMeta!!
                 val unit = plugin.getConfigManager().getCurrencyConfig().currencyUnit
-                meta.setDisplayName("§e${category.displayName}")
+                meta.setDisplayName("§e${displayName}")
                 meta.lore = listOf(
-                    "§7クリックして${category.displayName}を見る",
+                    "§7クリックして${displayName}を見る",
                     "",
                     "§b所持金: §f${economyManager.getBalance(player)}${unit}"
                 )
@@ -179,22 +226,19 @@ class ShopManager(
         }
         
         // アイテムを付与（セット商品の場合は複数アイテム）
-        when (shopItem.id) {
-            "iron_armor_set" -> {
-                player.inventory.addItem(ItemStack(Material.IRON_HELMET))
-                player.inventory.addItem(ItemStack(Material.IRON_CHESTPLATE))
-                player.inventory.addItem(ItemStack(Material.IRON_LEGGINGS))
-                player.inventory.addItem(ItemStack(Material.IRON_BOOTS))
+        if (shopItem.setItems != null && shopItem.setItems.isNotEmpty()) {
+            // セット商品の場合
+            for (materialName in shopItem.setItems) {
+                try {
+                    val material = Material.valueOf(materialName.uppercase())
+                    player.inventory.addItem(ItemStack(material))
+                } catch (e: IllegalArgumentException) {
+                    plugin.logger.warning("無効なマテリアル: $materialName (セットアイテム: ${shopItem.id})")
+                }
             }
-            "diamond_armor_set" -> {
-                player.inventory.addItem(ItemStack(Material.DIAMOND_HELMET))
-                player.inventory.addItem(ItemStack(Material.DIAMOND_CHESTPLATE))
-                player.inventory.addItem(ItemStack(Material.DIAMOND_LEGGINGS))
-                player.inventory.addItem(ItemStack(Material.DIAMOND_BOOTS))
-            }
-            else -> {
-                player.inventory.addItem(shopItem.itemStack.clone())
-            }
+        } else {
+            // 通常商品の場合
+            player.inventory.addItem(shopItem.itemStack.clone())
         }
         
         // 購入履歴を更新

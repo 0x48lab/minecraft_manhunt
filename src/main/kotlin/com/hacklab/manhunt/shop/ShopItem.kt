@@ -20,7 +20,8 @@ data class ShopItem(
     val category: ShopCategory,
     val allowedRoles: Set<PlayerRole>,
     val maxPurchases: Int = -1,  // -1 = 無制限
-    val cooldown: Int = 0        // 秒単位のクールダウン
+    val cooldown: Int = 0,       // 秒単位のクールダウン
+    val setItems: List<String>? = null  // セット商品の場合のマテリアル名リスト
 ) {
     companion object {
         // プリセットアイテムの定義

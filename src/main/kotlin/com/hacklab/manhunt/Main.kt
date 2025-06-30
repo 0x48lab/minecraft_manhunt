@@ -50,7 +50,7 @@ class Main : JavaPlugin() {
         currencyConfig = configManager.getCurrencyConfig()
         currencyTracker = CurrencyTracker(this, economyManager, currencyConfig)
         shopManager = ShopManager(this, economyManager)
-        shopCommand = ShopCommand(this, shopManager, economyManager)
+        shopCommand = ShopCommand(this, shopManager, economyManager, messageManager)
         shopListener = ShopListener(this, shopManager, currencyTracker)
         
         eventListener = EventListener(gameManager, uiManager, messageManager)
@@ -59,7 +59,7 @@ class Main : JavaPlugin() {
         positionShareCommand = PositionShareCommand(gameManager, messageManager)
         
         // Register commands
-        val manhuntCommand = ManhuntCommand(gameManager, compassTracker, spectatorMenu)
+        val manhuntCommand = ManhuntCommand(gameManager, compassTracker, spectatorMenu, messageManager)
         getCommand("manhunt")?.setExecutor(manhuntCommand)
         getCommand("manhunt")?.tabCompleter = manhuntCommand
         

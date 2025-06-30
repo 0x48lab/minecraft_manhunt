@@ -2,6 +2,7 @@ package com.hacklab.manhunt.shop
 
 import com.hacklab.manhunt.GameState
 import com.hacklab.manhunt.Main
+import com.hacklab.manhunt.MessageManager
 import com.hacklab.manhunt.PlayerRole
 import com.hacklab.manhunt.economy.EconomyManager
 import org.bukkit.command.Command
@@ -16,25 +17,26 @@ import org.bukkit.entity.Player
 class ShopCommand(
     private val plugin: Main,
     private val shopManager: ShopManager,
-    private val economyManager: EconomyManager
+    private val economyManager: EconomyManager,
+    private val messageManager: MessageManager
 ) : CommandExecutor, TabCompleter {
     
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
         if (sender !is Player) {
-            sender.sendMessage("§cこのコマンドはプレイヤーのみ使用できます。")
+            sender.sendMessage(messageManager.getMessage(null, "shop.player-only"))
             return true
         }
         
         // ゲーム状態チェック
         if (plugin.getGameManager().getGameState() != GameState.RUNNING) {
-            sender.sendMessage("§cショップはゲーム中のみ使用できます。")
+            sender.sendMessage(messageManager.getMessage(sender, "shop.game-only"))
             return true
         }
         
         // 役割チェック
         val role = plugin.getGameManager().getPlayerRole(sender)
         if (role == null || role == PlayerRole.SPECTATOR) {
-            sender.sendMessage("§c観戦者はショップを使用できません。")
+            sender.sendMessage(messageManager.getMessage(sender, "shop.spectator-denied"))
             return true
         }
         
