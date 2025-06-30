@@ -177,12 +177,14 @@ class GameResultManager(
     private fun showMVPAnnouncement(mvp: GameStats.PlayerStatistics?, winningTeam: PlayerRole?) {
         if (mvp == null) return
         
-        val starSeparator = messageManager.getMessage("result.mvp.star-separator").repeat(30)
+        val starSeparator = messageManager.getMessage("result.mvp.header.separator")
+        val headerLength = messageManager.getMessage("result.mvp.header.length").toIntOrNull() ?: 30
+        val separatorLine = starSeparator.repeat(headerLength)
         
         Bukkit.broadcastMessage("")
-        Bukkit.broadcastMessage("§6§l$starSeparator")
-        Bukkit.broadcastMessage(messageManager.getMessage("result.mvp.header"))
-        Bukkit.broadcastMessage("§6§l$starSeparator")
+        Bukkit.broadcastMessage("§6§l$separatorLine")
+        Bukkit.broadcastMessage(messageManager.getMessage("result.mvp.header.title"))
+        Bukkit.broadcastMessage("§6§l$separatorLine")
         
         val roleColor = messageManager.getMessage("result.roles.${mvp.role.name.lowercase()}.color")
         val roleIcon = messageManager.getMessage("result.roles.${mvp.role.name.lowercase()}.icon")
