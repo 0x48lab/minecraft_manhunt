@@ -82,7 +82,7 @@ class EconomyManager(private val plugin: Main) {
                         "reason" to reason.getDescription(player)
                     ))
                 }
-                player.sendMessage(message as String)
+                player.sendMessage(message)
             }
         }
         
@@ -135,7 +135,20 @@ class EconomyManager(private val plugin: Main) {
     fun resetAllBalances() {
         playerBalances.clear()
         earnHistory.clear()
-        plugin.logger.info("Reset all player balances")
+        
+        // 開始時の所持金を設定
+        val startingBalance = plugin.getConfigManager().getCurrencyConfig().startingBalance
+        val gameManager = plugin.getGameManager()
+        
+        // ゲームに参加しているプレイヤー全員に初期残高を設定
+        for (player in plugin.server.onlinePlayers) {
+            val role = gameManager.getPlayerRole(player)
+            if (role != null && role != PlayerRole.SPECTATOR) {
+                playerBalances[player.uniqueId] = startingBalance
+            }
+        }
+        
+        plugin.logger.info("Reset all player balances and set starting balance: $startingBalance")
     }
     
     /**

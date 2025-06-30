@@ -65,7 +65,7 @@ ui:
 # 経済・ショップ設定
 economy:
   # 開始時の所持金
-  starting-balance: 0
+  starting-balance: 1000
   # 最大所持金
   max-balance: 999999
   # 通貨単位（例: g, コイン, 円, $ など）
