@@ -1,0 +1,553 @@
+game:
+  start: '§6[Manhunt] Game Started!'
+  end: '§6[Manhunt] Game Ended!'
+  reset: '§7Game has been reset.'
+  hunter-win: '§cHunters Win! All runners have been eliminated!'
+  runner-win: '§aRunners Win! The Ender Dragon has been defeated!'
+  hunter-start: '§c[Hunter] Chase the runners!'
+  runner-start: '§a[Runner] Defeat the Ender Dragon!'
+  spectator-start: '§7[Spectator] Please spectate the game.'
+role:
+  changed: '§aRole changed to {role}!'
+  runner: 'Runner'
+  hunter: 'Hunter'
+  spectator: 'Spectator'
+  invalid: '§cInvalid role. Please specify runner, hunter, or spectator.'
+  game-running: '§cCannot change role after the game has started.'
+compass:
+  activated: '§6[Tracking Compass] §aActivated!'
+  usage: '§eUsage: §7Hold compass and right-click to track runners'
+  slot-hint: '§e§l※Compass required (no duplicates allowed)'
+  hunter-only: '§cOnly hunters can use the compass!'
+  game-only: '§cCompass can only be used during the game.'
+  cooldown: '§cCompass on cooldown... ({time}s)'
+  no-target: '§cNo runner targets found.'
+  different-world: '§cRunner is in a different world: §e{world}'
+  tracking: '§6[Compass] §e{player} §7- {distance}'
+  target-switched: '§b[Target Switch] §7[{index}/{total}] §e{player} §7- {distance}'
+  hint: '§6[Hint] §eHold compass and right-click to track runners!'
+  actionbar-hint: '§e§lCompass right-click to track runners'
+  actionbar-use: '§e§lCompass right-click to start tracking'
+  title-activated: '§6§lVirtual Compass'
+  subtitle-activated: '§eRight-click to start tracking'
+spectate:
+  menu-title: '§6Spectator Menu'
+  spectator-only: '§cOnly spectators can use this menu.'
+  teleported: '§aTeleported to {player}!'
+  player-offline: '§cThat player is not online.'
+command:
+  player-only: '§cThis command can only be executed by players.'
+  no-permission: '§cYou don''t have permission to execute this command.'
+  unknown: '§cUnknown command. Use /manhunt help to see usage.'
+  usage: '§cUsage: {usage}'
+status:
+  header: '§6=== Manhunt Game Status ==='
+  state: '§eGame State: {state}'
+  min-players: '§eMinimum Players: {count}'
+  runners: '§aRunners: {count} players {players}'
+  hunters: '§cHunters: {count} players {players}'
+  spectators: '§7Spectators: {count} players {players}'
+  total-players: '§eTotal Players: {count}'
+  can-start: '§eCan Auto-start: {status}'
+join:
+  game-running: '§7Joined as spectator because the game is in progress.'
+  next-game: '§eYou can select a role for the next game.'
+  welcome: '§6[Manhunt] Joined the game!'
+  role-select: '§eUse /manhunt role <runner|hunter> to select your role.'
+  spectator: '§7Joined as spectator.'
+proximity:
+  level-1: '§c§l[WARNING] Hunter within 1 chunk!'
+  level-2: '§6§l[WARNING] Hunter within 2 chunks!'
+  level-3: '§e§l[WARNING] Hunter within 3 chunks!'
+ui:
+  hunter-mode: '🗡 Hunter Mode | Nearest Target: {target} ({distance}m)'
+  runner-mode: '🏃 Runner Mode | Defeat the Ender Dragon!'
+  spectator-mode: '👁 Spectator Mode | Watching the game...'
+help:
+  header: '§6=== Manhunt Commands ==='
+  role: '§e/manhunt role <runner|hunter|spectator> - Change role'
+  compass: '§e/manhunt compass - Activate virtual tracking compass'
+  status: '§e/manhunt status - Check game status'
+  spectate: '§e/manhunt spectate - Open spectator menu (spectators only)'
+  note: '§7※ You automatically join the game when entering the server'
+  virtual-compass: '§b=== Virtual Compass Usage ==='
+  compass-usage: '§7• Right-click with empty hand = Track nearest runner'
+  compass-display: '§7• Particles and arrows show direction'
+  compass-benefits: '§7• No item drops or duplication issues'
+  admin-header: '§c=== Admin Commands ==='
+teamchat:
+  player-only: '§cThis command can only be used by players.'
+  game-only: '§cTeam chat can only be used during the game.'
+  spectator-cannot-use: '§cSpectators cannot use team chat.'
+  usage: '§cUsage: /r <message>'
+  usage-hint: '§7Send message to teammates only.'
+  empty-message: '§cMessage is empty.'
+  no-teammates: '§cNo teammates online.'
+  hunter-prefix: '§c[🗡Team]'
+  runner-prefix: '§a[🏃Team]'
+  format: '{prefix} §f{sender}: §7{message}'
+position:
+  player-only: '§cThis command can only be used by players.'
+  game-only: '§cPosition sharing can only be used during the game.'
+  spectator-cannot-use: '§cSpectators cannot share position.'
+  no-teammates: '§cNo teammates online.'
+  hunter-prefix: '§c[🗡Pos]'
+  runner-prefix: '§a[🏃Pos]'
+  format: '{prefix} §f{sender}: §bX:{x} Y:{y} Z:{z} §7({world})'
+  sent-format: '{prefix} §f{sender}: §bX:{x} Y:{y} Z:{z} §7({world}) §7(Sent to {count} teammates)'
+  relative: '§7  └→ Relative: X:{x} Y:{y} Z:{z} (Distance: {distance}m)'
+  different-world: '§7  └→ §eIn different world'
+quit:
+  changed-to-spectator: '§7You became a spectator after leaving the game.'
+rejoin:
+  success: '§aRecovered from network error! Role: {role}'
+auto-assign:
+  hunter: '§cAutomatically assigned as Hunter due to shortage!'
+  runner: '§aAutomatically assigned as Runner due to shortage!'
+respawn:
+  hunter: '§c[Hunter] Respawned! Continue the chase.'
+  runner-death: '§c[Runner] You died. Respawning in {time} seconds...'
+  waiting: '§7[Waiting] You can spectate in spectator mode.'
+  runner-success: '§a[Runner] Respawned! Defeat the Ender Dragon.'
+  countdown: '§c[Respawn] {time} seconds remaining...'
+  countdown-final: '§e§l{time}...'
+
+# ManhuntCommand related
+admin:
+  game-already-started: '§cGame is already started or in progress.'
+  force-start: '§aGame force started!'
+  set-hunter: '§a{player} has been set as hunter.'
+  set-hunter-notify: '§cYou have been set as hunter!'
+  player-not-found: '§cPlayer ''{player}'' is not online.'
+  invalid-number: '§c''{input}'' is not a valid number.'
+  min-players-too-low: '§cMinimum players must be 2 or more.'
+  min-players-too-high: '§cMinimum players must be 100 or less.'
+  min-players-set: '§aMinimum players set to {count}.'
+  min-players-current: '§cCurrent minimum players: {count}'
+  min-players-change: '§cTo change: /manhunt minplayers <number>'
+  input-required: '§cPlease specify a number.'
+  player-name-required: '§cPlease specify a player name.'
+
+# Reload related
+reload:
+  config-start: '§7Reloading config.yml...'
+  config-complete: '§aconfig.yml reload completed.'
+  shop-start: '§7Reloading shop.yml...'
+  shop-complete: '§ashop.yml reload completed.'
+  all-start: '§7Reloading all configuration files...'
+  all-complete: '§aAll configuration files reload completed.'
+  usage: '§cUsage: /manhunt reload [config|shop|all]'
+  note: '§eNote: Some settings take effect after game restart.'
+  failed: '§cConfiguration reload failed: {error}'
+
+# UI settings related
+ui-settings:
+  header: '§6=== UI Display Settings ==='
+  scoreboard: '§eScoreboard: {status}'
+  actionbar: '§eActionBar: {status}'
+  bossbar: '§eBossBar: {status}'
+  title: '§eTitle: {status}'
+  enabled: '§aEnabled'
+  disabled: '§cDisabled'
+  config-note: '§7Current UI display settings can be changed in config.yml.'
+  reload-note: '§7Use /manhunt reload to apply config.yml changes.'
+  usage: '§cUsage: /manhunt ui <toggle|status>'
+
+# Game status details
+status-detail:
+  insufficient-players: '§c  - Insufficient players ({current}/{required})'
+  insufficient-hunters: '§c  - Insufficient hunters'
+  insufficient-runners: '§c  - Insufficient runners'
+
+# Help extensions
+help-additional:
+  other-commands: '§a=== Other Commands ==='
+  teamchat: '§a/r <message> - Team chat (teammates only)'
+  position: '§a/pos - Share position with teammates'
+  shop-open: '§a/shop - Open shop'
+  shop-balance: '§a/shop balance - Check balance'
+  admin-start: '§c/manhunt start - Force start game'
+  admin-sethunter: '§c/manhunt sethunter <player> - Set player as hunter'
+  admin-minplayers: '§c/manhunt minplayers [number] - Set minimum players'
+  admin-reload: '§c/manhunt reload [config|shop|all] - Reload configuration files'
+  admin-ui: '§c/manhunt ui <toggle|status> - UI display controls'
+
+# Shop related
+shop:
+  spectator-denied: '§cSpectators cannot use the shop.'
+  game-only: '§cShop can only be used during the game.'
+  player-only: '§cThis command can only be used by players.'
+  balance-header: '§6==============================='
+  balance-display: '§eBalance: §f{balance}{unit}'
+  balance-footer: '§6==============================='
+  help-header: '§6=== Shop Command Help ==='
+  help-open: '§e/shop §7- Open shop'
+  help-balance: '§e/shop balance §7- Check balance'
+  help-help: '§e/shop help §7- Show this help'
+  help-description1: '§7Earn coins during the game and'
+  help-description2: '§7purchase various items.'
+  help-hunter-header: '§c[Hunter] Coin earning methods:'
+  help-hunter-damage: '§7- Deal damage to runners'
+  help-hunter-kill: '§7- Kill runners'
+  help-hunter-time: '§7- Time bonus'
+  help-runner-header: '§a[Runner] Coin earning methods:'
+  help-runner-survival: '§7- Survival time bonus'
+  help-runner-dimension: '§7- Dimension arrival'
+  help-runner-diamond: '§7- Diamond collection'
+  help-runner-escape: '§7- Successful escape from hunters'
+  unknown-subcommand: '§cUnknown subcommand. Use /shop help to see help.'
+  too-many-args: '§cToo many arguments. Use /shop help to see help.'
+  cannot-purchase: '§cCannot purchase this item.'
+  insufficient-funds: '§cInsufficient {unit}. (Required: {price}{unit})'
+  purchase-error: '§cError occurred during purchase.'
+  purchase-success: '§aPurchased {item}! (-{price}{unit})'
+  balance-remaining: '§7Balance: §f{balance}{unit}'
+
+# Game progress messages
+game-progress:
+  reset-failed: '§cPlayer left during the game and became spectator.'
+  waiting-state:
+    waiting: 'Waiting'
+    starting: 'Starting'
+    running: 'Running'
+    ended: 'Ended'
+
+# Compass additional
+compass-additional:
+  already-has: '§eAlready have tracking compass'
+  inventory-full: '§eInventory full, cannot place compass'
+  restored: '§aTracking compass has been restored'
+  cannot-pickup: '§eCannot pickup compass, already have one'
+
+# Game management messages
+game-management:
+  player-left-spectator: '§e{player} left the game and became a spectator.'
+  player-disconnected: '§e{player} disconnected from the server.'
+  network-recovery: '§aRecovered from network error! Role: {role}'
+  network-recovery-broadcast: '§e{player} recovered from network error!'
+  hunter-shortage-assign: '§cAutomatically assigned as Hunter due to shortage!'
+  runner-shortage-assign: '§aAutomatically assigned as Runner due to shortage!'
+  start-cancelled-roles: '§cAt least 1 hunter and 1 runner required. Game start cancelled.'
+  players-teleported: '§6Players have been teleported to starting positions!'
+  inventory-cleared: '§6[Manhunt] Player inventories have been cleared!'
+  start-countdown: '§6[Manhunt] Game starting in {time} seconds...'
+  start-title: '§6🎮 Game Start'
+  start-subtitle: '§fStarting in {time} seconds'
+  countdown-final: '§e§l{time}...'
+
+# Victory messages
+victory:
+  hunter-elimination: '§c🏆 Hunters Win! §fAll runners have been eliminated!'
+  runner-dragon: '§a🏆 Runners Win! §fThe Ender Dragon has been defeated!'
+  hunter-runners-left: '§cHunters Win! All runners have left the game!'
+  runner-hunters-left: '§aRunners Win! All hunters have left the game!'
+  hunter-no-hunters: '§aRunners Win! No hunters remain!'
+
+# Role display names
+role-display:
+  runner: 'Runner'
+  hunter: 'Hunter'
+  spectator: 'Spectator'
+
+# Game start messages per role  
+game-start-role:
+  hunter: '§cHunters: Eliminate all runners!'
+  runner: '§aRunners: Defeat the Ender Dragon!'
+  spectator: '§7Spectators will watch in spectator mode.'
+
+# Respawn system
+respawn-system:
+  hunter-respawned: '§c[Hunter] Respawned! Continue the chase.'
+  runner-death: '§c[Runner] You died. Respawning in {time} seconds...'
+  runner-death-broadcast: '§e{player} (Runner) died. Respawning in {time} seconds.'
+  waiting-spectator: '§7[Waiting] You can spectate in spectator mode.'
+  runner-respawned: '§a[Runner] Respawned! Defeat the Ender Dragon.'
+  runner-respawned-broadcast: '§e{player} (Runner) has respawned.'
+  death-title: '§c💀 Dead'
+  death-subtitle: '§fRespawning in {time} seconds'
+  countdown-chat: '§c[Respawn] {time} seconds remaining...'
+  countdown-emphasis: '§e§l{time}...'
+
+# Command interface messages
+command-interface:
+  status-waiting: 'Waiting'
+  status-starting: 'Starting'
+  status-running: 'Running'
+  status-ended: 'Ended'
+  status-game-header: '§6=== Manhunt Game Status ==='
+  status-game-state: '§eGame State: {state}'
+  status-min-players: '§eMinimum Players: {count}'
+  status-runners-list: '§aRunners: {count} players {players}'
+  status-hunters-list: '§cHunters: {count} players {players}'
+  status-spectators-list: '§7Spectators: {count} players {players}'
+  status-total-players: '§eTotal Players: {count}'
+  status-can-start: '§eCan Auto-start: {status}'
+  admin-no-permission: '§cYou don''t have admin permission.'
+  game-already-started: '§cGame is already started or in progress.'
+  admin-force-start: '§aGame force started!'
+  sethunter-usage: '§cUsage: /manhunt sethunter <player_name>'
+  sethunter-success: '§a{player} has been set as hunter.'
+  sethunter-notify: '§cYou have been set as hunter!'
+  minplayers-usage: '§cUsage: /manhunt minplayers <number>'
+  minplayers-current: '§cCurrent minimum players: {count}'
+  minplayers-change: '§cTo change: /manhunt minplayers <number>'
+  minplayers-set: '§aMinimum players set to {count}.'
+  help-commands-header: '§6=== Manhunt Commands ==='
+  help-role-change: '§e/manhunt role <runner|hunter|spectator> - Change role'
+  help-compass-activate: '§e/manhunt compass - Activate virtual tracking compass'
+  help-status-check: '§e/manhunt status - Check game status'
+  help-spectate-menu: '§e/manhunt spectate - Open spectator menu (spectators only)'
+  help-note: '§7※ You automatically join the game when entering the server'
+  help-virtual-compass: '§b=== Virtual Compass Usage ==='
+  help-compass-usage: '§7• Right-click with empty hand = Track nearest runner'
+  help-compass-display: '§7• Particles and arrows show direction'
+  help-compass-benefits: '§7• No item drops or duplication issues'
+  help-admin-commands: '§c=== Admin Commands ==='
+  help-other-commands: '§a=== Other Commands ==='
+  help-teamchat: '§a/r <message> - Team chat (teammates only)'
+  help-position: '§a/pos - Share position with teammates'
+  help-shop-open: '§a/shop - Open shop'
+  help-shop-balance: '§a/shop balance - Check balance'
+  help-admin-start: '§c/manhunt start - Force start game'
+  help-admin-sethunter: '§c/manhunt sethunter <player> - Set player as hunter'
+  help-admin-minplayers: '§c/manhunt minplayers [number] - Set minimum players'
+  help-admin-reload: '§c/manhunt reload [config|shop|all] - Reload configuration files'
+  help-admin-ui: '§c/manhunt ui <toggle|status> - UI display controls'
+
+# Game result and MVP system
+result:
+  # Victory announcement messages
+  victory:
+    dragon-killed: '§a🐉 Runners Win!§f The Ender Dragon has been defeated!'
+    all-runners-eliminated: '§c⚔ Hunters Win!§f All runners have been eliminated!'
+    all-hunters-left: '§a🏃 Runners Win!§f All hunters have left the game!'
+    all-runners-left: '§c🗡 Hunters Win!§f All runners have left the game!'
+    game-end: '§6Game Ended!'
+  
+  # Result display formatting
+  header:
+    separator: '='
+    title: '§6§l                 🏆 GAME RESULT 🏆'
+    length: 50
+  
+  # Title display messages
+  title:
+    hunters-win: 'HUNTERS WIN!'
+    runners-win: 'RUNNERS WIN!'
+    game-end: 'GAME END'
+  
+  # Subtitle display messages
+  subtitle:
+    dragon-defeated: '§fEnder Dragon Defeated'
+    all-eliminated: '§fAll Runners Eliminated'
+    hunters-abandoned: '§fHunters Abandoned'
+    runners-abandoned: '§fRunners Abandoned'
+    game-complete: '§fGame Complete'
+  
+  # Detailed statistics section
+  stats:
+    header: '§e§l=== Game Statistics ==='
+    game-duration: '§6⏱ Game Duration: §f{duration}'
+    hunter-stats-header: '§c§l🗡 Hunter Statistics:'
+    runner-stats-header: '§a§l🏃 Runner Statistics:'
+    
+    # Ranking icons
+    rank:
+      first: '§6👑'
+      second: '§7🥈'
+      third: '§c🥉'
+      other: '§f{rank}.'
+    
+    # Hunter statistics format
+    hunter-format: '{rank} §c{name}§f: §eKills {kills} §7| §cDamage {damage} §7| §6Earned {currency}G'
+    
+    # Runner statistics format
+    runner-format: '{rank} §a{name}§f: §bSurvival {survival} §7| §5Explored {dimensions} dimensions §7| §6Earned {currency}G'
+  
+  # MVP announcement section
+  mvp:
+    header:
+      separator: '★'
+      title: '§6§l           🌟 MVP PLAYER 🌟'
+      length: 30
+    
+    announcement: '{color}§l{icon} {name}§6§l has been selected as MVP!'
+    
+    # MVP performance display
+    hunter-performance: '§7📊 Performance: §eKills {kills} §7| §cDamage {damage}'
+    runner-performance: '§7📊 Performance: §bSurvival Time {survival} §7| §5Explored {dimensions} dimensions'
+    
+    # MVP title and effects
+    title: '§6§l🌟 MVP! 🌟'
+    subtitle: '§eCongratulations!'
+  
+  # Personal statistics section
+  personal:
+    header: '§b§l=== Personal Detailed Statistics ==='
+    player-format: '{icon} §f{name}:'
+    
+    # Hunter personal stats
+    hunter:
+      kd-stats: '  §7• Kills: §e{kills} §7| Deaths: §c{deaths} §7| K/D: §6{kd}'
+      damage-stats: '  §7• Damage Dealt: §c{dealt} §7| Damage Taken: §4{taken}'
+      currency-stats: '  §7• Currency: §6Earned {earned}G §7| §eSpent {spent}G §7| §bPurchased {items} items'
+    
+    # Runner personal stats
+    runner:
+      survival-stats: '  §7• Survival Time: §b{survival} §7| Deaths: §c{deaths}'
+      exploration-stats: '  §7• Exploration: §5{dimensions} dimensions §7| Diamonds: §b{diamonds} §7| Escapes: §a{escapes}'
+      currency-stats: '  §7• Currency: §6Earned {earned}G §7| §eSpent {spent}G §7| §bPurchased {items} items'
+    
+    # Spectator stats
+    spectator-stats: '  §7• Participated as spectator'
+    
+    # Special values
+    kd-infinity: '∞'
+  
+  # Role icons and colors
+  roles:
+    hunter:
+      icon: '🗡'
+      color: '§c'
+    runner:
+      icon: '🏃'
+      color: '§a'
+    spectator:
+      icon: '👁'
+      color: '§7'
+
+# Economy related
+economy:
+  # Balance validation
+  validation:
+    balance-negative: 'Balance must be 0 or greater'
+    amount-negative: 'Amount must be 0 or greater'
+    insufficient-balance: 'Insufficient balance'
+  
+  # Currency related messages
+  currency:
+    gained: '§a[+{amount}{unit}] {reason}'
+    lost: '§c[-{amount}{unit}] {reason}'
+    balance-updated: 'Balance updated: {balance}{unit}'
+    statistics-error: 'Error occurred in statistics recording: {error}'
+  
+  # Earning reasons (Hunter)
+  earn-reasons:
+    hunter:
+      damage-dealt: 'Dealt {damage} damage to runner'
+      kill: 'Killed {runnerName}'
+      proximity: 'Approached runner within {distance}m'
+      time-bonus: 'Tracking bonus'
+    
+    # Earning reasons (Runner)
+    runner:
+      survival-bonus: 'Survival bonus'
+      progress:
+        nether-enter: 'Reached the Nether'
+        fortress-found: 'Found fortress'
+        end-enter: 'Reached the End'
+      item-collected: 'Collected {count} {itemName}'
+      escape-bonus: 'Successful escape bonus'
+  
+  # Reset related
+  reset:
+    all-balances: 'Reset all players balances'
+    player-balance: 'Reset {player} balance'
+
+# Material names
+materials:
+  diamond: 'Diamond'
+  iron: 'Iron'
+  gold: 'Gold'
+  netherite: 'Netherite'
+  stone: 'Stone'
+  wood: 'Wood'
+  leather: 'Leather'
+  # Weapons
+  sword: 'Sword'
+  axe: 'Axe'
+  pickaxe: 'Pickaxe'
+  shovel: 'Shovel'
+  bow: 'Bow'
+  trident: 'Trident'
+  # Armor
+  helmet: 'Helmet'
+  chestplate: 'Chestplate'
+  leggings: 'Leggings'
+  boots: 'Boots'
+  # Special
+  elytra: 'Elytra'
+  compass: 'Compass'
+  # Consumables
+  potion: 'Potion'
+  apple: 'Apple'
+  golden_apple: 'Golden Apple'
+  ender_pearl: 'Ender Pearl'
+  # Tools
+  bucket: 'Bucket'
+  water_bucket: 'Water Bucket'
+  lava_bucket: 'Lava Bucket'
+  flint_and_steel: 'Flint and Steel'
+  arrow: 'Arrow'
+  # Food
+  beef: 'Beef'
+  cooked_beef: 'Steak'
+
+# Shop related (Extended)
+shop-extended:
+  # Interface
+  interface:
+    category-menu-title: '§6§lShop - Category Selection'
+    category-shop-title: '§6§lShop - {category}'
+    category-description: '§7Click to view {category}'
+    balance-display: '§bBalance: §f{balance}{unit}'
+    
+    # Buttons
+    back-button: '§cBack'
+    back-description: '§7Return to category selection'
+    close-button: '§cClose'
+    balance-button: '§6Balance'
+    
+    # Filler
+    filler-name: ' '
+  
+  # Item display
+  item-display:
+    price-format: '§6Price: §f{price}{unit}'
+    purchase-limit: '§7Purchase limit: §f{count}/{max}'
+    cooldown-remaining: '§cCooldown: {time}s'
+    insufficient-funds: '§c✗ Insufficient {unit}'
+    cannot-purchase: '§c✗ Cannot purchase'
+    can-purchase: '§a✓ Click to purchase'
+  
+  # Purchase processing
+  purchase:
+    cannot-purchase: '§cCannot purchase this item.'
+    insufficient-funds: '§cInsufficient {unit}. (Required: {price}{unit})'
+    purchase-error: '§cError occurred during purchase.'
+    success: '§aPurchased {item}! (-{price}{unit})'
+    balance-remaining: '§7Balance: §f{balance}{unit}'
+    
+    # Purchase restrictions
+    max-purchases-reached: '§cThis item has reached purchase limit.'
+    cooldown-active: '§cThis item is on cooldown. ({time}s)'
+    role-restricted: '§cYou cannot purchase this item with your role.'
+  
+  # Categories
+  categories:
+    weapons: 'Weapons'
+    armor: 'Armor'
+    tools: 'Tools'
+    consumables: 'Consumables'
+    food: 'Food'
+    special: 'Special'
+  
+  # Log messages
+  log:
+    config-loaded: 'Loaded {count} items from shop.yml'
+    config-fallback: 'Could not load items from shop.yml. Using default items'
+    config-error: 'Error loading shop items: {error}'
+    config-reloaded: 'Shop configuration reloaded'
+    config-reload-error: 'Error reloading shop configuration: {error}'
+    player-purchase: '{player} purchased {item} ({price}{unit})'
+    invalid-material: 'Invalid material: {material} (Set item: {itemId})'

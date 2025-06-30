@@ -1,0 +1,553 @@
+game:
+  start: '§6[Manhunt] ゲーム開始！'
+  end: '§6[Manhunt] ゲーム終了！'
+  reset: '§7ゲームがリセットされました。'
+  hunter-win: '§c追う人の勝利！逃げる人を全員倒しました！'
+  runner-win: '§a逃げる人の勝利！エンダードラゴンを倒しました！'
+  hunter-start: '§c[ハンター] ランナーを追跡せよ！'
+  runner-start: '§a[ランナー] エンダードラゴンを倒せ！'
+  spectator-start: '§7[観戦者] ゲームを観戦してください。'
+role:
+  changed: '§a役割が{role}に変更されました！'
+  runner: 'ランナー'
+  hunter: 'ハンター'
+  spectator: '観戦者'
+  invalid: '§c無効な役割です。runner、hunter、spectatorのいずれかを指定してください。'
+  game-running: '§cゲーム開始後は役割を変更できません。'
+compass:
+  activated: '§6[追跡コンパス] §a有効化！'
+  usage: '§e使用法: §7コンパスを持って右クリックでランナーを追跡'
+  slot-hint: '§e§l※コンパス必須（重複不可）'
+  hunter-only: '§cハンターのみコンパスを使用できます！'
+  game-only: '§cコンパスはゲーム中のみ使用できます。'
+  cooldown: '§cコンパスはクールダウン中です... ({time}秒)'
+  no-target: '§cランナーのターゲットが見つかりません。'
+  different-world: '§cランナーは異なるワールドにいます: §e{world}'
+  tracking: '§6[コンパス] §e{player} §7- {distance}'
+  target-switched: '§b[ターゲット切替] §7[{index}/{total}] §e{player} §7- {distance}'
+  hint: '§6[ヒント] §eコンパスを持って右クリックでランナーを追跡！'
+  actionbar-hint: '§e§lコンパス右クリックでランナー追跡'
+  actionbar-use: '§e§lコンパス右クリックで追跡開始'
+  title-activated: '§6§l仮想コンパス'
+  subtitle-activated: '§e右クリックで追跡開始'
+spectate:
+  menu-title: '§6観戦者メニュー'
+  spectator-only: '§c観戦者のみこのメニューを使用できます。'
+  teleported: '§a{player}にテレポートしました！'
+  player-offline: '§cそのプレイヤーはオンラインではありません。'
+command:
+  player-only: '§cこのコマンドはプレイヤーのみが実行できます。'
+  no-permission: '§cこのコマンドを実行する権限がありません。'
+  unknown: '§c不明なコマンドです。/manhunt help で使用法を確認してください。'
+  usage: '§c使用法: {usage}'
+status:
+  header: '§6=== Manhunt ゲーム状況 ==='
+  state: '§eゲーム状態: {state}'
+  min-players: '§e最小プレイヤー数: {count}'
+  runners: '§aランナー: {count}人 {players}'
+  hunters: '§cハンター: {count}人 {players}'
+  spectators: '§7観戦者: {count}人 {players}'
+  total-players: '§e総プレイヤー数: {count}'
+  can-start: '§e自動開始可能: {status}'
+join:
+  game-running: '§7ゲーム進行中のため観戦者として参加しました。'
+  next-game: '§e次のゲームで役割を選択できます。'
+  welcome: '§6[Manhunt] ゲームに参加しました！'
+  role-select: '§e/manhunt role <runner|hunter> で役割を選択してください。'
+  spectator: '§7観戦者として参加しました。'
+proximity:
+  level-1: '§c§l[警告] ハンターが1チャンク以内にいます！'
+  level-2: '§6§l[警告] ハンターが2チャンク以内にいます！'
+  level-3: '§e§l[警告] ハンターが3チャンク以内にいます！'
+ui:
+  hunter-mode: '🗡 ハンターモード | 最寄りターゲット: {target} ({distance}m)'
+  runner-mode: '🏃 ランナーモード | エンダードラゴンを倒そう！'
+  spectator-mode: '👁 観戦モード | ゲームを観戦中...'
+help:
+  header: '§6=== Manhunt コマンド ==='
+  role: '§e/manhunt role <runner|hunter|spectator> - 役割変更'
+  compass: '§e/manhunt compass - 仮想追跡コンパスを有効化'
+  status: '§e/manhunt status - ゲーム状況確認'
+  spectate: '§e/manhunt spectate - 観戦メニューを開く（観戦者のみ）'
+  note: '§7※ サーバー参加時に自動的にゲームに参加します'
+  virtual-compass: '§b=== 仮想コンパス使用法 ==='
+  compass-usage: '§7• 空手で右クリック = 最寄りランナーを追跡'
+  compass-display: '§7• パーティクルと矢印で方向を表示'
+  compass-benefits: '§7• アイテムドロップや重複の心配なし'
+  admin-header: '§c=== 管理者コマンド ==='
+teamchat:
+  player-only: '§cこのコマンドはプレイヤーのみが使用できます。'
+  game-only: '§cチームチャットはゲーム中のみ使用できます。'
+  spectator-cannot-use: '§c観戦者はチームチャットを使用できません。'
+  usage: '§c使用法: /r <メッセージ>'
+  usage-hint: '§7味方のみにメッセージを送信します。'
+  empty-message: '§cメッセージが空です。'
+  no-teammates: '§cオンラインの味方がいません。'
+  hunter-prefix: '§c[🗡チーム]'
+  runner-prefix: '§a[🏃チーム]'
+  format: '{prefix} §f{sender}: §7{message}'
+position:
+  player-only: '§cこのコマンドはプレイヤーのみが使用できます。'
+  game-only: '§c座標共有はゲーム中のみ使用できます。'
+  spectator-cannot-use: '§c観戦者は座標を共有できません。'
+  no-teammates: '§cオンラインの味方がいません。'
+  hunter-prefix: '§c[🗡座標]'
+  runner-prefix: '§a[🏃座標]'
+  format: '{prefix} §f{sender}: §bX:{x} Y:{y} Z:{z} §7({world})'
+  sent-format: '{prefix} §f{sender}: §bX:{x} Y:{y} Z:{z} §7({world}) §7({count}人の味方に送信)'
+  relative: '§7  └→ 相対座標: X:{x} Y:{y} Z:{z} (距離: {distance}m)'
+  different-world: '§7  └→ §e異なるワールドにいます'
+quit:
+  changed-to-spectator: '§7ゲームから退出したため観戦者になりました。'
+rejoin:
+  success: '§aネットワークエラーから復帰しました！役割: {role}'
+auto-assign:
+  hunter: '§cハンターが不足のため、自動的にハンターに割り当てられました！'
+  runner: '§aランナーが不足のため、自動的にランナーに割り当てられました！'
+respawn:
+  hunter: '§c[ハンター] リスポンしました！追跡を続けてください。'
+  runner-death: '§c[ランナー] 死亡しました。{time}秒後にリスポンします...'
+  waiting: '§7[リスポン待ち] スペクテーターモードでゲームを観戦できます。'
+  runner-success: '§a[ランナー] リスポンしました！エンダードラゴンを倒してください。'
+  countdown: '§c[リスポン] あと{time}秒...'
+  countdown-final: '§e§l{time}...'
+
+# ManhuntCommand関連
+admin:
+  game-already-started: '§cゲームは既に開始されているか進行中です。'
+  force-start: '§aゲームを強制開始しました！'
+  set-hunter: '§a{player}をハンターに設定しました。'
+  set-hunter-notify: '§cあなたは追う人に設定されました！'
+  player-not-found: '§cプレイヤー ''{player}'' がオンラインではありません。'
+  invalid-number: '§c''{input}'' は有効な数値ではありません。'
+  min-players-too-low: '§c最小プレイヤー数は2以上である必要があります。'
+  min-players-too-high: '§c最小プレイヤー数は100以下である必要があります。'
+  min-players-set: '§a最小プレイヤー数を{count}に設定しました。'
+  min-players-current: '§c現在の最小プレイヤー数: {count}'
+  min-players-change: '§c変更するには: /manhunt minplayers <数値>'
+  input-required: '§c数値を指定してください。'
+  player-name-required: '§cプレイヤー名を指定してください。'
+
+# リロード関連
+reload:
+  config-start: '§7config.ymlをリロードしています...'
+  config-complete: '§aconfig.ymlのリロードが完了しました。'
+  shop-start: '§7shop.ymlをリロードしています...'
+  shop-complete: '§ashop.ymlのリロードが完了しました。'
+  all-start: '§7全設定ファイルをリロードしています...'
+  all-complete: '§a全設定ファイルのリロードが完了しました。'
+  usage: '§c使用法: /manhunt reload [config|shop|all]'
+  note: '§e注意: 一部の設定はゲーム再開始後に反映されます。'
+  failed: '§c設定ファイルのリロードに失敗しました: {error}'
+
+# UI設定関連
+ui-settings:
+  header: '§6=== UI表示設定 ==='
+  scoreboard: '§eスコアボード: {status}'
+  actionbar: '§eActionBar: {status}'
+  bossbar: '§eBossBar: {status}'
+  title: '§eタイトル: {status}'
+  enabled: '§a有効'
+  disabled: '§c無効'
+  config-note: '§7現在のUI表示設定はconfig.ymlで変更できます。'
+  reload-note: '§7/manhunt reloadでconfig.ymlの変更を反映してください。'
+  usage: '§c使用法: /manhunt ui <toggle|status>'
+
+# ゲーム状況詳細
+status-detail:
+  insufficient-players: '§c  - プレイヤー数不足 ({current}/{required})'
+  insufficient-hunters: '§c  - ハンター不足'
+  insufficient-runners: '§c  - ランナー不足'
+
+# ヘルプ拡張
+help-additional:
+  other-commands: '§a=== その他のコマンド ==='
+  teamchat: '§a/r <メッセージ> - チームチャット（味方のみ）'
+  position: '§a/pos - 座標を味方に共有'
+  shop-open: '§a/shop - ショップを開く'
+  shop-balance: '§a/shop balance - 所持金確認'
+  admin-start: '§c/manhunt start - ゲーム強制開始'
+  admin-sethunter: '§c/manhunt sethunter <プレイヤー> - 指定プレイヤーをハンターに設定'
+  admin-minplayers: '§c/manhunt minplayers [数値] - 最小プレイヤー数設定'
+  admin-reload: '§c/manhunt reload [config|shop|all] - 設定ファイルをリロード'
+  admin-ui: '§c/manhunt ui <toggle|status> - UI表示制御'
+
+# ショップ関連
+shop:
+  spectator-denied: '§c観戦者はショップを使用できません。'
+  game-only: '§cショップはゲーム中のみ使用できます。'
+  player-only: '§cこのコマンドはプレイヤーのみが使用できます。'
+  balance-header: '§6==============================='
+  balance-display: '§e所持金: §f{balance}{unit}'
+  balance-footer: '§6==============================='
+  help-header: '§6=== ショップコマンド ヘルプ ==='
+  help-open: '§e/shop §7- ショップを開く'
+  help-balance: '§e/shop balance §7- 所持金を確認'
+  help-help: '§e/shop help §7- このヘルプを表示'
+  help-description1: '§7ゲーム中にコインを獲得して'
+  help-description2: '§7様々なアイテムを購入できます。'
+  help-hunter-header: '§c[ハンター] コイン獲得方法:'
+  help-hunter-damage: '§7- ランナーにダメージを与える'
+  help-hunter-kill: '§7- ランナーを倒す'
+  help-hunter-time: '§7- 時間経過ボーナス'
+  help-runner-header: '§a[ランナー] コイン獲得方法:'
+  help-runner-survival: '§7- 生存時間ボーナス'
+  help-runner-dimension: '§7- ディメンション到達'
+  help-runner-diamond: '§7- ダイヤモンド収集'
+  help-runner-escape: '§7- ハンターからの逃走成功'
+  unknown-subcommand: '§c不明なサブコマンドです。/shop help でヘルプを確認してください。'
+  too-many-args: '§c引数が多すぎます。/shop help でヘルプを確認してください。'
+  cannot-purchase: '§cこのアイテムを購入できません。'
+  insufficient-funds: '§c{unit}が不足しています。（必要: {price}{unit}）'
+  purchase-error: '§c購入中にエラーが発生しました。'
+  purchase-success: '§a{item}を購入しました！（-{price}{unit}）'
+  balance-remaining: '§7残高: §f{balance}{unit}'
+
+# ゲーム進行メッセージ
+game-progress:
+  reset-failed: '§cゲーム中にプレイヤーが退出し、観戦者になりました。'
+  waiting-state:
+    waiting: '待機中'
+    starting: '開始中'
+    running: '進行中'
+    ended: '終了'
+
+# コンパス追加
+compass-additional:
+  already-has: '§e追跡コンパスを既に持っています'
+  inventory-full: '§eインベントリが満杯でコンパスを配置できません'
+  restored: '§a追跡コンパスが復元されました'
+  cannot-pickup: '§eコンパスを拾得できません。既に1個持っています'
+
+# Game management messages
+game-management:
+  player-left-spectator: '§e{player}がゲームから退出し、観戦者になりました。'
+  player-disconnected: '§e{player}がサーバーから切断しました。'
+  network-recovery: '§aネットワークエラーから復帰しました！役割: {role}'
+  network-recovery-broadcast: '§e{player}がネットワークエラーから復帰しました！'
+  hunter-shortage-assign: '§cハンターが不足のため、自動的にハンターに割り当てられました！'
+  runner-shortage-assign: '§aランナーが不足のため、自動的にランナーに割り当てられました！'
+  start-cancelled-roles: '§cハンターとランナーが最低1人ずつ必要です。ゲーム開始を中止しました。'
+  players-teleported: '§6プレイヤーが各開始地点に転送されました！'
+  inventory-cleared: '§6[Manhunt] プレイヤーのインベントリがクリアされました！'
+  start-countdown: '§6[Manhunt] ゲーム開始まで {time}秒...'
+  start-title: '§6🎮 ゲーム開始'
+  start-subtitle: '§f{time}秒後に開始'
+  countdown-final: '§e§l{time}...'
+
+# Victory messages
+victory:
+  hunter-elimination: '§c🏆 ハンターの勝利！§f逃げる人を全員倒しました！'
+  runner-dragon: '§a🏆 ランナーの勝利！§fエンダードラゴンを倒しました！'
+  hunter-runners-left: '§c追う人の勝利！逃げる人が全員退出しました！'
+  runner-hunters-left: '§a逃げる人の勝利！追う人が全員退出しました！'
+  hunter-no-hunters: '§a逃げる人の勝利！追う人が全員いなくなりました！'
+
+# Role display names
+role-display:
+  runner: 'ランナー'
+  hunter: 'ハンター'
+  spectator: '観戦者'
+
+# Game start messages per role  
+game-start-role:
+  hunter: '§c追う人: 逃げる人を全員倒せ！'
+  runner: '§a逃げる人: エンダードラゴンを倒せ！'
+  spectator: '§7観戦者はスペクテーターモードで観戦します。'
+
+# Respawn system
+respawn-system:
+  hunter-respawned: '§c[ハンター] リスポンしました！追跡を続けてください。'
+  runner-death: '§c[ランナー] 死亡しました。{time}秒後にリスポンします...'
+  runner-death-broadcast: '§e{player} (ランナー) が死亡しました。{time}秒後にリスポンします。'
+  waiting-spectator: '§7[リスポン待ち] スペクテーターモードでゲームを観戦できます。'
+  runner-respawned: '§a[ランナー] リスポンしました！エンダードラゴンを倒してください。'
+  runner-respawned-broadcast: '§e{player} (ランナー) がリスポンしました。'
+  death-title: '§c💀 死亡中'
+  death-subtitle: '§f{time}秒後にリスポン'
+  countdown-chat: '§c[リスポン] あと {time}秒...'
+  countdown-emphasis: '§e§l{time}...'
+
+# Command interface messages
+command-interface:
+  status-waiting: '待機中'
+  status-starting: '開始中'
+  status-running: '進行中'
+  status-ended: '終了'
+  status-game-header: '§6=== Manhunt ゲーム状況 ==='
+  status-game-state: '§eゲーム状態: {state}'
+  status-min-players: '§e最小プレイヤー数: {count}'
+  status-runners-list: '§aランナー: {count}人 {players}'
+  status-hunters-list: '§cハンター: {count}人 {players}'
+  status-spectators-list: '§7観戦者: {count}人 {players}'
+  status-total-players: '§e総プレイヤー数: {count}'
+  status-can-start: '§e自動開始可能: {status}'
+  admin-no-permission: '§c管理者権限がありません。'
+  game-already-started: '§cゲームは既に開始されているか進行中です。'
+  admin-force-start: '§aゲームを強制開始しました！'
+  sethunter-usage: '§c使用法: /manhunt sethunter <プレイヤー名>'
+  sethunter-success: '§a{player}をハンターに設定しました。'
+  sethunter-notify: '§cあなたはハンターに設定されました！'
+  minplayers-usage: '§c使用法: /manhunt minplayers <数値>'
+  minplayers-current: '§c現在の最小プレイヤー数: {count}'
+  minplayers-change: '§c変更するには: /manhunt minplayers <数値>'
+  minplayers-set: '§a最小プレイヤー数を{count}に設定しました。'
+  help-commands-header: '§6=== Manhunt コマンド ==='
+  help-role-change: '§e/manhunt role <runner|hunter|spectator> - 役割変更'
+  help-compass-activate: '§e/manhunt compass - 仮想追跡コンパスを有効化'
+  help-status-check: '§e/manhunt status - ゲーム状況確認'
+  help-spectate-menu: '§e/manhunt spectate - 観戦メニューを開く（観戦者のみ）'
+  help-note: '§7※ サーバー参加時に自動的にゲームに参加します'
+  help-virtual-compass: '§b=== 仮想コンパス使用法 ==='
+  help-compass-usage: '§7• 空手で右クリック = 最寄りランナーを追跡'
+  help-compass-display: '§7• パーティクルと矢印で方向を表示'
+  help-compass-benefits: '§7• アイテムドロップや重複の心配なし'
+  help-admin-commands: '§c=== 管理者コマンド ==='
+  help-other-commands: '§a=== その他のコマンド ==='
+  help-teamchat: '§a/r <メッセージ> - チームチャット（味方のみ）'
+  help-position: '§a/pos - 座標を味方に共有'
+  help-shop-open: '§a/shop - ショップを開く'
+  help-shop-balance: '§a/shop balance - 所持金確認'
+  help-admin-start: '§c/manhunt start - ゲーム強制開始'
+  help-admin-sethunter: '§c/manhunt sethunter <プレイヤー> - 指定プレイヤーをハンターに設定'
+  help-admin-minplayers: '§c/manhunt minplayers [数値] - 最小プレイヤー数設定'
+  help-admin-reload: '§c/manhunt reload [config|shop|all] - 設定ファイルをリロード'
+  help-admin-ui: '§c/manhunt ui <toggle|status> - UI表示制御'
+
+# Game result and MVP system
+result:
+  # Victory announcement messages
+  victory:
+    dragon-killed: '§a🐉 ランナーの勝利！§f エンダードラゴンを討伐しました！'
+    all-runners-eliminated: '§c⚔ ハンターの勝利！§f 全ランナーを撃破しました！'
+    all-hunters-left: '§a🏃 ランナーの勝利！§f ハンターが全員退出しました！'
+    all-runners-left: '§c🗡 ハンターの勝利！§f ランナーが全員退出しました！'
+    game-end: '§6ゲーム終了！'
+  
+  # Result display formatting
+  header:
+    separator: '='
+    title: '§6§l                 🏆 GAME RESULT 🏆'
+    length: 50
+  
+  # Title display messages
+  title:
+    hunters-win: 'HUNTERS WIN!'
+    runners-win: 'RUNNERS WIN!'
+    game-end: 'GAME END'
+  
+  # Subtitle display messages
+  subtitle:
+    dragon-defeated: '§fEnder Dragon Defeated'
+    all-eliminated: '§fAll Runners Eliminated'
+    hunters-abandoned: '§fHunters Abandoned'
+    runners-abandoned: '§fRunners Abandoned'
+    game-complete: '§fGame Complete'
+  
+  # Detailed statistics section
+  stats:
+    header: '§e§l=== ゲーム統計 ==='
+    game-duration: '§6⏱ ゲーム時間: §f{duration}'
+    hunter-stats-header: '§c§l🗡 ハンター統計:'
+    runner-stats-header: '§a§l🏃 ランナー統計:'
+    
+    # Ranking icons
+    rank:
+      first: '§6👑'
+      second: '§7🥈'
+      third: '§c🥉'
+      other: '§f{rank}.'
+    
+    # Hunter statistics format
+    hunter-format: '{rank} §c{name}§f: §eキル {kills} §7| §cダメージ {damage} §7| §6収入 {currency}G'
+    
+    # Runner statistics format
+    runner-format: '{rank} §a{name}§f: §b生存 {survival} §7| §5探索 {dimensions}次元 §7| §6収入 {currency}G'
+  
+  # MVP announcement section
+  mvp:
+    header:
+      separator: '★'
+      title: '§6§l           🌟 MVP PLAYER 🌟'
+      length: 30
+    
+    announcement: '{color}§l{icon} {name}§6§l が MVP に選ばれました！'
+    
+    # MVP performance display
+    hunter-performance: '§7📊 成績: §eキル数 {kills} §7| §cダメージ {damage}'
+    runner-performance: '§7📊 成績: §b生存時間 {survival} §7| §5探索 {dimensions}次元'
+    
+    # MVP title and effects
+    title: '§6§l🌟 MVP! 🌟'
+    subtitle: '§eおめでとうございます！'
+  
+  # Personal statistics section
+  personal:
+    header: '§b§l=== 個人詳細成績 ==='
+    player-format: '{icon} §f{name}:'
+    
+    # Hunter personal stats
+    hunter:
+      kd-stats: '  §7• キル: §e{kills} §7| デス: §c{deaths} §7| K/D: §6{kd}'
+      damage-stats: '  §7• 与ダメージ: §c{dealt} §7| 被ダメージ: §4{taken}'
+      currency-stats: '  §7• 通貨: §6獲得 {earned}G §7| §e消費 {spent}G §7| §b購入 {items}個'
+    
+    # Runner personal stats
+    runner:
+      survival-stats: '  §7• 生存時間: §b{survival} §7| デス: §c{deaths}'
+      exploration-stats: '  §7• 探索: §5{dimensions}次元 §7| ダイヤ: §b{diamonds}個 §7| 逃走: §a{escapes}回'
+      currency-stats: '  §7• 通貨: §6獲得 {earned}G §7| §e消費 {spent}G §7| §b購入 {items}個'
+    
+    # Spectator stats
+    spectator-stats: '  §7• 観戦者として参加'
+    
+    # Special values
+    kd-infinity: '∞'
+  
+  # Role icons and colors
+  roles:
+    hunter:
+      icon: '🗡'
+      color: '§c'
+    runner:
+      icon: '🏃'
+      color: '§a'
+    spectator:
+      icon: '👁'
+      color: '§7'
+
+# エコノミー関連
+economy:
+  # 残高バリデーション
+  validation:
+    balance-negative: '残高は0以上である必要があります'
+    amount-negative: '金額は0以上である必要があります'
+    insufficient-balance: '残高が不足しています'
+  
+  # 通貨関連メッセージ
+  currency:
+    gained: '§a[+{amount}{unit}] {reason}'
+    lost: '§c[-{amount}{unit}] {reason}'
+    balance-updated: '残高が更新されました: {balance}{unit}'
+    statistics-error: '統計記録でエラーが発生しました: {error}'
+  
+  # 獲得理由（ハンター）
+  earn-reasons:
+    hunter:
+      damage-dealt: 'ランナーに{damage}ダメージを与えた'
+      kill: '{runnerName}を倒した'
+      proximity: 'ランナーとの距離{distance}m以内に接近'
+      time-bonus: '追跡ボーナス'
+    
+    # 獲得理由（ランナー）
+    runner:
+      survival-bonus: '生存ボーナス'
+      progress:
+        nether-enter: 'ネザーに到達'
+        fortress-found: '要塞を発見'
+        end-enter: 'エンドに到達'
+      item-collected: '{itemName}を{count}個収集'
+      escape-bonus: '逃走成功ボーナス'
+  
+  # リセット関連
+  reset:
+    all-balances: '全プレイヤーの残高をリセットしました'
+    player-balance: '{player}の残高をリセットしました'
+
+# マテリアル名
+materials:
+  diamond: 'ダイヤモンド'
+  iron: '鉄'
+  gold: '金'
+  netherite: 'ネザライト'
+  stone: '石'
+  wood: '木'
+  leather: '革'
+  # 武器
+  sword: '剣'
+  axe: '斧'
+  pickaxe: 'つるはし'
+  shovel: 'シャベル'
+  bow: '弓'
+  trident: 'トライデント'
+  # 防具
+  helmet: 'ヘルメット'
+  chestplate: 'チェストプレート'
+  leggings: 'レギンス'
+  boots: 'ブーツ'
+  # 特殊
+  elytra: 'エリトラ'
+  compass: 'コンパス'
+  # 消耗品
+  potion: 'ポーション'
+  apple: 'リンゴ'
+  golden_apple: '金のリンゴ'
+  ender_pearl: 'エンダーパール'
+  # ツール
+  bucket: 'バケツ'
+  water_bucket: '水バケツ'
+  lava_bucket: 'マグマバケツ'
+  flint_and_steel: '火打石と打ち金'
+  arrow: '矢'
+  # 食料
+  beef: '牛肉'
+  cooked_beef: 'ステーキ'
+
+# ショップ関連（拡張）
+shop-extended:
+  # インターフェース
+  interface:
+    category-menu-title: '§6§lショップ - カテゴリ選択'
+    category-shop-title: '§6§lショップ - {category}'
+    category-description: '§7クリックして{category}を見る'
+    balance-display: '§b所持金: §f{balance}{unit}'
+    
+    # ボタン
+    back-button: '§c戻る'
+    back-description: '§7カテゴリ選択に戻る'
+    close-button: '§c閉じる'
+    balance-button: '§6所持金'
+    
+    # フィラー
+    filler-name: ' '
+  
+  # アイテム表示
+  item-display:
+    price-format: '§6価格: §f{price}{unit}'
+    purchase-limit: '§7購入制限: §f{count}/{max}'
+    cooldown-remaining: '§cクールダウン: {time}秒'
+    insufficient-funds: '§c✗ {unit}が不足しています'
+    cannot-purchase: '§c✗ 購入できません'
+    can-purchase: '§a✓ クリックして購入'
+  
+  # 購入処理
+  purchase:
+    cannot-purchase: '§cこのアイテムは購入できません。'
+    insufficient-funds: '§c{unit}が不足しています。(必要: {price}{unit})'
+    purchase-error: '§c購入処理中にエラーが発生しました。'
+    success: '§a{item}§aを購入しました！ (-{price}{unit})'
+    balance-remaining: '§7残高: §f{balance}{unit}'
+    
+    # 購入制限
+    max-purchases-reached: '§cこのアイテムは購入制限に達しています。'
+    cooldown-active: '§cこのアイテムはクールダウン中です。({time}秒)'
+    role-restricted: '§cあなたの役割ではこのアイテムを購入できません。'
+  
+  # カテゴリ
+  categories:
+    weapons: '武器'
+    armor: '防具'
+    tools: 'ツール'
+    consumables: '消耗品'
+    food: '食料'
+    special: '特殊'
+  
+  # ログメッセージ
+  log:
+    config-loaded: 'shop.yml から {count} 個のアイテムを読み込みました'
+    config-fallback: 'shop.yml からアイテムを読み込めませんでした。デフォルトアイテムを使用します'
+    config-error: 'ショップアイテムの読み込みでエラー: {error}'
+    config-reloaded: 'ショップ設定をリロードしました'
+    config-reload-error: 'ショップ設定のリロードでエラー: {error}'
+    player-purchase: '{player} が {item} を購入 ({price}{unit})'
+    invalid-material: '無効なマテリアル: {material} (セットアイテム: {itemId})'
