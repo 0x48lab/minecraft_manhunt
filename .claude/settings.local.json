@@ -14,7 +14,8 @@
       "Bash(do echo \"Checking $item:\")",
       "Bash(echo)",
       "Bash(done)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(mv:*)"
     ],
     "deny": []
   }
