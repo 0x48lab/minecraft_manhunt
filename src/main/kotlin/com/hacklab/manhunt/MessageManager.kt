@@ -33,8 +33,8 @@ class MessageManager(private val plugin: Main) {
         
         // サポートされていない言語の場合はデフォルトに戻す
         if (!SUPPORTED_LANGUAGES.contains(defaultLanguage)) {
-            plugin.logger.warning("Unsupported default language: $defaultLanguage. Using 'ja' instead.")
-            defaultLanguage = "ja"
+            plugin.logger.warning("Unsupported default language: $defaultLanguage. Using 'en' instead.")
+            defaultLanguage = "en"
         }
     }
     
