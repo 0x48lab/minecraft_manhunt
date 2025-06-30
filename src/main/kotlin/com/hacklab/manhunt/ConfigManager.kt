@@ -141,7 +141,4 @@ class ConfigManager(private val plugin: Main) {
             currencyUnit = economySection.getString("currency-unit", "G") ?: "G"
         )
     }
-    
-    // 言語設定を取得
-    fun getDefaultLanguage(): String = config.getString("language.default", "en") ?: "en"
 }

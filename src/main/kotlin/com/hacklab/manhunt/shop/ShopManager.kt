@@ -43,9 +43,8 @@ class ShopManager(
                 shopItems.addAll(configItems)
                 plugin.logger.info("Loaded ${configItems.size} items from shop.yml")
             } else {
-                // フォールバック: ハードコーディングされたアイテムを使用
-                plugin.logger.warning("Could not load items from shop.yml. Using default items")
-                shopItems.addAll(ShopItem.getDefaultItems())
+                plugin.logger.severe("Failed to load items from shop.yml - no items loaded!")
+                // shop.ymlが完備されているため、フォールバックは削除
             }
             
             // カテゴリ設定を読み込み
@@ -53,8 +52,8 @@ class ShopManager(
             
         } catch (e: Exception) {
             plugin.logger.severe("Error loading shop items: ${e.message}")
-            // エラー時はデフォルトアイテムを使用
-            shopItems.addAll(ShopItem.getDefaultItems())
+            e.printStackTrace()
+            // shop.ymlが完備されているため、フォールバックは削除
         }
     }
     
