@@ -60,7 +60,7 @@ class SpectatorMenu(
         val inventory = Bukkit.createInventory(
             null, 
             INVENTORY_SIZE, 
-            messageManager.getMessage("ja", "spectate.menu-title-with-page", mapOf("current" to (currentPage + 1), "total" to totalPages))
+            messageManager.getMessage("spectate.menu-title-with-page", mapOf("current" to (currentPage + 1), "total" to totalPages))
         )
         
         // プレイヤーヘッドを配置
@@ -96,19 +96,19 @@ class SpectatorMenu(
         }
         
         val roleText = when (playerInfo.role) {
-            PlayerRole.RUNNER -> messageManager.getMessage("ja", "role.runner")
-            PlayerRole.HUNTER -> messageManager.getMessage("ja", "role.hunter")
-            else -> messageManager.getMessage("ja", "role.spectator")
+            PlayerRole.RUNNER -> messageManager.getMessage("role.runner")
+            PlayerRole.HUNTER -> messageManager.getMessage("role.hunter")
+            else -> messageManager.getMessage("role.spectator")
         }
         
         meta.setDisplayName("$roleColor${playerInfo.player.name}")
         
         val lore = mutableListOf<String>()
-        lore.add(messageManager.getMessage("ja", "spectate.lore.role", mapOf("roleColor" to roleColor, "role" to roleText)))
-        lore.add(messageManager.getMessage("ja", "spectate.lore.health", mapOf("health" to String.format("%.1f", playerInfo.player.health))))
-        lore.add(messageManager.getMessage("ja", "spectate.lore.world", mapOf("world" to playerInfo.player.world.name)))
+        lore.add(messageManager.getMessage("spectate.lore.role", mapOf("roleColor" to roleColor, "role" to roleText)))
+        lore.add(messageManager.getMessage("spectate.lore.health", mapOf("health" to String.format("%.1f", playerInfo.player.health))))
+        lore.add(messageManager.getMessage("spectate.lore.world", mapOf("world" to playerInfo.player.world.name)))
         lore.add("")
-        lore.add(messageManager.getMessage("ja", "spectate.lore.click-teleport"))
+        lore.add(messageManager.getMessage("spectate.lore.click-teleport"))
         
         meta.lore = lore
         item.itemMeta = meta
@@ -121,8 +121,8 @@ class SpectatorMenu(
         if (currentPage > 0) {
             val previousButton = ItemStack(Material.ARROW)
             val meta = previousButton.itemMeta
-            meta?.setDisplayName(messageManager.getMessage("ja", "spectate.button.previous-page"))
-            meta?.lore = listOf(messageManager.getMessage("ja", "spectate.button.to-page", mapOf("page" to currentPage)))
+            meta?.setDisplayName(messageManager.getMessage("spectate.button.previous-page"))
+            meta?.lore = listOf(messageManager.getMessage("spectate.button.to-page", mapOf("page" to currentPage)))
             previousButton.itemMeta = meta
             inventory.setItem(45, previousButton)
         }
@@ -131,8 +131,8 @@ class SpectatorMenu(
         if (currentPage < totalPages - 1) {
             val nextButton = ItemStack(Material.ARROW)
             val meta = nextButton.itemMeta
-            meta?.setDisplayName(messageManager.getMessage("ja", "spectate.button.next-page"))
-            meta?.lore = listOf(messageManager.getMessage("ja", "spectate.button.to-page", mapOf("page" to (currentPage + 2))))
+            meta?.setDisplayName(messageManager.getMessage("spectate.button.next-page"))
+            meta?.lore = listOf(messageManager.getMessage("spectate.button.to-page", mapOf("page" to (currentPage + 2))))
             nextButton.itemMeta = meta
             inventory.setItem(53, nextButton)
         }
@@ -140,13 +140,13 @@ class SpectatorMenu(
         // 情報アイテム
         val infoItem = ItemStack(Material.BOOK)
         val infoMeta = infoItem.itemMeta
-        infoMeta?.setDisplayName(messageManager.getMessage("ja", "spectate.info.title"))
+        infoMeta?.setDisplayName(messageManager.getMessage("spectate.info.title"))
         infoMeta?.lore = listOf(
-            messageManager.getMessage("ja", "spectate.info.description-1"),
-            messageManager.getMessage("ja", "spectate.info.description-2"),
+            messageManager.getMessage("spectate.info.description-1"),
+            messageManager.getMessage("spectate.info.description-2"),
             "",
-            messageManager.getMessage("ja", "spectate.info.runner-legend"),
-            messageManager.getMessage("ja", "spectate.info.hunter-legend")
+            messageManager.getMessage("spectate.info.runner-legend"),
+            messageManager.getMessage("spectate.info.hunter-legend")
         )
         infoItem.itemMeta = infoMeta
         inventory.setItem(49, infoItem)
@@ -154,15 +154,15 @@ class SpectatorMenu(
         // 閉じるボタン
         val closeButton = ItemStack(Material.BARRIER)
         val closeMeta = closeButton.itemMeta
-        closeMeta?.setDisplayName(messageManager.getMessage("ja", "spectate.button.close"))
+        closeMeta?.setDisplayName(messageManager.getMessage("spectate.button.close"))
         closeButton.itemMeta = closeMeta
         inventory.setItem(48, closeButton)
         
         // リフレッシュボタン
         val refreshButton = ItemStack(Material.COMPASS)
         val refreshMeta = refreshButton.itemMeta
-        refreshMeta?.setDisplayName(messageManager.getMessage("ja", "spectate.button.refresh"))
-        refreshMeta?.lore = listOf(messageManager.getMessage("ja", "spectate.button.refresh-description"))
+        refreshMeta?.setDisplayName(messageManager.getMessage("spectate.button.refresh"))
+        refreshMeta?.lore = listOf(messageManager.getMessage("spectate.button.refresh-description"))
         refreshButton.itemMeta = refreshMeta
         inventory.setItem(50, refreshButton)
     }
@@ -174,7 +174,7 @@ class SpectatorMenu(
         
         // メニュータイトルをチェック
         val view = event.view
-        if (!view.title.contains(messageManager.getMessage("ja", "spectate.menu-title"))) return
+        if (!view.title.contains(messageManager.getMessage("spectate.menu-title"))) return
         
         event.isCancelled = true
         

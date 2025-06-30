@@ -1,6 +1,7 @@
 package com.hacklab.manhunt
 
 import org.bukkit.entity.Player
+import org.bukkit.command.CommandSender
 import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.configuration.file.YamlConfiguration
 import java.io.File
@@ -137,14 +138,26 @@ class MessageManager(private val plugin: Main) {
     
     fun getMessage(player: Player?, key: String, vararg args: Any): String {
         val language = getPlayerLanguage(player)
-        return getMessage(language, key, *args)
-    }
-    
-    fun getMessage(language: String, key: String, vararg args: Any): String {
         val message = messages[language]?.get(key) 
             ?: messages[defaultLanguage]?.get(key)
             ?: run {
                 plugin.logger.warning("Missing message key: $key for language: $language (default: $defaultLanguage)")
+                plugin.logger.warning("Available languages: ${messages.keys}")
+                plugin.logger.warning("Available keys for $defaultLanguage: ${messages[defaultLanguage]?.keys?.take(5)}")
+                "§c[Missing message: $key]"
+            }
+        
+        return formatMessage(message, *args)
+    }
+    
+    fun getMessage(sender: CommandSender?, key: String, vararg args: Any): String {
+        return getMessage(sender as? Player, key, *args)
+    }
+    
+    fun getMessage(key: String, vararg args: Any): String {
+        val message = messages[defaultLanguage]?.get(key)
+            ?: run {
+                plugin.logger.warning("Missing message key: $key for default language: $defaultLanguage")
                 plugin.logger.warning("Available languages: ${messages.keys}")
                 plugin.logger.warning("Available keys for $defaultLanguage: ${messages[defaultLanguage]?.keys?.take(5)}")
                 "§c[Missing message: $key]"

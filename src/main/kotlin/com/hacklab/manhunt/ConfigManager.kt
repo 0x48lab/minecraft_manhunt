@@ -143,5 +143,5 @@ class ConfigManager(private val plugin: Main) {
     }
     
     // 言語設定を取得
-    fun getDefaultLanguage(): String = config.getString("language.default", "ja") ?: "ja"
+    fun getDefaultLanguage(): String = config.getString("language.default", "en") ?: "en"
 }

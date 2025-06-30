@@ -156,14 +156,14 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
                 // 意図的な退出の場合はSpectatorにする
                 setPlayerRole(player, PlayerRole.SPECTATOR)
                 player.sendMessage(messageManager.getMessage(player, "quit.changed-to-spectator"))
-                Bukkit.broadcastMessage(messageManager.getMessage("ja", "game-management.player-left-spectator", mapOf("player" to player.name)))
+                Bukkit.broadcastMessage(messageManager.getMessage("game-management.player-left-spectator", mapOf("player" to player.name)))
             } else {
                 // 切断の場合は元の役割を保存（ネットワークエラーの可能性）
                 playerRole?.let { role ->
                     disconnectedPlayers[player.uniqueId] = role
                     players.remove(player.uniqueId)
                     fixedHunters.remove(player.uniqueId)
-                    Bukkit.broadcastMessage(messageManager.getMessage("ja", "game-management.player-disconnected", mapOf("player" to player.name)))
+                    Bukkit.broadcastMessage(messageManager.getMessage("game-management.player-disconnected", mapOf("player" to player.name)))
                 }
             }
             
@@ -207,7 +207,7 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
             }
             
             player.sendMessage(messageManager.getMessage(player, "game-management.network-recovery", mapOf("role" to roleText)))
-            Bukkit.broadcastMessage(messageManager.getMessage("ja", "game-management.network-recovery-broadcast", mapOf("player" to player.name)))
+            Bukkit.broadcastMessage(messageManager.getMessage("game-management.network-recovery-broadcast", mapOf("player" to player.name)))
             return true
         }
         
@@ -374,7 +374,7 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
         val finalRunners = getAllRunners()
         if (finalHunters.isEmpty() || finalRunners.isEmpty()) {
             gameState = GameState.WAITING
-            Bukkit.broadcastMessage(messageManager.getMessage("ja", "game-management.start-cancelled-roles"))
+            Bukkit.broadcastMessage(messageManager.getMessage("game-management.start-cancelled-roles"))
             return
         }
     }
@@ -463,11 +463,11 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
         when {
             // 全ランナーが死亡またはゲームから退出した場合（即座に終了）
             totalRunners == 0 || aliveRunners.isEmpty() -> {
-                endGame(messageManager.getMessage("ja", "victory.hunter-elimination"))
+                endGame(messageManager.getMessage("victory.hunter-elimination"))
             }
             // 全ハンターが死亡またはゲームから退出した場合
             aliveHunters.isEmpty() -> {
-                endGame(messageManager.getMessage("ja", "victory.hunter-no-hunters"))
+                endGame(messageManager.getMessage("victory.hunter-no-hunters"))
             }
         }
     }
@@ -481,12 +481,12 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
         when (leftPlayerRole) {
             PlayerRole.RUNNER -> {
                 if (aliveRunners.isEmpty()) {
-                    endGame(messageManager.getMessage("ja", "victory.hunter-runners-left"))
+                    endGame(messageManager.getMessage("victory.hunter-runners-left"))
                 }
             }
             PlayerRole.HUNTER -> {
                 if (aliveHunters.isEmpty()) {
-                    endGame(messageManager.getMessage("ja", "victory.runner-hunters-left"))
+                    endGame(messageManager.getMessage("victory.runner-hunters-left"))
                 }
             }
             else -> {
@@ -497,7 +497,7 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
     
     fun onEnderDragonDeath(killer: Player?) {
         if (gameState == GameState.RUNNING && killer != null && getPlayerRole(killer) == PlayerRole.RUNNER) {
-            endGame(messageManager.getMessage("ja", "victory.runner-dragon"))
+            endGame(messageManager.getMessage("victory.runner-dragon"))
         }
     }
     
@@ -545,7 +545,7 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
         } catch (e: Exception) {
             plugin.logger.warning("リザルト表示でエラー: ${e.message}")
             // フォールバック: 従来のメッセージ表示
-            Bukkit.broadcastMessage(messageManager.getMessage("ja", "game.end"))
+            Bukkit.broadcastMessage(messageManager.getMessage("game.end"))
             Bukkit.broadcastMessage(message)
         }
         
@@ -701,7 +701,7 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
                 }
             }
             
-            Bukkit.broadcastMessage(messageManager.getMessage("ja", "game-management.players-teleported"))
+            Bukkit.broadcastMessage(messageManager.getMessage("game-management.players-teleported"))
             
         } catch (e: Exception) {
             plugin.logger.severe("Error during player teleportation: ${e.message}")
@@ -811,7 +811,7 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
             }
         }
         
-        Bukkit.broadcastMessage(messageManager.getMessage("ja", "game-management.inventory-cleared"))
+        Bukkit.broadcastMessage(messageManager.getMessage("game-management.inventory-cleared"))
     }
     
     // ======== 死亡・リスポン管理システム ========
@@ -864,7 +864,7 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
         
         // 死亡メッセージ
         player.sendMessage(messageManager.getMessage(player, "respawn-system.runner-death", mapOf("time" to respawnTime)))
-        Bukkit.broadcastMessage(messageManager.getMessage("ja", "respawn-system.runner-death-broadcast", mapOf("player" to player.name, "time" to respawnTime)))
+        Bukkit.broadcastMessage(messageManager.getMessage("respawn-system.runner-death-broadcast", mapOf("player" to player.name, "time" to respawnTime)))
         
         // リスポン待ち中はスペクテーターモードに変更
         Bukkit.getScheduler().runTaskLater(plugin, Runnable {
@@ -898,7 +898,7 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
                         player.gameMode = GameMode.SURVIVAL
                         
                         player.sendMessage(messageManager.getMessage(player, "respawn-system.runner-respawned"))
-                        Bukkit.broadcastMessage(messageManager.getMessage("ja", "respawn-system.runner-respawned-broadcast", mapOf("player" to player.name)))
+                        Bukkit.broadcastMessage(messageManager.getMessage("respawn-system.runner-respawned-broadcast", mapOf("player" to player.name)))
                         
                         // UIManager経由でタイトルクリア
                         try {
@@ -1005,7 +1005,7 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
         var remainingTime = countdownSeconds
         
         // カウントダウン開始メッセージ
-        Bukkit.broadcastMessage(messageManager.getMessage("ja", "game-management.start-countdown", mapOf("time" to countdownSeconds)))
+        Bukkit.broadcastMessage(messageManager.getMessage("game-management.start-countdown", mapOf("time" to countdownSeconds)))
         
         // 既存のカウントダウンタスクをキャンセル
         countdownTask?.cancel()
@@ -1020,8 +1020,8 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
                     
                     if (remainingTime > 0) {
                         // タイトルとサウンドでカウントダウン表示
-                        val title = messageManager.getMessage("ja", "game-management.start-title")
-                        val subtitle = messageManager.getMessage("ja", "game-management.start-subtitle", mapOf("time" to remainingTime))
+                        val title = messageManager.getMessage("game-management.start-title")
+                        val subtitle = messageManager.getMessage("game-management.start-subtitle", mapOf("time" to remainingTime))
                         
                         Bukkit.getOnlinePlayers().forEach { player ->
                             try {
@@ -1039,7 +1039,7 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
                         
                         // 最後の5秒はチャットでも表示
                         if (remainingTime <= 5) {
-                            Bukkit.broadcastMessage(messageManager.getMessage("ja", "game-management.countdown-final", mapOf("time" to remainingTime)))
+                            Bukkit.broadcastMessage(messageManager.getMessage("game-management.countdown-final", mapOf("time" to remainingTime)))
                         }
                         
                         remainingTime--
@@ -1092,9 +1092,9 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
         
         // Broadcast game start
         Bukkit.broadcastMessage(configManager.getGameStartMessage())
-        Bukkit.broadcastMessage(messageManager.getMessage("ja", "game-start-role.runner"))
-        Bukkit.broadcastMessage(messageManager.getMessage("ja", "game-start-role.hunter"))
-        Bukkit.broadcastMessage(messageManager.getMessage("ja", "game-start-role.spectator"))
+        Bukkit.broadcastMessage(messageManager.getMessage("game-start-role.runner"))
+        Bukkit.broadcastMessage(messageManager.getMessage("game-start-role.hunter"))
+        Bukkit.broadcastMessage(messageManager.getMessage("game-start-role.spectator"))
         
         // Start proximity checking
         startProximityChecking()

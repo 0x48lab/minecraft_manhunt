@@ -106,124 +106,120 @@ class ManhuntCommand(
     }
     
     private fun handleStatus(sender: CommandSender) {
-        val lang = if (sender is Player) messageManager.getPlayerLanguage(sender) else "ja"
         val state = when (gameManager.getGameState()) {
-            GameState.WAITING -> messageManager.getMessage(lang, "command-interface.status-waiting")
-            GameState.STARTING -> messageManager.getMessage(lang, "command-interface.status-starting")
-            GameState.RUNNING -> messageManager.getMessage(lang, "command-interface.status-running")
-            GameState.ENDED -> messageManager.getMessage(lang, "command-interface.status-ended")
+            GameState.WAITING -> messageManager.getMessage("command-interface.status-waiting")
+            GameState.STARTING -> messageManager.getMessage("command-interface.status-starting")
+            GameState.RUNNING -> messageManager.getMessage("command-interface.status-running")
+            GameState.ENDED -> messageManager.getMessage("command-interface.status-ended")
         }
         
         val hunters = gameManager.getAllHunters()
         val runners = gameManager.getAllRunners()
         val spectators = gameManager.getAllSpectators()
         
-        sender.sendMessage(messageManager.getMessage(lang, "command-interface.status-game-header"))
-        sender.sendMessage(messageManager.getMessage(lang, "command-interface.status-game-state", mapOf("state" to state)))
-        sender.sendMessage(messageManager.getMessage(lang, "command-interface.status-min-players", mapOf("count" to gameManager.getMinPlayers())))
-        sender.sendMessage(messageManager.getMessage(lang, "command-interface.status-runners-list", mapOf("count" to runners.size, "players" to if (runners.isNotEmpty()) runners.map { it.name } else "")))
-        sender.sendMessage(messageManager.getMessage(lang, "command-interface.status-hunters-list", mapOf("count" to hunters.size, "players" to if (hunters.isNotEmpty()) hunters.map { it.name } else "")))
-        sender.sendMessage(messageManager.getMessage(lang, "command-interface.status-spectators-list", mapOf("count" to spectators.size, "players" to if (spectators.isNotEmpty()) spectators.map { it.name } else "")))
+        sender.sendMessage(messageManager.getMessage("command-interface.status-game-header"))
+        sender.sendMessage(messageManager.getMessage("command-interface.status-game-state", mapOf("state" to state)))
+        sender.sendMessage(messageManager.getMessage("command-interface.status-min-players", mapOf("count" to gameManager.getMinPlayers())))
+        sender.sendMessage(messageManager.getMessage("command-interface.status-runners-list", mapOf("count" to runners.size, "players" to if (runners.isNotEmpty()) runners.map { it.name } else "")))
+        sender.sendMessage(messageManager.getMessage("command-interface.status-hunters-list", mapOf("count" to hunters.size, "players" to if (hunters.isNotEmpty()) hunters.map { it.name } else "")))
+        sender.sendMessage(messageManager.getMessage("command-interface.status-spectators-list", mapOf("count" to spectators.size, "players" to if (spectators.isNotEmpty()) spectators.map { it.name } else "")))
         
         // 開始条件のチェック状況
         val totalPlayers = hunters.size + runners.size + spectators.size
-        sender.sendMessage(messageManager.getMessage(lang, "command-interface.status-total-players", mapOf("count" to totalPlayers)))
+        sender.sendMessage(messageManager.getMessage("command-interface.status-total-players", mapOf("count" to totalPlayers)))
         
         if (gameManager.getGameState() == GameState.WAITING) {
             val canStart = totalPlayers >= gameManager.getMinPlayers() && hunters.isNotEmpty() && runners.isNotEmpty()
-            sender.sendMessage(messageManager.getMessage(lang, "command-interface.status-can-start", mapOf("status" to if (canStart) "§a✓" else "§c✗")))
+            sender.sendMessage(messageManager.getMessage("command-interface.status-can-start", mapOf("status" to if (canStart) "§a✓" else "§c✗")))
             
             if (!canStart) {
                 if (totalPlayers < gameManager.getMinPlayers()) {
-                    sender.sendMessage(messageManager.getMessage(lang, "status-detail.insufficient-players", mapOf("current" to totalPlayers, "required" to gameManager.getMinPlayers())))
+                    sender.sendMessage(messageManager.getMessage("status-detail.insufficient-players", mapOf("current" to totalPlayers, "required" to gameManager.getMinPlayers())))
                 }
                 if (hunters.isEmpty()) {
-                    sender.sendMessage(messageManager.getMessage(lang, "status-detail.insufficient-hunters"))
+                    sender.sendMessage(messageManager.getMessage("status-detail.insufficient-hunters"))
                 }
                 if (runners.isEmpty()) {
-                    sender.sendMessage(messageManager.getMessage(lang, "status-detail.insufficient-runners"))
+                    sender.sendMessage(messageManager.getMessage("status-detail.insufficient-runners"))
                 }
             }
         }
     }
     
     private fun handleSetHunter(sender: CommandSender, args: Array<out String>) {
-        val lang = if (sender is Player) messageManager.getPlayerLanguage(sender) else "ja"
         if (!sender.hasPermission("manhunt.admin")) {
-            sender.sendMessage(messageManager.getMessage(lang, "command-interface.admin-no-permission"))
+            sender.sendMessage(messageManager.getMessage("command-interface.admin-no-permission"))
             return
         }
         
         if (args.size < 2) {
-            sender.sendMessage(messageManager.getMessage(lang, "command-interface.sethunter-usage"))
+            sender.sendMessage(messageManager.getMessage("command-interface.sethunter-usage"))
             return
         }
         
         val playerName = args[1]
         if (playerName.isBlank()) {
-            sender.sendMessage(messageManager.getMessage(lang, "admin.player-name-required"))
+            sender.sendMessage(messageManager.getMessage("admin.player-name-required"))
             return
         }
         
         val targetPlayer = Bukkit.getPlayer(playerName)
         if (targetPlayer == null || !targetPlayer.isOnline) {
-            sender.sendMessage(messageManager.getMessage(lang, "admin.player-not-found", mapOf("player" to playerName)))
+            sender.sendMessage(messageManager.getMessage("admin.player-not-found", mapOf("player" to playerName)))
             return
         }
         
         if (gameManager.getGameState() != GameState.WAITING) {
-            sender.sendMessage(messageManager.getMessage(lang, "role.game-running"))
+            sender.sendMessage(messageManager.getMessage("role.game-running"))
             return
         }
         
         gameManager.setPlayerRole(targetPlayer, PlayerRole.HUNTER)
-        sender.sendMessage(messageManager.getMessage(lang, "command-interface.sethunter-success", mapOf("player" to targetPlayer.name)))
+        sender.sendMessage(messageManager.getMessage("command-interface.sethunter-success", mapOf("player" to targetPlayer.name)))
         targetPlayer.sendMessage(messageManager.getMessage(targetPlayer, "command-interface.sethunter-notify"))
     }
     
     private fun handleMinPlayers(sender: CommandSender, args: Array<out String>) {
-        val lang = if (sender is Player) messageManager.getPlayerLanguage(sender) else "ja"
         if (!sender.hasPermission("manhunt.admin")) {
-            sender.sendMessage(messageManager.getMessage(lang, "command-interface.admin-no-permission"))
+            sender.sendMessage(messageManager.getMessage("command-interface.admin-no-permission"))
             return
         }
         
         if (args.size < 2) {
-            sender.sendMessage(messageManager.getMessage(lang, "command-interface.minplayers-current", mapOf("count" to gameManager.getMinPlayers())))
-            sender.sendMessage(messageManager.getMessage(lang, "command-interface.minplayers-change"))
+            sender.sendMessage(messageManager.getMessage("command-interface.minplayers-current", mapOf("count" to gameManager.getMinPlayers())))
+            sender.sendMessage(messageManager.getMessage("command-interface.minplayers-change"))
             return
         }
         
         val countStr = args[1]
         if (countStr.isBlank()) {
-            sender.sendMessage(messageManager.getMessage(lang, "admin.input-required"))
+            sender.sendMessage(messageManager.getMessage("admin.input-required"))
             return
         }
         
         val count = countStr.toIntOrNull()
         if (count == null) {
-            sender.sendMessage(messageManager.getMessage(lang, "admin.invalid-number", mapOf("input" to countStr)))
+            sender.sendMessage(messageManager.getMessage("admin.invalid-number", mapOf("input" to countStr)))
             return
         }
         
         if (count < 2) {
-            sender.sendMessage(messageManager.getMessage(lang, "admin.min-players-too-low"))
+            sender.sendMessage(messageManager.getMessage("admin.min-players-too-low"))
             return
         }
         
         if (count > 100) {
-            sender.sendMessage(messageManager.getMessage(lang, "admin.min-players-too-high"))
+            sender.sendMessage(messageManager.getMessage("admin.min-players-too-high"))
             return
         }
         
         gameManager.setMinPlayers(count)
-        sender.sendMessage(messageManager.getMessage(lang, "command-interface.minplayers-set", mapOf("count" to count)))
+        sender.sendMessage(messageManager.getMessage("command-interface.minplayers-set", mapOf("count" to count)))
     }
     
     private fun handleReload(sender: CommandSender, args: Array<out String>) {
-        val lang = if (sender is Player) messageManager.getPlayerLanguage(sender) else "ja"
         if (!sender.hasPermission("manhunt.admin")) {
-            sender.sendMessage(messageManager.getMessage(lang, "command-interface.admin-no-permission"))
+            sender.sendMessage(messageManager.getMessage("command-interface.admin-no-permission"))
             return
         }
         
@@ -232,62 +228,61 @@ class ManhuntCommand(
         try {
             when (reloadType) {
                 "config" -> {
-                    sender.sendMessage(messageManager.getMessage(lang, "reload.config-start"))
+                    sender.sendMessage(messageManager.getMessage("reload.config-start"))
                     gameManager.configManager.reloadConfig()
-                    sender.sendMessage(messageManager.getMessage(lang, "reload.config-complete"))
+                    sender.sendMessage(messageManager.getMessage("reload.config-complete"))
                 }
                 "shop" -> {
-                    sender.sendMessage(messageManager.getMessage(lang, "reload.shop-start"))
+                    sender.sendMessage(messageManager.getMessage("reload.shop-start"))
                     gameManager.getPlugin().getShopManager().reloadShopConfig()
-                    sender.sendMessage(messageManager.getMessage(lang, "reload.shop-complete"))
+                    sender.sendMessage(messageManager.getMessage("reload.shop-complete"))
                 }
                 "all" -> {
-                    sender.sendMessage(messageManager.getMessage(lang, "reload.all-start"))
+                    sender.sendMessage(messageManager.getMessage("reload.all-start"))
                     gameManager.configManager.reloadConfig()
                     gameManager.getPlugin().getShopManager().reloadShopConfig()
-                    sender.sendMessage(messageManager.getMessage(lang, "reload.all-complete"))
+                    sender.sendMessage(messageManager.getMessage("reload.all-complete"))
                 }
                 else -> {
-                    sender.sendMessage(messageManager.getMessage(lang, "reload.usage"))
+                    sender.sendMessage(messageManager.getMessage("reload.usage"))
                     return
                 }
             }
-            sender.sendMessage(messageManager.getMessage(lang, "reload.note"))
+            sender.sendMessage(messageManager.getMessage("reload.note"))
         } catch (e: Exception) {
-            sender.sendMessage(messageManager.getMessage(lang, "reload.failed", mapOf("error" to (e.message ?: "Unknown error"))))
+            sender.sendMessage(messageManager.getMessage("reload.failed", mapOf("error" to (e.message ?: "Unknown error"))))
         }
     }
     
     private fun handleUI(sender: CommandSender, args: Array<out String>) {
-        val lang = if (sender is Player) messageManager.getPlayerLanguage(sender) else "ja"
         if (!sender.hasPermission("manhunt.admin")) {
-            sender.sendMessage(messageManager.getMessage(lang, "command-interface.admin-no-permission"))
+            sender.sendMessage(messageManager.getMessage("command-interface.admin-no-permission"))
             return
         }
         
         if (args.size < 2) {
-            sender.sendMessage(messageManager.getMessage(lang, "ui-settings.usage"))
+            sender.sendMessage(messageManager.getMessage("ui-settings.usage"))
             return
         }
         
         when (args[1].lowercase()) {
             "status" -> {
-                sender.sendMessage(messageManager.getMessage(lang, "ui-settings.header"))
-                val scoreboardStatus = if (configManager.isScoreboardEnabled()) messageManager.getMessage(lang, "ui-settings.enabled") else messageManager.getMessage(lang, "ui-settings.disabled")
-                val actionbarStatus = if (configManager.isActionBarEnabled()) messageManager.getMessage(lang, "ui-settings.enabled") else messageManager.getMessage(lang, "ui-settings.disabled")
-                val bossbarStatus = if (configManager.isBossBarEnabled()) messageManager.getMessage(lang, "ui-settings.enabled") else messageManager.getMessage(lang, "ui-settings.disabled")
-                val titleStatus = if (configManager.isTitleEnabled()) messageManager.getMessage(lang, "ui-settings.enabled") else messageManager.getMessage(lang, "ui-settings.disabled")
-                sender.sendMessage(messageManager.getMessage(lang, "ui-settings.scoreboard", mapOf("status" to scoreboardStatus)))
-                sender.sendMessage(messageManager.getMessage(lang, "ui-settings.actionbar", mapOf("status" to actionbarStatus)))
-                sender.sendMessage(messageManager.getMessage(lang, "ui-settings.bossbar", mapOf("status" to bossbarStatus)))
-                sender.sendMessage(messageManager.getMessage(lang, "ui-settings.title", mapOf("status" to titleStatus)))
+                sender.sendMessage(messageManager.getMessage("ui-settings.header"))
+                val scoreboardStatus = if (configManager.isScoreboardEnabled()) messageManager.getMessage("ui-settings.enabled") else messageManager.getMessage("ui-settings.disabled")
+                val actionbarStatus = if (configManager.isActionBarEnabled()) messageManager.getMessage("ui-settings.enabled") else messageManager.getMessage("ui-settings.disabled")
+                val bossbarStatus = if (configManager.isBossBarEnabled()) messageManager.getMessage("ui-settings.enabled") else messageManager.getMessage("ui-settings.disabled")
+                val titleStatus = if (configManager.isTitleEnabled()) messageManager.getMessage("ui-settings.enabled") else messageManager.getMessage("ui-settings.disabled")
+                sender.sendMessage(messageManager.getMessage("ui-settings.scoreboard", mapOf("status" to scoreboardStatus)))
+                sender.sendMessage(messageManager.getMessage("ui-settings.actionbar", mapOf("status" to actionbarStatus)))
+                sender.sendMessage(messageManager.getMessage("ui-settings.bossbar", mapOf("status" to bossbarStatus)))
+                sender.sendMessage(messageManager.getMessage("ui-settings.title", mapOf("status" to titleStatus)))
             }
             "toggle" -> {
-                sender.sendMessage(messageManager.getMessage(lang, "ui-settings.config-note"))
-                sender.sendMessage(messageManager.getMessage(lang, "ui-settings.reload-note"))
+                sender.sendMessage(messageManager.getMessage("ui-settings.config-note"))
+                sender.sendMessage(messageManager.getMessage("ui-settings.reload-note"))
             }
             else -> {
-                sender.sendMessage(messageManager.getMessage(lang, "ui-settings.usage"))
+                sender.sendMessage(messageManager.getMessage("ui-settings.usage"))
             }
         }
     }
@@ -312,34 +307,33 @@ class ManhuntCommand(
     
     
     private fun showHelp(sender: CommandSender) {
-        val lang = if (sender is Player) messageManager.getPlayerLanguage(sender) else "ja"
-        sender.sendMessage(messageManager.getMessage(lang, "command-interface.help-commands-header"))
-        sender.sendMessage(messageManager.getMessage(lang, "command-interface.help-role-change"))
-        sender.sendMessage(messageManager.getMessage(lang, "command-interface.help-role-menu"))
-        sender.sendMessage(messageManager.getMessage(lang, "command-interface.help-compass-activate"))
-        sender.sendMessage(messageManager.getMessage(lang, "command-interface.help-status-check"))
-        sender.sendMessage(messageManager.getMessage(lang, "command-interface.help-spectate-menu"))
-        sender.sendMessage(messageManager.getMessage(lang, "command-interface.help-note"))
+        sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-commands-header"))
+        sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-role-change"))
+        sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-role-menu"))
+        sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-compass-activate"))
+        sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-status-check"))
+        sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-spectate-menu"))
+        sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-note"))
         sender.sendMessage("")
-        sender.sendMessage(messageManager.getMessage(lang, "command-interface.help-other-commands"))
-        sender.sendMessage(messageManager.getMessage(lang, "command-interface.help-teamchat"))
-        sender.sendMessage(messageManager.getMessage(lang, "command-interface.help-position"))
-        sender.sendMessage(messageManager.getMessage(lang, "command-interface.help-shop-open"))
-        sender.sendMessage(messageManager.getMessage(lang, "command-interface.help-shop-balance"))
+        sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-other-commands"))
+        sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-teamchat"))
+        sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-position"))
+        sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-shop-open"))
+        sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-shop-balance"))
         sender.sendMessage("")
-        sender.sendMessage(messageManager.getMessage(lang, "command-interface.help-virtual-compass"))
-        sender.sendMessage(messageManager.getMessage(lang, "command-interface.help-compass-usage"))
-        sender.sendMessage(messageManager.getMessage(lang, "command-interface.help-compass-display"))
-        sender.sendMessage(messageManager.getMessage(lang, "command-interface.help-compass-benefits"))
+        sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-virtual-compass"))
+        sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-compass-usage"))
+        sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-compass-display"))
+        sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-compass-benefits"))
         
         if (sender.hasPermission("manhunt.admin")) {
             sender.sendMessage("")
-            sender.sendMessage(messageManager.getMessage(lang, "command-interface.help-admin-commands"))
-            sender.sendMessage(messageManager.getMessage(lang, "command-interface.help-admin-start"))
-            sender.sendMessage(messageManager.getMessage(lang, "command-interface.help-admin-sethunter"))
-            sender.sendMessage(messageManager.getMessage(lang, "command-interface.help-admin-minplayers"))
-            sender.sendMessage(messageManager.getMessage(lang, "command-interface.help-admin-reload"))
-            sender.sendMessage(messageManager.getMessage(lang, "command-interface.help-admin-ui"))
+            sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-admin-commands"))
+            sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-admin-start"))
+            sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-admin-sethunter"))
+            sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-admin-minplayers"))
+            sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-admin-reload"))
+            sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-admin-ui"))
         }
     }
     

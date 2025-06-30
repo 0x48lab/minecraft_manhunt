@@ -358,8 +358,8 @@ class ShopManager(
     private fun createBackButton(): ItemStack {
         val item = ItemStack(Material.ARROW)
         val meta = item.itemMeta!!
-        meta.setDisplayName(messageManager.getMessage("ja", "shop-extended.buttons.back"))
-        meta.lore = listOf(messageManager.getMessage("ja", "shop-extended.buttons.back-description"))
+        meta.setDisplayName(messageManager.getMessage("shop-extended.buttons.back"))
+        meta.lore = listOf(messageManager.getMessage("shop-extended.buttons.back-description"))
         item.itemMeta = meta
         return item
     }
@@ -367,7 +367,7 @@ class ShopManager(
     private fun createCloseButton(): ItemStack {
         val item = ItemStack(Material.BARRIER)
         val meta = item.itemMeta!!
-        meta.setDisplayName(messageManager.getMessage("ja", "shop-extended.buttons.close"))
+        meta.setDisplayName(messageManager.getMessage("shop-extended.buttons.close"))
         item.itemMeta = meta
         return item
     }
