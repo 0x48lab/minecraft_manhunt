@@ -117,8 +117,8 @@ class ConfigManager(private val plugin: Main) {
         val economySection = config.getConfigurationSection("economy") ?: return CurrencyConfig()
         
         return CurrencyConfig(
-            // ハンター設定
-            hunterDamageReward = economySection.getInt("hunter.damage-reward", 50),
+            // ハンター設定（config.ymlの実際の値に合わせてデフォルト値を修正）
+            hunterDamageReward = economySection.getInt("hunter.damage-reward", 55),
             hunterKillReward = economySection.getInt("hunter.kill-reward", 500),
             hunterProximityReward = economySection.getInt("hunter.proximity-reward", 100),
             hunterProximityDistance = economySection.getInt("hunter.proximity-distance", 50),
@@ -135,10 +135,10 @@ class ConfigManager(private val plugin: Main) {
             runnerEscapeReward = economySection.getInt("runner.escape-reward", 50),
             runnerEscapeDistance = economySection.getInt("runner.escape-distance", 100),
             
-            // 共通設定
+            // 共通設定（config.ymlの実際の値に合わせてデフォルト値を修正）
             startingBalance = economySection.getInt("starting-balance", 0),
             maxBalance = economySection.getInt("max-balance", 999999),
-            currencyUnit = economySection.getString("currency-unit", "g") ?: "g"
+            currencyUnit = economySection.getString("currency-unit", "G") ?: "G"
         )
     }
     
