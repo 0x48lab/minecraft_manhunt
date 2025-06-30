@@ -253,7 +253,7 @@ class UIManager(
             
             "X:$xSign$deltaX Y:$ySign$deltaY Z:$zSign$deltaZ"
         } catch (e: Exception) {
-            "座標取得エラー"
+            messageManager.getMessage("ui.coordinate-error")
         }
     }
     

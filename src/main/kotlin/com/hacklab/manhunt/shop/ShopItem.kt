@@ -25,11 +25,11 @@ data class ShopItem(
 /**
  * ショップカテゴリー
  */
-enum class ShopCategory(val displayName: String, val icon: Material) {
-    WEAPONS("武器", Material.IRON_SWORD),
-    ARMOR("防具", Material.IRON_CHESTPLATE),
-    TOOLS("ツール", Material.IRON_PICKAXE),
-    CONSUMABLES("消耗品", Material.POTION),
-    FOOD("食料", Material.COOKED_BEEF),
-    SPECIAL("特殊", Material.NETHER_STAR)
+enum class ShopCategory(val messageKey: String, val icon: Material) {
+    WEAPONS("shop-extended.categories.weapons", Material.IRON_SWORD),
+    ARMOR("shop-extended.categories.armor", Material.IRON_CHESTPLATE),
+    TOOLS("shop-extended.categories.tools", Material.IRON_PICKAXE),
+    CONSUMABLES("shop-extended.categories.consumables", Material.POTION),
+    FOOD("shop-extended.categories.food", Material.COOKED_BEEF),
+    SPECIAL("shop-extended.categories.special", Material.NETHER_STAR)
 }

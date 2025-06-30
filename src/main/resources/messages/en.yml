@@ -1,7 +1,7 @@
 game:
   start: '§6[Manhunt] Game Started!'
   end: '§6[Manhunt] Game Ended!'
-  reset: '§7Game has been reset.'
+  reset: '§6[Manhunt] New game is ready!'
   hunter-win: '§cHunters Win! All runners have been eliminated!'
   runner-win: '§aRunners Win! The Ender Dragon has been defeated!'
   hunter-start: '§c[Hunter] Chase the runners!'
@@ -98,12 +98,23 @@ ui:
     hunter: '§c🗡 Hunter'
     runner: '§a🏃 Runner'
     spectator: '§7👁 Spectator'
+  coordinate-error: 'Coordinate Error'
+  title:
+    manhunt: '§6🏃 MANHUNT'
+    manhunt-welcome: '§e🎮 MANHUNT'
+    game-running-spectator: '§7Game in progress - Spectator mode'
+    role-selection: '§fUse /manhunt role to select your role!'
 
 # Virtual Compass Messages
 virtual-compass:
   target-switch: '§eTarget Switch'
   compass-restored: '§aTracking compass has been restored'
   already-have-pickup: '§eCannot pick up compass - you already have one'
+  name: '§6Virtual Tracking Compass'
+  lore:
+    - '§7Right-click to switch targets'
+    - '§7Track runners'' positions'
+    - '§8※Compass required - no duplicates'
 command:
   player-only: '§cThis command can only be executed by players.'
   no-permission: '§cYou don''t have permission to execute this command.'
@@ -128,10 +139,6 @@ proximity:
   level-1: '§c§l[WARNING] Hunter within 1 chunk!'
   level-2: '§6§l[WARNING] Hunter within 2 chunks!'
   level-3: '§e§l[WARNING] Hunter within 3 chunks!'
-ui:
-  hunter-mode: '🗡 Hunter Mode | Nearest Target: {target} ({distance}m)'
-  runner-mode: '🏃 Runner Mode | Defeat the Ender Dragon!'
-  spectator-mode: '👁 Spectator Mode | Watching the game...'
 help:
   header: '§6=== Manhunt Commands ==='
   role: '§e/manhunt role <runner|hunter|spectator> - Change role'
@@ -180,13 +187,6 @@ respawn:
   runner-success: '§a[Runner] Respawned! Defeat the Ender Dragon.'
   countdown: '§c[Respawn] {time} seconds remaining...'
   countdown-final: '§e§l{time}...'
-
-ui:
-  title:
-    manhunt: '§6🏃 MANHUNT'
-    manhunt-welcome: '§e🎮 MANHUNT'
-    game-running-spectator: '§7Game in progress - Spectator mode'
-    role-selection: '§fUse /manhunt role to select your role!'
 
 # ManhuntCommand related
 admin:
@@ -526,15 +526,15 @@ result:
     
     # Hunter personal stats
     hunter:
-      kd-stats: '  §7• Kills: §e{kills} §7| Deaths: §c{deaths} §7| K/D: §6{kd}'
-      damage-stats: '  §7• Damage Dealt: §c{dealt} §7| Damage Taken: §4{taken}'
-      currency-stats: '  §7• Currency: §6Earned {earned}G §7| §eSpent {spent}G §7| §bPurchased {items} items'
+      kill-death: '  §7• Kills: §e{kills} §7| Deaths: §c{deaths} §7| K/D: §6{kd}'
+      damage: '  §7• Damage Dealt: §c{dealt} §7| Damage Taken: §4{taken}'
+      currency: '  §7• Currency: §6Earned {earned}G §7| §eSpent {spent}G §7| §bPurchased {items} items'
     
     # Runner personal stats
     runner:
-      survival-stats: '  §7• Survival Time: §b{survival} §7| Deaths: §c{deaths}'
-      exploration-stats: '  §7• Exploration: §5{dimensions} dimensions §7| Diamonds: §b{diamonds} §7| Escapes: §a{escapes}'
-      currency-stats: '  §7• Currency: §6Earned {earned}G §7| §eSpent {spent}G §7| §bPurchased {items} items'
+      survival: '  §7• Survival Time: §b{survival} §7| Deaths: §c{deaths}'
+      exploration: '  §7• Exploration: §5{dimensions} dimensions §7| Diamonds: §b{diamonds} §7| Escapes: §a{escapes}'
+      currency: '  §7• Currency: §6Earned {earned}G §7| §eSpent {spent}G §7| §bPurchased {items} items'
     
     # Spectator stats
     spectator-stats: '  §7• Participated as spectator'
@@ -680,6 +680,55 @@ shop-extended:
     consumables: 'Consumables'
     food: 'Food'
     special: 'Special'
+  
+  # Shop Items
+  items:
+    iron_sword:
+      name: '§fIron Sword'
+      description:
+        - '§7Practical iron sword'
+        - '§7Attack damage: 6'
+        - '§7High durability'
+    golden_sword:
+      name: '§6Golden Sword'
+      description:
+        - '§7Lightweight and fast sword'
+        - '§7Attack damage: 4'
+        - '§cLow durability'
+    diamond_sword:
+      name: '§bDiamond Sword'
+      description:
+        - '§7Powerful diamond sword'
+        - '§7Attack damage: 7'
+    netherite_sword:
+      name: '§5Netherite Sword'
+      description:
+        - '§7The strongest sword'
+        - '§7Attack damage: 8'
+        - '§c※Top grade'
+    iron_axe:
+      name: '§fIron Axe'
+      description:
+        - '§7High attack power axe'
+        - '§7Attack damage: 9'
+        - '§7High durability'
+    diamond_axe:
+      name: '§bDiamond Axe'
+      description:
+        - '§7Powerful attack power'
+        - '§7Attack damage: 9'
+    netherite_axe:
+      name: '§5Netherite Axe'
+      description:
+        - '§7The strongest axe'
+        - '§7Attack damage: 10'
+        - '§c※Top grade'
+    trident:
+      name: '§3Trident'
+      description:
+        - '§7Throwable weapon'
+        - '§7Attack damage: 9'
+        - '§7Long-range attack possible'
   
   # Log messages
   log:

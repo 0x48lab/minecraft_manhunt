@@ -34,15 +34,6 @@ class ConfigManager(private val plugin: Main) {
     // 距離表示設定
     fun getMinimumDisplayDistance(): Int = config.getInt("ui.distance-display.minimum-distance", 5)
     
-    // メッセージ設定
-    fun getGameStartMessage(): String = config.getString("messages.game-start") ?: "§6[Manhunt] ゲーム開始！"
-    fun getHunterWinMessage(): String = config.getString("messages.hunter-win") ?: "§c追う人の勝利！逃げる人を全員倒しました！"
-    fun getRunnerWinMessage(): String = config.getString("messages.runner-win") ?: "§a逃げる人の勝利！エンダードラゴンを倒しました！"
-    fun getGameResetMessage(): String = config.getString("messages.game-reset") ?: "§6[Manhunt] 新しいゲームの準備ができました！"
-    
-    fun getProximityWarningLevel1(): String = config.getString("messages.proximity-warnings.level-1") ?: "§c§l[警告] 追う人が1チャンク以内にいます！"
-    fun getProximityWarningLevel2(): String = config.getString("messages.proximity-warnings.level-2") ?: "§6§l[警告] 追う人が2チャンク以内にいます！"
-    fun getProximityWarningLevel3(): String = config.getString("messages.proximity-warnings.level-3") ?: "§e§l[警告] 追う人が3チャンク以内にいます！"
     
     // 設定値の検証と修正
     fun validateAndFixConfig() {

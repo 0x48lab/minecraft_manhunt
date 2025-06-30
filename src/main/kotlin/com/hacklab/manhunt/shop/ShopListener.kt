@@ -36,12 +36,20 @@ class ShopListener(
         
         // ショップインベントリかチェック
         val title = event.view.title
-        if (!title.startsWith("§6§lショップ")) return
+        val messageManager = plugin.getMessageManager()
+        val categoryTitle = messageManager.getMessage("shop-extended.menu.category-title")
+        
+        // タイトルがショップ関連かチェック（より柔軟に）
+        val isShopInventory = title.contains(categoryTitle) || 
+                            title.contains("Shop") || 
+                            title.contains("ショップ")
+        
+        if (!isShopInventory) return
         
         event.isCancelled = true
         
         // カテゴリ選択メニューの場合
-        if (title.contains("カテゴリ選択")) {
+        if (title.contains(categoryTitle) || title.contains("Category") || title.contains("カテゴリ")) {
             handleCategorySelection(player, clickedItem)
             return
         }

@@ -110,7 +110,8 @@ class VirtualCompass(
         val newItem = player.inventory.getItem(event.newSlot)
         if (newItem?.type == Material.COMPASS) {
             val meta = newItem.itemMeta
-            if (meta?.displayName?.contains("追跡") == true) {
+            val compassName = messageManager.getMessage("virtual-compass.name")
+            if (meta?.displayName == compassName) {
                 // ActionBarでヒントを表示
                 val hintMessage = messageManager.getMessage(player, "compass.actionbar-hint")
                 player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent(hintMessage))
@@ -323,12 +324,13 @@ class VirtualCompass(
             // 追跡コンパスを一時保存
             var savedCompass: org.bukkit.inventory.ItemStack? = null
             
+            val compassName = messageManager.getMessage("virtual-compass.name")
             val iterator = event.drops.iterator()
             while (iterator.hasNext()) {
                 val item = iterator.next()
                 if (item.type == Material.COMPASS) {
                     val meta = item.itemMeta
-                    if (meta?.displayName?.contains("追跡") == true) {
+                    if (meta?.displayName == compassName) {
                         savedCompass = item.clone()
                         iterator.remove() // ドロップから削除
                         break
@@ -357,7 +359,8 @@ class VirtualCompass(
         // 追跡コンパスの拾得を制限
         if (item.type == Material.COMPASS) {
             val meta = item.itemMeta
-            if (meta?.displayName?.contains("追跡") == true) {
+            val compassName = messageManager.getMessage("virtual-compass.name")
+            if (meta?.displayName == compassName) {
                 // ハンター以外は拾えない
                 if (gameManager.getPlayerRole(player) != PlayerRole.HUNTER) {
                     event.isCancelled = true
@@ -371,7 +374,7 @@ class VirtualCompass(
                 for (invItem in inventory.contents) {
                     if (invItem?.type == Material.COMPASS) {
                         val invMeta = invItem.itemMeta
-                        if (invMeta?.displayName?.contains("追跡") == true) {
+                        if (invMeta?.displayName == compassName) {
                             compassCount++
                         }
                     }

@@ -3,16 +3,11 @@
 
 # ショップアイテム定義
 items:
-  # 武器カテゴリ - 剣
+  # 武器カテゴリ - 剣（言語データはmessages/から取得）
   iron_sword:
-    display-name: "§f鉄の剣"
     material: "IRON_SWORD"
     price: 800
     category: "WEAPONS"
-    description:
-      - "§7実用的な鉄の剣"
-      - "§7攻撃力: 6"
-      - "§7高い耐久性"
     allowed-roles:
       - "HUNTER"
       - "RUNNER"
@@ -622,22 +617,17 @@ items:
     max-purchases: 1
 
 # カテゴリ設定
+# display-nameを削除することで、MessageManagerから多言語対応の名前を取得
 categories:
   WEAPONS:
-    display-name: "武器"
     icon: "IRON_SWORD"
   ARMOR:
-    display-name: "防具"
     icon: "IRON_CHESTPLATE"
   TOOLS:
-    display-name: "ツール"
     icon: "IRON_PICKAXE"
   CONSUMABLES:
-    display-name: "消耗品"
     icon: "POTION"
   FOOD:
-    display-name: "食料"
     icon: "COOKED_BEEF"
   SPECIAL:
-    display-name: "特殊"
     icon: "NETHER_STAR"

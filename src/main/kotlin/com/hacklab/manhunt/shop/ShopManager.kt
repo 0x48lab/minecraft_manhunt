@@ -108,7 +108,7 @@ class ShopManager(
             if (hasItemsInCategory(role, category)) {
                 // 設定ファイルからカテゴリ情報を取得、なければデフォルト値
                 val categoryConfig = categories[category]
-                val displayName = categoryConfig?.displayName ?: category.displayName
+                val displayName = categoryConfig?.displayName ?: messageManager.getMessage(category.messageKey)
                 val icon = categoryConfig?.icon ?: category.icon
                 
                 val item = ItemStack(icon)
@@ -137,7 +137,7 @@ class ShopManager(
     private fun createCategoryShop(player: Player, role: PlayerRole, category: ShopCategory): Inventory {
         val items = getItemsForCategory(role, category)
         val size = ((items.size - 1) / 9 + 2) * 9 // 最低2行、アイテム数に応じて拡張
-        val categoryDisplayName = categories[category]?.displayName ?: category.displayName
+        val categoryDisplayName = categories[category]?.displayName ?: messageManager.getMessage(category.messageKey)
         val title = messageManager.getMessage(player, "shop-extended.menu.shop-title", mapOf("category" to categoryDisplayName))
         val inventory = Bukkit.createInventory(null, size.coerceIn(18, 54), title)
         
@@ -168,10 +168,19 @@ class ShopManager(
         val purchaseCount = purchaseRecord?.count ?: 0
         val canPurchase = canPlayerPurchase(player, shopItem)
         
-        meta.setDisplayName(shopItem.displayName)
+        // プレイヤーの言語に応じた表示名を取得
+        val displayName = messageManager.getMessage(player, "shop-extended.items.${shopItem.id}.name").let {
+            if (it.startsWith("§c[Missing message:")) shopItem.displayName else it
+        }
+        meta.setDisplayName(displayName)
+        
+        // プレイヤーの言語に応じた説明を取得
+        val description = messageManager.getMessageList(player, "shop-extended.items.${shopItem.id}.description").let {
+            if (it.isEmpty()) shopItem.description else it
+        }
         
         val lore = mutableListOf<String>()
-        lore.addAll(shopItem.description)
+        lore.addAll(description)
         lore.add("")
         val unit = plugin.getConfigManager().getCurrencyConfig().currencyUnit
         lore.add(messageManager.getMessage(player, "shop-extended.item.price-format", mapOf("price" to shopItem.price, "unit" to unit)))

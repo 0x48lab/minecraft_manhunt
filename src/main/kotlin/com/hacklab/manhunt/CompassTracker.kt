@@ -95,10 +95,11 @@ class CompassTracker(
         val inventory = hunter.inventory
         var compassCount = 0
         
+        val compassName = messageManager.getMessage("virtual-compass.name")
         for (item in inventory.contents) {
             if (item?.type == org.bukkit.Material.COMPASS) {
                 val meta = item.itemMeta
-                if (meta?.displayName?.contains("追跡") == true) {
+                if (meta?.displayName == compassName) {
                     compassCount++
                 }
             }
@@ -113,12 +114,8 @@ class CompassTracker(
         // 新しいコンパスを作成
         val compass = org.bukkit.inventory.ItemStack(org.bukkit.Material.COMPASS)
         val meta = compass.itemMeta
-        meta?.setDisplayName("§6仮想追跡コンパス")
-        meta?.lore = listOf(
-            "§7右クリックでターゲット切り替え",
-            "§7ランナーの位置を追跡します",
-            "§8※コンパス必須・重複不可"
-        )
+        meta?.setDisplayName(messageManager.getMessage("virtual-compass.name"))
+        meta?.lore = messageManager.getMessageList("virtual-compass.lore")
         compass.itemMeta = meta
         
         // ホットバーの最初のスロットに優先配置
@@ -136,11 +133,12 @@ class CompassTracker(
     fun removePhysicalCompasses(player: Player) {
         // 既存の物理コンパスを削除（移行用）
         val inventory = player.inventory
+        val compassName = messageManager.getMessage("virtual-compass.name")
         for (i in 0 until inventory.size) {
             val item = inventory.getItem(i)
             if (item?.type == org.bukkit.Material.COMPASS) {
                 val meta = item.itemMeta
-                if (meta?.displayName?.contains("追跡") == true) {
+                if (meta?.displayName == compassName) {
                     inventory.setItem(i, null)
                 }
             }

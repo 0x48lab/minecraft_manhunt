@@ -92,10 +92,13 @@ class ShopConfigManager(private val plugin: Main) {
     private fun createShopItemFromConfig(itemId: String, config: org.bukkit.configuration.ConfigurationSection): ShopItem? {
         try {
             // 必須項目の取得
-            val displayName = config.getString("display-name") ?: return null
             val materialName = config.getString("material") ?: return null
             val price = config.getInt("price", 0)
             val categoryName = config.getString("category") ?: "SPECIAL"
+            
+            // display-nameの取得（なければメッセージシステムから）
+            val displayName = config.getString("display-name") 
+                ?: plugin.getMessageManager().getMessage("shop-extended.items.$itemId.name")
             
             // マテリアルの検証
             val material = try {
@@ -167,8 +170,12 @@ class ShopConfigManager(private val plugin: Main) {
                 }
             }
             
-            // 説明文の取得
-            val description = config.getStringList("description")
+            // 説明文の取得（なければメッセージシステムから）
+            val description = if (config.contains("description")) {
+                config.getStringList("description")
+            } else {
+                plugin.getMessageManager().getMessageList("shop-extended.items.$itemId.description")
+            }
             
             // 許可された役割の取得
             val allowedRoleStrings = config.getStringList("allowed-roles")
@@ -227,7 +234,8 @@ class ShopConfigManager(private val plugin: Main) {
                     val categorySection = categoriesSection.getConfigurationSection(categoryKey)
                     if (categorySection != null) {
                         val category = ShopCategory.valueOf(categoryKey.uppercase())
-                        val displayName = categorySection.getString("display-name") ?: category.displayName
+                        // 設定ファイルでdisplay-nameが指定されていればそれを使用、なければnullにしてShopManagerで言語別に取得
+                        val displayName = categorySection.getString("display-name")
                         val iconMaterial = categorySection.getString("icon") ?: category.icon.name
                         
                         val icon = try {
@@ -251,7 +259,7 @@ class ShopConfigManager(private val plugin: Main) {
      * カテゴリ設定データクラス
      */
     data class CategoryConfig(
-        val displayName: String,
+        val displayName: String?,
         val icon: Material
     )
     

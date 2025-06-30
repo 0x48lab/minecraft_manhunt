@@ -432,9 +432,9 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
                         
                         if (currentTime - lastWarningTime >= cooldownMillis) {
                             val warningMessage = when {
-                                chunks <= configManager.getProximityLevel1() -> configManager.getProximityWarningLevel1()
-                                chunks <= configManager.getProximityLevel2() -> configManager.getProximityWarningLevel2()
-                                chunks <= configManager.getProximityLevel3() -> configManager.getProximityWarningLevel3()
+                                chunks <= configManager.getProximityLevel1() -> messageManager.getMessage("proximity.level-1")
+                                chunks <= configManager.getProximityLevel2() -> messageManager.getMessage("proximity.level-2")
+                                chunks <= configManager.getProximityLevel3() -> messageManager.getMessage("proximity.level-3")
                                 else -> null
                             }
                             
@@ -638,7 +638,7 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
         countdownTask?.cancel()
         countdownTask = null
         
-        Bukkit.broadcastMessage(configManager.getGameResetMessage())
+        Bukkit.broadcastMessage(messageManager.getMessage("game.reset"))
     }
     
     fun setMinPlayers(count: Int) {
@@ -1091,7 +1091,7 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
         }
         
         // Broadcast game start
-        Bukkit.broadcastMessage(configManager.getGameStartMessage())
+        Bukkit.broadcastMessage(messageManager.getMessage("game.start"))
         Bukkit.broadcastMessage(messageManager.getMessage("game-start-role.runner"))
         Bukkit.broadcastMessage(messageManager.getMessage("game-start-role.hunter"))
         Bukkit.broadcastMessage(messageManager.getMessage("game-start-role.spectator"))

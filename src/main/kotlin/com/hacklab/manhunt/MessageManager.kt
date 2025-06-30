@@ -32,11 +32,15 @@ class MessageManager(private val plugin: Main) {
         defaultLanguage = config.getString("language.default", "en") ?: "en"
         perPlayerEnabled = config.getBoolean("language.per-player", true)
         
+        plugin.logger.info("Loading language configuration: default=$defaultLanguage, per-player=$perPlayerEnabled")
+        
         // サポートされていない言語の場合はデフォルトに戻す
         if (!SUPPORTED_LANGUAGES.contains(defaultLanguage)) {
             plugin.logger.warning("Unsupported default language: $defaultLanguage. Using 'en' instead.")
             defaultLanguage = "en"
         }
+        
+        plugin.logger.info("Final default language: $defaultLanguage")
     }
     
     private fun loadMessageFiles() {
@@ -164,6 +168,40 @@ class MessageManager(private val plugin: Main) {
             }
         
         return formatMessage(message, *args)
+    }
+    
+    fun getMessageList(key: String): List<String> {
+        // YAMLのリスト形式のメッセージを取得
+        val messagesDir = File(plugin.dataFolder, MESSAGES_FOLDER)
+        val messageFile = File(messagesDir, "$defaultLanguage.yml")
+        
+        if (messageFile.exists()) {
+            try {
+                val config = YamlConfiguration.loadConfiguration(messageFile)
+                return config.getStringList(key)
+            } catch (e: Exception) {
+                plugin.logger.warning("Failed to load list message key: $key")
+            }
+        }
+        
+        return emptyList()
+    }
+    
+    fun getMessageList(player: Player?, key: String): List<String> {
+        val language = getPlayerLanguage(player)
+        val messagesDir = File(plugin.dataFolder, MESSAGES_FOLDER)
+        val messageFile = File(messagesDir, "$language.yml")
+        
+        if (messageFile.exists()) {
+            try {
+                val config = YamlConfiguration.loadConfiguration(messageFile)
+                return config.getStringList(key)
+            } catch (e: Exception) {
+                plugin.logger.warning("Failed to load list message key: $key for language: $language")
+            }
+        }
+        
+        return emptyList()
     }
     
     private fun formatMessage(message: String, vararg args: Any): String {

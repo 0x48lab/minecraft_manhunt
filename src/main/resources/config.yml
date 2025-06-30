@@ -61,18 +61,6 @@ ui:
     # 最小表示距離（メートル）- この値未満は設定値で表示
     minimum-distance: 5
 
-# メッセージ設定 (廃止予定 - messages/ フォルダの言語ファイルに移行)
-# この設定は後方互換性のため残されています
-messages:
-  game-start: "§6[Manhunt] ゲーム開始！"
-  hunter-win: "§c追う人の勝利！逃げる人を全員倒しました！"
-  runner-win: "§a逃げる人の勝利！エンダードラゴンを倒しました！"
-  game-reset: "§6[Manhunt] 新しいゲームの準備ができました！"
-  
-  proximity-warnings:
-    level-1: "§c§l[警告] 追う人が1チャンク以内にいます！"
-    level-2: "§6§l[警告] 追う人が2チャンク以内にいます！"
-    level-3: "§e§l[警告] 追う人が3チャンク以内にいます！"
 
 # 経済・ショップ設定
 economy:
