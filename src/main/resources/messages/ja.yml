@@ -188,12 +188,6 @@ respawn:
   countdown: '§c[リスポン] あと{time}秒...'
   countdown-final: '§e§l{time}...'
 
-ui:
-  title:
-    manhunt: '§6🏃 MANHUNT'
-    manhunt-welcome: '§e🎮 MANHUNT'
-    game-running-spectator: '§7ゲーム進行中 - 観戦モード'
-    role-selection: '§f/manhunt role で役割を選択しよう！'
 
 # ManhuntCommand関連
 admin:
@@ -638,7 +632,7 @@ shop-extended:
   
   # ボタン
   buttons:
-    back: '§c戻る'
+    back: '§a← 戻る'
     back-description: '§7カテゴリ選択に戻る'
     close: '§c閉じる'
     balance-title: '§6所持金'

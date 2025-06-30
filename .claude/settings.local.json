@@ -9,7 +9,12 @@
       "Bash(git commit:*)",
       "Bash(rg:*)",
       "Bash(grep:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(for item in ender_pearl_4 arrow_32 emerald_4 emerald_8 cooked_beef_16)",
+      "Bash(do echo \"Checking $item:\")",
+      "Bash(echo)",
+      "Bash(done)",
+      "Bash(python3:*)"
     ],
     "deny": []
   }
