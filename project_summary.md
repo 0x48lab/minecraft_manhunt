@@ -86,19 +86,18 @@ The plugin creates an asymmetric multiplayer experience:
 - **Community Engagement**: Building active user community for feedback and contributions
 - **International Reach**: Specific focus on Japanese and English-speaking markets
 
-## 🔮 Future Roadmap
+## 🔮 Future Plans
 
-### Short-term (Next 3 months)
-- Additional language support (Spanish, French)
-- More shop items and categories
-- Advanced statistics dashboard
-- Custom game mode variants
+### Planned Improvements
+- Bug fixes and performance optimizations
+- Additional shop items based on user feedback
+- Balance adjustments for economy system
+- Minor quality of life improvements
 
-### Long-term (6+ months)
-- Tournament system with brackets
-- Replay system for game recordings
-- Advanced admin tools and analytics
-- Integration with popular server management plugins
+### Under Consideration
+- Additional language support (based on community demand)
+- Extended configuration options
+- More detailed game statistics
 
 ## 🤝 Community Focus
 
