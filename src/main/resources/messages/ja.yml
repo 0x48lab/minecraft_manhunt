@@ -48,14 +48,62 @@ spectate:
     next-page: '§a次のページ ▶'
     to-page: '§7ページ {page}へ'
     close: '§c閉じる'
-    refresh: '§b更新'
-    refresh-description: '§7プレイヤーリストを更新'
-  info:
-    title: '§6観戦メニュー'
-    description-1: '§7プレイヤーをクリックして'
-    description-2: '§7テレポートできます。'
-    runner-legend: '§a● ランナー'
-    hunter-legend: '§c● ハンター'
+
+# UI表示システム用メッセージ
+ui:
+  scoreboard:
+    title: '§6§l🏃 MANHUNT GAME'
+    player-title: '§6🏃 MANHUNT'
+    state: '§f状態: {state}'
+    hunters-alive: '§c🗡 ハンター生存: §f{count}'
+    hunters-dead: '§c💀 ハンター死亡: §f{count}'
+    runners-alive: '§a🏃 ランナー生存: §f{count}'
+    runners-dead: '§a💀 ランナー死亡: §f{count}'
+    hunters-total: '§c🗡 ハンター: §f{count}'
+    runners-total: '§a🏃 ランナー: §f{count}'
+    spectators-total: '§7👁 観戦者: §f{count}'
+    required-players: '§e必要人数: §f{current}/{min}'
+    separator: '§7━━━━━━━━━━━━━'
+    help-command: '§f/manhunt help'
+    help-text: '§7でコマンド確認'
+    balance: '§6💰 所持金: §e{balance}{unit}'
+    self-suffix: ' §f(自分)'
+  playerlist:
+    title: '§6プレイヤー情報'
+  actionbar:
+    join-game: '§e/manhunt join でゲームに参加しよう！'
+    waiting: '§7役割: {role} §8| §eゲーム開始を待機中...'
+    hunter-with-target: '§c🗡 ハンターモード §8| §f最寄りターゲット: §a{target} §7({distance}m)'
+    hunter-no-target: '§c🗡 ハンターモード §8| §7ターゲットが見つかりません'
+    runner: '§a🏃 ランナーモード §8| §7エンダードラゴンを倒そう！'
+    spectator: '§7👁 観戦モード §8| §eゲームを観戦中...'
+    default: '§7ゲーム情報: /manhunt status'
+  bossbar:
+    starting:
+      title: '§6ゲーム開始'
+      subtitle: '§e準備してください...'
+    running:
+      title: '§a🏃 MANHUNT'
+      subtitle: '§fゲーム開始！'
+    ended:
+      title: '§cゲーム終了'
+      subtitle: '§7お疲れ様でした'
+    progress: '§6🏃 Manhunt Game 進行中'
+  gamestate:
+    waiting: '§e待機中'
+    starting: '§6開始中'
+    running: '§a進行中'
+    ended: '§c終了'
+  role-display:
+    hunter: '§c🗡 ハンター'
+    runner: '§a🏃 ランナー'
+    spectator: '§7👁 観戦者'
+
+# 仮想コンパス用メッセージ  
+virtual-compass:
+  target-switch: '§eターゲット切り替え'
+  compass-restored: '§a追跡コンパスが復元されました'
+  already-have-pickup: '§e既に追跡コンパスを持っているため拾えません'
 command:
   player-only: '§cこのコマンドはプレイヤーのみが実行できます。'
   no-permission: '§cこのコマンドを実行する権限がありません。'

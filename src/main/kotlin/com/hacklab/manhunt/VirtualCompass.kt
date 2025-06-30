@@ -187,7 +187,7 @@ class VirtualCompass(
         // タイトル表示（ターゲット切り替え情報付き）
         hunter.sendTitle(
             "§b§l[${currentIndex}/${totalTargets}] §6§l${target.name}",
-            "$formattedDistance §7| ${getDirectionArrow(direction)} §8| §eターゲット切り替え",
+            "$formattedDistance §7| ${getDirectionArrow(direction)} §8| ${messageManager.getMessage("virtual-compass.target-switch")}",
             10, 50, 10
         )
         
@@ -342,7 +342,7 @@ class VirtualCompass(
                     if (player.isOnline && gameManager.getPlayerRole(player) == PlayerRole.HUNTER) {
                         // ホットバーの最初のスロットに復元
                         player.inventory.setItem(0, compass)
-                        player.sendMessage("§a追跡コンパスが復元されました")
+                        player.sendMessage(messageManager.getMessage(player, "virtual-compass.compass-restored"))
                     }
                 }, 1L) // 1tick後に実行
             }
@@ -379,7 +379,7 @@ class VirtualCompass(
                 
                 if (compassCount >= 1) {
                     event.isCancelled = true
-                    player.sendMessage("§e既に追跡コンパスを持っているため拾えません")
+                    player.sendMessage(messageManager.getMessage(player, "virtual-compass.already-have-pickup"))
                 }
             }
         }

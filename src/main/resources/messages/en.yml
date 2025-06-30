@@ -48,14 +48,62 @@ spectate:
     next-page: '§aNext Page ▶'
     to-page: '§7To page {page}'
     close: '§cClose'
-    refresh: '§bRefresh'
-    refresh-description: '§7Refresh player list'
-  info:
-    title: '§6Spectator Menu'
-    description-1: '§7Click on players to'
-    description-2: '§7teleport to them.'
-    runner-legend: '§a● Runners'
-    hunter-legend: '§c● Hunters'
+
+# UI Display System Messages
+ui:
+  scoreboard:
+    title: '§6§l🏃 MANHUNT GAME'
+    player-title: '§6🏃 MANHUNT'
+    state: '§fState: {state}'
+    hunters-alive: '§c🗡 Hunters Alive: §f{count}'
+    hunters-dead: '§c💀 Hunters Dead: §f{count}'
+    runners-alive: '§a🏃 Runners Alive: §f{count}'
+    runners-dead: '§a💀 Runners Dead: §f{count}'
+    hunters-total: '§c🗡 Hunters: §f{count}'
+    runners-total: '§a🏃 Runners: §f{count}'
+    spectators-total: '§7👁 Spectators: §f{count}'
+    required-players: '§eRequired Players: §f{current}/{min}'
+    separator: '§7━━━━━━━━━━━━━'
+    help-command: '§f/manhunt help'
+    help-text: '§7for commands'
+    balance: '§6💰 Balance: §e{balance}{unit}'
+    self-suffix: ' §f(you)'
+  playerlist:
+    title: '§6Player Info'
+  actionbar:
+    join-game: '§e/manhunt join to join the game!'
+    waiting: '§7Role: {role} §8| §eWaiting for game start...'
+    hunter-with-target: '§c🗡 Hunter Mode §8| §fNearest Target: §a{target} §7({distance}m)'
+    hunter-no-target: '§c🗡 Hunter Mode §8| §7No targets found'
+    runner: '§a🏃 Runner Mode §8| §7Defeat the Ender Dragon!'
+    spectator: '§7👁 Spectator Mode §8| §eSpectating the game...'
+    default: '§7Game Info: /manhunt status'
+  bossbar:
+    starting:
+      title: '§6Game Starting'
+      subtitle: '§eGet ready...'
+    running:
+      title: '§a🏃 MANHUNT'
+      subtitle: '§fGame Started!'
+    ended:
+      title: '§cGame Ended'
+      subtitle: '§7Good game!'
+    progress: '§6🏃 Manhunt Game In Progress'
+  gamestate:
+    waiting: '§eWaiting'
+    starting: '§6Starting'
+    running: '§aRunning'
+    ended: '§cEnded'
+  role-display:
+    hunter: '§c🗡 Hunter'
+    runner: '§a🏃 Runner'
+    spectator: '§7👁 Spectator'
+
+# Virtual Compass Messages
+virtual-compass:
+  target-switch: '§eTarget Switch'
+  compass-restored: '§aTracking compass has been restored'
+  already-have-pickup: '§eCannot pick up compass - you already have one'
 command:
   player-only: '§cThis command can only be executed by players.'
   no-permission: '§cYou don''t have permission to execute this command.'
