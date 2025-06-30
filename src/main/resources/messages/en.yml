@@ -729,6 +729,228 @@ shop-extended:
         - '§7Throwable weapon'
         - '§7Attack damage: 9'
         - '§7Long-range attack possible'
+    
+    # Armor
+    iron_helmet:
+      name: '§fIron Helmet'
+      description:
+        - '§7Practical head armor'
+        - '§7Defense: +2'
+        - '§7High durability'
+    iron_chestplate:
+      name: '§fIron Chestplate'
+      description:
+        - '§7Practical chest armor'
+        - '§7Defense: +6'
+        - '§7High durability'
+    iron_leggings:
+      name: '§fIron Leggings'
+      description:
+        - '§7Practical leg armor'
+        - '§7Defense: +5'
+        - '§7High durability'
+    iron_boots:
+      name: '§fIron Boots'
+      description:
+        - '§7Practical foot armor'
+        - '§7Defense: +2'
+        - '§7High durability'
+    iron_armor_set:
+      name: '§fIron Armor Set'
+      description:
+        - '§7Complete iron armor set'
+        - '§7Helmet+Chestplate+Leggings+Boots'
+        - '§6Great value set price!'
+    
+    golden_helmet:
+      name: '§6Golden Helmet'
+      description:
+        - '§7Golden head armor'
+        - '§7Defense: +2'
+        - '§cLow durability'
+    golden_chestplate:
+      name: '§6Golden Chestplate'
+      description:
+        - '§7Golden chest armor'
+        - '§7Defense: +5'
+        - '§cLow durability'
+    golden_leggings:
+      name: '§6Golden Leggings'
+      description:
+        - '§7Golden leg armor'
+        - '§7Defense: +3'
+        - '§cLow durability'
+    golden_boots:
+      name: '§6Golden Boots'
+      description:
+        - '§7Golden foot armor'
+        - '§7Defense: +1'
+        - '§cLow durability'
+    
+    diamond_helmet:
+      name: '§bDiamond Helmet'
+      description:
+        - '§7Diamond head armor'
+        - '§7Defense: +3'
+    diamond_chestplate:
+      name: '§bDiamond Chestplate'
+      description:
+        - '§7Diamond chest armor'
+        - '§7Defense: +8'
+    diamond_leggings:
+      name: '§bDiamond Leggings'
+      description:
+        - '§7Diamond leg armor'
+        - '§7Defense: +6'
+    diamond_boots:
+      name: '§bDiamond Boots'
+      description:
+        - '§7Diamond foot armor'
+        - '§7Defense: +3'
+    diamond_armor_set:
+      name: '§bDiamond Armor Set'
+      description:
+        - '§7Complete diamond armor set'
+        - '§7Helmet+Chestplate+Leggings+Boots'
+        - '§6Great value set price!'
+    
+    netherite_helmet:
+      name: '§5Netherite Helmet'
+      description:
+        - '§7Strongest head armor'
+        - '§7Defense: +3'
+        - '§7Knockback resistance'
+    netherite_chestplate:
+      name: '§5Netherite Chestplate'
+      description:
+        - '§7Strongest chest armor'
+        - '§7Defense: +8'
+        - '§7Knockback resistance'
+    netherite_leggings:
+      name: '§5Netherite Leggings'
+      description:
+        - '§7Strongest leg armor'
+        - '§7Defense: +6'
+        - '§7Knockback resistance'
+    netherite_boots:
+      name: '§5Netherite Boots'
+      description:
+        - '§7Strongest foot armor'
+        - '§7Defense: +3'
+        - '§7Knockback resistance'
+    
+    # Special Items
+    elytra:
+      name: '§5Elytra'
+      description:
+        - '§7Wings that allow flight'
+        - '§c※Rare item'
+    ender_pearl_4:
+      name: '§5Ender Pearl ×4'
+      description:
+        - '§7Allows teleportation'
+    
+    # Consumables
+    golden_apple:
+      name: '§6Golden Apple'
+      description:
+        - '§7Healing and temporary buffs'
+    speed_potion:
+      name: '§bSpeed Potion'
+      description:
+        - '§73 minutes of Speed II'
+    strength_potion:
+      name: '§cStrength Potion'
+      description:
+        - '§73 minutes of increased attack power'
+        - '§cHunter only'
+    invisibility_potion:
+      name: '§7Invisibility Potion'
+      description:
+        - '§71 minute of invisibility'
+        - '§aRunner only'
+    
+    # Tools
+    iron_pickaxe:
+      name: '§fIron Pickaxe'
+      description:
+        - '§7Practical mining tool'
+        - '§7High durability'
+    diamond_pickaxe:
+      name: '§bDiamond Pickaxe'
+      description:
+        - '§7Efficient mining'
+        - '§7Efficiency II enchanted'
+    netherite_pickaxe:
+      name: '§5Netherite Pickaxe'
+      description:
+        - '§7Fastest mining speed'
+        - '§7Efficiency III enchanted'
+    diamond_shovel:
+      name: '§bDiamond Shovel'
+      description:
+        - '§7Efficient digging'
+        - '§7Efficiency II enchanted'
+    water_bucket:
+      name: '§9Water Bucket'
+      description:
+        - '§7Bucket filled with water'
+        - '§7Reduces fall damage, extinguishes fire'
+        - '§6Essential for Nether exploration!'
+    lava_bucket:
+      name: '§cLava Bucket'
+      description:
+        - '§7Bucket filled with lava'
+        - '§7Use for traps or attacks'
+        - '§cDangerous - handle with care'
+    flint_and_steel:
+      name: '§6Flint and Steel'
+      description:
+        - '§7Tool for creating fire'
+        - '§7Use for attacks or traps'
+    bow:
+      name: '§6Bow'
+      description:
+        - '§7Ranged attack weapon'
+        - '§7Arrows sold separately'
+    arrow_32:
+      name: '§fArrow ×32'
+      description:
+        - '§7Arrows for bow'
+    
+    # Precious Materials
+    emerald:
+      name: '§aEmerald'
+      description:
+        - '§7Precious green gem'
+        - '§7Used for villager trading'
+        - '§7Get enchanted books'
+    emerald_4:
+      name: '§aEmerald ×4'
+      description:
+        - '§7Precious green gems (value pack)'
+        - '§7Used for villager trading'
+        - '§6Save 50G with bulk purchase!'
+    emerald_8:
+      name: '§aEmerald ×8'
+      description:
+        - '§7Precious green gems (large pack)'
+        - '§7Used for villager trading'
+        - '§6Save 200G with bulk purchase!'
+    
+    # Food
+    cooked_beef_16:
+      name: '§6Steak ×16'
+      description:
+        - '§7Greatly restores hunger'
+    
+    # Hunter Exclusive
+    compass_upgrade:
+      name: '§eTracking Compass Upgrade'
+      description:
+        - '§7More accurate tracking'
+        - '§7Improved distance display precision'
+        - '§cHunter only'
   
   # Log messages
   log:

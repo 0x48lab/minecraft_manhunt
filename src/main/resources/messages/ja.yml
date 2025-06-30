@@ -736,6 +736,228 @@ shop-extended:
         - '§7投擲可能な武器'
         - '§7攻撃力: 9'
         - '§7遠距離攻撃可能'
+    
+    # 防具
+    iron_helmet:
+      name: '§f鉄のヘルメット'
+      description:
+        - '§7実用的な頭防具'
+        - '§7防御力: +2'
+        - '§7高い耐久性'
+    iron_chestplate:
+      name: '§f鉄のチェストプレート'
+      description:
+        - '§7実用的な胸部防具'
+        - '§7防御力: +6'
+        - '§7高い耐久性'
+    iron_leggings:
+      name: '§f鉄のレギンス'
+      description:
+        - '§7実用的な脚部防具'
+        - '§7防御力: +5'
+        - '§7高い耐久性'
+    iron_boots:
+      name: '§f鉄のブーツ'
+      description:
+        - '§7実用的な足防具'
+        - '§7防御力: +2'
+        - '§7高い耐久性'
+    iron_armor_set:
+      name: '§f鉄装備セット'
+      description:
+        - '§7鉄の装備一式'
+        - '§7ヘルメット+胸当て+レギンス+ブーツ'
+        - '§6セット価格でお得！'
+    
+    golden_helmet:
+      name: '§6金のヘルメット'
+      description:
+        - '§7金の頭防具'
+        - '§7防御力: +2'
+        - '§c耐久度が低い'
+    golden_chestplate:
+      name: '§6金のチェストプレート'
+      description:
+        - '§7金の胸部防具'
+        - '§7防御力: +5'
+        - '§c耐久度が低い'
+    golden_leggings:
+      name: '§6金のレギンス'
+      description:
+        - '§7金の脚部防具'
+        - '§7防御力: +3'
+        - '§c耐久度が低い'
+    golden_boots:
+      name: '§6金のブーツ'
+      description:
+        - '§7金の足防具'
+        - '§7防御力: +1'
+        - '§c耐久度が低い'
+    
+    diamond_helmet:
+      name: '§bダイヤモンドのヘルメット'
+      description:
+        - '§7ダイヤの頭防具'
+        - '§7防御力: +3'
+    diamond_chestplate:
+      name: '§bダイヤモンドのチェストプレート'
+      description:
+        - '§7ダイヤの胸部防具'
+        - '§7防御力: +8'
+    diamond_leggings:
+      name: '§bダイヤモンドのレギンス'
+      description:
+        - '§7ダイヤの脚部防具'
+        - '§7防御力: +6'
+    diamond_boots:
+      name: '§bダイヤモンドのブーツ'
+      description:
+        - '§7ダイヤの足防具'
+        - '§7防御力: +3'
+    diamond_armor_set:
+      name: '§bダイヤモンド装備セット'
+      description:
+        - '§7ダイヤの装備一式'
+        - '§7ヘルメット+胸当て+レギンス+ブーツ'
+        - '§6セット価格でお得！'
+    
+    netherite_helmet:
+      name: '§5ネザライトのヘルメット'
+      description:
+        - '§7最強の頭防具'
+        - '§7防御力: +3'
+        - '§7ノックバック耐性'
+    netherite_chestplate:
+      name: '§5ネザライトのチェストプレート'
+      description:
+        - '§7最強の胸部防具'
+        - '§7防御力: +8'
+        - '§7ノックバック耐性'
+    netherite_leggings:
+      name: '§5ネザライトのレギンス'
+      description:
+        - '§7最強の脚部防具'
+        - '§7防御力: +6'
+        - '§7ノックバック耐性'
+    netherite_boots:
+      name: '§5ネザライトのブーツ'
+      description:
+        - '§7最強の足防具'
+        - '§7防御力: +3'
+        - '§7ノックバック耐性'
+    
+    # 特殊アイテム
+    elytra:
+      name: '§5エリトラ'
+      description:
+        - '§7空を飛べる翼'
+        - '§c※貴重品'
+    ender_pearl_4:
+      name: '§5エンダーパール ×4'
+      description:
+        - '§7瞬間移動できる'
+    
+    # 消耗品
+    golden_apple:
+      name: '§6金のリンゴ'
+      description:
+        - '§7回復と一時的な強化'
+    speed_potion:
+      name: '§b速度のポーション'
+      description:
+        - '§73分間の速度上昇II'
+    strength_potion:
+      name: '§c力のポーション'
+      description:
+        - '§73分間の攻撃力上昇'
+        - '§cハンター専用'
+    invisibility_potion:
+      name: '§7透明化のポーション'
+      description:
+        - '§71分間の透明化'
+        - '§aランナー専用'
+    
+    # ツール
+    iron_pickaxe:
+      name: '§f鉄のつるはし'
+      description:
+        - '§7実用的な採掘ツール'
+        - '§7高い耐久性'
+    diamond_pickaxe:
+      name: '§bダイヤモンドのつるはし'
+      description:
+        - '§7効率的な採掘'
+        - '§7効率強化II付き'
+    netherite_pickaxe:
+      name: '§5ネザライトのつるはし'
+      description:
+        - '§7最高速度の採掘'
+        - '§7効率強化III付き'
+    diamond_shovel:
+      name: '§bダイヤモンドのシャベル'
+      description:
+        - '§7効率的な掘削'
+        - '§7効率強化II付き'
+    water_bucket:
+      name: '§9水バケツ'
+      description:
+        - '§7水の入ったバケツ'
+        - '§7落下ダメージ軽減・消火'
+        - '§6ネザー進出に必須！'
+    lava_bucket:
+      name: '§cマグマバケツ'
+      description:
+        - '§7マグマの入ったバケツ'
+        - '§7トラップや攻撃に使用'
+        - '§c危険・取扱注意'
+    flint_and_steel:
+      name: '§6火打石と打ち金'
+      description:
+        - '§7火をつける道具'
+        - '§7攻撃やトラップに'
+    bow:
+      name: '§6弓'
+      description:
+        - '§7遠距離攻撃武器'
+        - '§7矢は別売り'
+    arrow_32:
+      name: '§f矢 ×32'
+      description:
+        - '§7弓用の矢'
+    
+    # 貴重な素材
+    emerald:
+      name: '§aエメラルド'
+      description:
+        - '§7貴重な緑の宝石'
+        - '§7村人取引に使用'
+        - '§7エンチャント本の入手に'
+    emerald_4:
+      name: '§aエメラルド ×4'
+      description:
+        - '§7貴重な緑の宝石（お得パック）'
+        - '§7村人取引に使用'
+        - '§6まとめ買いで50G節約！'
+    emerald_8:
+      name: '§aエメラルド ×8'
+      description:
+        - '§7貴重な緑の宝石（大容量パック）'
+        - '§7村人取引に使用'
+        - '§6まとめ買いで200G節約！'
+    
+    # 食料
+    cooked_beef_16:
+      name: '§6ステーキ ×16'
+      description:
+        - '§7満腹度を大幅回復'
+    
+    # ハンター専用
+    compass_upgrade:
+      name: '§e追跡コンパス強化'
+      description:
+        - '§7より正確な追跡'
+        - '§7距離表示の精度向上'
+        - '§cハンター専用'
   
   # ログメッセージ
   log:

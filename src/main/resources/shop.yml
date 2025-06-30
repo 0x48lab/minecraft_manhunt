@@ -1,9 +1,10 @@
 # Manhunt ショップアイテム設定ファイル
 # アイテムの追加・削除・価格変更がこのファイルで可能です
+# 表示名・説明文は messages/ フォルダの言語ファイルで管理されます
 
 # ショップアイテム定義
 items:
-  # 武器カテゴリ - 剣（言語データはmessages/から取得）
+  # 武器カテゴリ - 剣
   iron_sword:
     material: "IRON_SWORD"
     price: 800
@@ -15,158 +16,100 @@ items:
     cooldown: 0        # 秒単位
 
   golden_sword:
-    display-name: "§6金の剣"
     material: "GOLDEN_SWORD"
     price: 300
     category: "WEAPONS"
-    description:
-      - "§7軽量で素早い剣"
-      - "§7攻撃力: 4"
-      - "§c耐久度が低い"
     allowed-roles:
       - "HUNTER"
       - "RUNNER"
 
   diamond_sword:
-    display-name: "§bダイヤモンドの剣"
     material: "DIAMOND_SWORD"
     price: 2000
     category: "WEAPONS"
-    description:
-      - "§7強力なダイヤモンドの剣"
-      - "§7攻撃力: 7"
     allowed-roles:
       - "HUNTER"
       - "RUNNER"
 
   netherite_sword:
-    display-name: "§5ネザライトの剣"
     material: "NETHERITE_SWORD"
     price: 5000
     category: "WEAPONS"
-    description:
-      - "§7最強の剣"
-      - "§7攻撃力: 8"
-      - "§c※最上級"
     allowed-roles:
       - "HUNTER"
       - "RUNNER"
 
   # 武器カテゴリ - 斧
   iron_axe:
-    display-name: "§f鉄の斧"
     material: "IRON_AXE"
     price: 900
     category: "WEAPONS"
-    description:
-      - "§7攻撃力の高い斧"
-      - "§7攻撃力: 9"
-      - "§7高い耐久性"
     allowed-roles:
       - "HUNTER"
       - "RUNNER"
 
   diamond_axe:
-    display-name: "§bダイヤモンドの斧"
     material: "DIAMOND_AXE"
     price: 2200
     category: "WEAPONS"
-    description:
-      - "§7強力な攻撃力"
-      - "§7攻撃力: 9"
     allowed-roles:
       - "HUNTER"
       - "RUNNER"
 
   netherite_axe:
-    display-name: "§5ネザライトの斧"
     material: "NETHERITE_AXE"
     price: 5500
     category: "WEAPONS"
-    description:
-      - "§7最強の斧"
-      - "§7攻撃力: 10"
-      - "§c※最上級"
     allowed-roles:
       - "HUNTER"
       - "RUNNER"
 
   trident:
-    display-name: "§3トライデント"
     material: "TRIDENT"
     price: 3000
     category: "WEAPONS"
-    description:
-      - "§7投擲可能な武器"
-      - "§7攻撃力: 9"
-      - "§7遠距離攻撃可能"
     allowed-roles:
       - "HUNTER"
       - "RUNNER"
 
   # 防具カテゴリ - 鉄装備
   iron_helmet:
-    display-name: "§f鉄のヘルメット"
     material: "IRON_HELMET"
     price: 600
     category: "ARMOR"
-    description:
-      - "§7実用的な頭防具"
-      - "§7防御力: +2"
-      - "§7高い耐久性"
     allowed-roles:
       - "HUNTER"
       - "RUNNER"
 
   iron_chestplate:
-    display-name: "§f鉄のチェストプレート"
     material: "IRON_CHESTPLATE"
     price: 1200
     category: "ARMOR"
-    description:
-      - "§7実用的な胸部防具"
-      - "§7防御力: +6"
-      - "§7高い耐久性"
     allowed-roles:
       - "HUNTER"
       - "RUNNER"
 
   iron_leggings:
-    display-name: "§f鉄のレギンス"
     material: "IRON_LEGGINGS"
     price: 1000
     category: "ARMOR"
-    description:
-      - "§7実用的な脚部防具"
-      - "§7防御力: +5"
-      - "§7高い耐久性"
     allowed-roles:
       - "HUNTER"
       - "RUNNER"
 
   iron_boots:
-    display-name: "§f鉄のブーツ"
     material: "IRON_BOOTS"
     price: 500
     category: "ARMOR"
-    description:
-      - "§7実用的な足防具"
-      - "§7防御力: +2"
-      - "§7高い耐久性"
     allowed-roles:
       - "HUNTER"
       - "RUNNER"
 
   # 防具セット
   iron_armor_set:
-    display-name: "§f鉄装備セット"
     material: "IRON_CHESTPLATE"
     price: 2800
     category: "ARMOR"
-    description:
-      - "§7鉄の装備一式"
-      - "§7ヘルメット+胸当て+レギンス+ブーツ"
-      - "§6セット価格でお得！"
     allowed-roles:
       - "HUNTER"
       - "RUNNER"
@@ -178,115 +121,74 @@ items:
 
   # 防具カテゴリ - 金装備
   golden_helmet:
-    display-name: "§6金のヘルメット"
     material: "GOLDEN_HELMET"
     price: 200
     category: "ARMOR"
-    description:
-      - "§7金の頭防具"
-      - "§7防御力: +2"
-      - "§c耐久度が低い"
     allowed-roles:
       - "HUNTER"
       - "RUNNER"
 
   golden_chestplate:
-    display-name: "§6金のチェストプレート"
     material: "GOLDEN_CHESTPLATE"
     price: 400
     category: "ARMOR"
-    description:
-      - "§7金の胸部防具"
-      - "§7防御力: +5"
-      - "§c耐久度が低い"
     allowed-roles:
       - "HUNTER"
       - "RUNNER"
 
   golden_leggings:
-    display-name: "§6金のレギンス"
     material: "GOLDEN_LEGGINGS"
     price: 350
     category: "ARMOR"
-    description:
-      - "§7金の脚部防具"
-      - "§7防御力: +3"
-      - "§c耐久度が低い"
     allowed-roles:
       - "HUNTER"
       - "RUNNER"
 
   golden_boots:
-    display-name: "§6金のブーツ"
     material: "GOLDEN_BOOTS"
     price: 150
     category: "ARMOR"
-    description:
-      - "§7金の足防具"
-      - "§7防御力: +1"
-      - "§c耐久度が低い"
     allowed-roles:
       - "HUNTER"
       - "RUNNER"
 
   # 防具カテゴリ - ダイヤ装備
   diamond_helmet:
-    display-name: "§bダイヤモンドのヘルメット"
     material: "DIAMOND_HELMET"
     price: 1500
     category: "ARMOR"
-    description:
-      - "§7ダイヤの頭防具"
-      - "§7防御力: +3"
     allowed-roles:
       - "HUNTER"
       - "RUNNER"
 
   diamond_chestplate:
-    display-name: "§bダイヤモンドのチェストプレート"
     material: "DIAMOND_CHESTPLATE"
     price: 3000
     category: "ARMOR"
-    description:
-      - "§7ダイヤの胸部防具"
-      - "§7防御力: +8"
     allowed-roles:
       - "HUNTER"
       - "RUNNER"
 
   diamond_leggings:
-    display-name: "§bダイヤモンドのレギンス"
     material: "DIAMOND_LEGGINGS"
     price: 2500
     category: "ARMOR"
-    description:
-      - "§7ダイヤの脚部防具"
-      - "§7防御力: +6"
     allowed-roles:
       - "HUNTER"
       - "RUNNER"
 
   diamond_boots:
-    display-name: "§bダイヤモンドのブーツ"
     material: "DIAMOND_BOOTS"
     price: 1200
     category: "ARMOR"
-    description:
-      - "§7ダイヤの足防具"
-      - "§7防御力: +3"
     allowed-roles:
       - "HUNTER"
       - "RUNNER"
 
   diamond_armor_set:
-    display-name: "§bダイヤモンド装備セット"
     material: "DIAMOND_CHESTPLATE"
     price: 7200
     category: "ARMOR"
-    description:
-      - "§7ダイヤの装備一式"
-      - "§7ヘルメット+胸当て+レギンス+ブーツ"
-      - "§6セット価格でお得！"
     allowed-roles:
       - "HUNTER"
       - "RUNNER"
@@ -298,101 +200,68 @@ items:
 
   # 防具カテゴリ - ネザライト装備
   netherite_helmet:
-    display-name: "§5ネザライトのヘルメット"
     material: "NETHERITE_HELMET"
     price: 4000
     category: "ARMOR"
-    description:
-      - "§7最強の頭防具"
-      - "§7防御力: +3"
-      - "§7ノックバック耐性"
     allowed-roles:
       - "HUNTER"
       - "RUNNER"
 
   netherite_chestplate:
-    display-name: "§5ネザライトのチェストプレート"
     material: "NETHERITE_CHESTPLATE"
     price: 8000
     category: "ARMOR"
-    description:
-      - "§7最強の胸部防具"
-      - "§7防御力: +8"
-      - "§7ノックバック耐性"
     allowed-roles:
       - "HUNTER"
       - "RUNNER"
 
   netherite_leggings:
-    display-name: "§5ネザライトのレギンス"
     material: "NETHERITE_LEGGINGS"
     price: 6500
     category: "ARMOR"
-    description:
-      - "§7最強の脚部防具"
-      - "§7防御力: +6"
-      - "§7ノックバック耐性"
     allowed-roles:
       - "HUNTER"
       - "RUNNER"
 
   netherite_boots:
-    display-name: "§5ネザライトのブーツ"
     material: "NETHERITE_BOOTS"
     price: 3000
     category: "ARMOR"
-    description:
-      - "§7最強の足防具"
-      - "§7防御力: +3"
-      - "§7ノックバック耐性"
     allowed-roles:
       - "HUNTER"
       - "RUNNER"
 
   # 特殊アイテム
   elytra:
-    display-name: "§5エリトラ"
     material: "ELYTRA"
     price: 10000
     category: "SPECIAL"
-    description:
-      - "§7空を飛べる翼"
-      - "§c※貴重品"
     allowed-roles:
       - "HUNTER"
       - "RUNNER"
     max-purchases: 1
 
   ender_pearl_4:
-    display-name: "§5エンダーパール ×4"
     material: "ENDER_PEARL"
     amount: 4
     price: 1000
     category: "SPECIAL"
-    description:
-      - "§7瞬間移動できる"
     allowed-roles:
       - "RUNNER"
 
   # 消耗品
   golden_apple:
-    display-name: "§6金のリンゴ"
     material: "GOLDEN_APPLE"
     price: 1500
     category: "CONSUMABLES"
-    description:
-      - "§7回復と一時的な強化"
     allowed-roles:
       - "HUNTER"
       - "RUNNER"
 
   speed_potion:
-    display-name: "§b速度のポーション"
     material: "POTION"
     price: 800
     category: "CONSUMABLES"
-    description:
-      - "§73分間の速度上昇II"
     allowed-roles:
       - "HUNTER"
       - "RUNNER"
@@ -402,13 +271,9 @@ items:
         amplifier: 1    # レベル2
 
   strength_potion:
-    display-name: "§c力のポーション"
     material: "POTION"
     price: 1200
     category: "CONSUMABLES"
-    description:
-      - "§73分間の攻撃力上昇"
-      - "§cハンター専用"
     allowed-roles:
       - "HUNTER"
     potion-effects:
@@ -417,13 +282,9 @@ items:
         amplifier: 0
 
   invisibility_potion:
-    display-name: "§7透明化のポーション"
     material: "POTION"
     price: 2000
     category: "CONSUMABLES"
-    description:
-      - "§71分間の透明化"
-      - "§aランナー専用"
     allowed-roles:
       - "RUNNER"
     cooldown: 300  # 5分
@@ -434,24 +295,16 @@ items:
 
   # ツール
   iron_pickaxe:
-    display-name: "§f鉄のつるはし"
     material: "IRON_PICKAXE"
     price: 600
     category: "TOOLS"
-    description:
-      - "§7実用的な採掘ツール"
-      - "§7高い耐久性"
     allowed-roles:
       - "RUNNER"
 
   diamond_pickaxe:
-    display-name: "§bダイヤモンドのつるはし"
     material: "DIAMOND_PICKAXE"
     price: 1500
     category: "TOOLS"
-    description:
-      - "§7効率的な採掘"
-      - "§7効率強化II付き"
     allowed-roles:
       - "RUNNER"
     enchantments:
@@ -459,13 +312,9 @@ items:
         level: 2
 
   netherite_pickaxe:
-    display-name: "§5ネザライトのつるはし"
     material: "NETHERITE_PICKAXE"
     price: 4000
     category: "TOOLS"
-    description:
-      - "§7最高速度の採掘"
-      - "§7効率強化III付き"
     allowed-roles:
       - "RUNNER"
     enchantments:
@@ -473,13 +322,9 @@ items:
         level: 3
 
   diamond_shovel:
-    display-name: "§bダイヤモンドのシャベル"
     material: "DIAMOND_SHOVEL"
     price: 800
     category: "TOOLS"
-    description:
-      - "§7効率的な掘削"
-      - "§7効率強化II付き"
     allowed-roles:
       - "RUNNER"
     enchantments:
@@ -487,137 +332,93 @@ items:
         level: 2
 
   water_bucket:
-    display-name: "§9水バケツ"
     material: "WATER_BUCKET"
     price: 500
     category: "TOOLS"
-    description:
-      - "§7水の入ったバケツ"
-      - "§7落下ダメージ軽減・消火"
-      - "§6ネザー進出に必須！"
     allowed-roles:
       - "RUNNER"
 
   lava_bucket:
-    display-name: "§cマグマバケツ"
     material: "LAVA_BUCKET"
     price: 1200
     category: "TOOLS"
-    description:
-      - "§7マグマの入ったバケツ"
-      - "§7トラップや攻撃に使用"
-      - "§c危険・取扱注意"
     allowed-roles:
       - "HUNTER"
       - "RUNNER"
 
   flint_and_steel:
-    display-name: "§6火打石と打ち金"
     material: "FLINT_AND_STEEL"
     price: 300
     category: "TOOLS"
-    description:
-      - "§7火をつける道具"
-      - "§7攻撃やトラップに"
     allowed-roles:
       - "HUNTER"
       - "RUNNER"
 
   bow:
-    display-name: "§6弓"
     material: "BOW"
     price: 600
     category: "TOOLS"
-    description:
-      - "§7遠距離攻撃武器"
-      - "§7矢は別売り"
     allowed-roles:
       - "HUNTER"
       - "RUNNER"
 
   arrow_32:
-    display-name: "§f矢 ×32"
     material: "ARROW"
     amount: 32
     price: 200
     category: "TOOLS"
-    description:
-      - "§7弓用の矢"
     allowed-roles:
       - "HUNTER"
       - "RUNNER"
 
   # 貴重な素材
   emerald:
-    display-name: "§aエメラルド"
     material: "EMERALD"
     price: 150
     category: "SPECIAL"
-    description:
-      - "§7貴重な緑の宝石"
-      - "§7村人取引に使用"
-      - "§7エンチャント本の入手に"
     allowed-roles:
       - "HUNTER"
       - "RUNNER"
 
   emerald_4:
-    display-name: "§aエメラルド ×4"
     material: "EMERALD"
     amount: 4
     price: 550
     category: "SPECIAL"
-    description:
-      - "§7貴重な緑の宝石（お得パック）"
-      - "§7村人取引に使用"
-      - "§6まとめ買いで50G節約！"
     allowed-roles:
       - "HUNTER"
       - "RUNNER"
 
   emerald_8:
-    display-name: "§aエメラルド ×8"
     material: "EMERALD"
     amount: 8
     price: 1000
     category: "SPECIAL"
-    description:
-      - "§7貴重な緑の宝石（大容量パック）"
-      - "§7村人取引に使用"
-      - "§6まとめ買いで200G節約！"
     allowed-roles:
       - "HUNTER"
       - "RUNNER"
 
   # 食料
   cooked_beef_16:
-    display-name: "§6ステーキ ×16"
     material: "COOKED_BEEF"
     amount: 16
     price: 200
     category: "FOOD"
-    description:
-      - "§7満腹度を大幅回復"
     allowed-roles:
       - "HUNTER"
       - "RUNNER"
 
   # ハンター専用
   compass_upgrade:
-    display-name: "§e追跡コンパス強化"
     material: "COMPASS"
     price: 3000
     category: "SPECIAL"
-    description:
-      - "§7より正確な追跡"
-      - "§7距離表示の精度向上"
-      - "§cハンター専用"
     allowed-roles:
       - "HUNTER"
     max-purchases: 1
 
 # カテゴリ設定
-# display-nameを削除することで、MessageManagerから多言語対応の名前を取得
+# display-nameは削除し、MessageManagerから多言語対応の名前を取得
 categories:
   WEAPONS:
     icon: "IRON_SWORD"
