@@ -279,28 +279,6 @@ shop:
   purchase-success: '§aPurchased {item}! (-{price}{unit})'
   balance-remaining: '§7Balance: §f{balance}{unit}'
 
-# Extended shop system
-shop-extended:
-  menu:
-    category-title: '§6§lShop - Category Selection'
-    shop-title: '§6§lShop - {category}'
-    category-click: '§7Click to view {category}'
-    balance-display: '§bBalance: §f{balance}{unit}'
-  
-  item:
-    price-format: '§6Price: §f{price}{unit}'
-    purchase-limit: '§7Purchase limit: §f{current}/{max}'
-    cooldown: '§cCooldown: {time} seconds'
-    insufficient-funds: '§c✗ Insufficient {unit}'
-    cannot-purchase: '§c✗ Cannot purchase'
-    click-to-purchase: '§a✓ Click to purchase'
-  
-  buttons:
-    back: '§a← Back'
-    back-description: '§7Return to category selection'
-    close: '§cClose'
-    balance-title: '§6Balance'
-    balance-amount: '§bBalance: §f{balance}{unit}'
 
 # Language system
 language:

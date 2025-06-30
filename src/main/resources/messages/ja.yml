@@ -286,28 +286,6 @@ shop:
   purchase-success: '§a{item}を購入しました！（-{price}{unit}）'
   balance-remaining: '§7残高: §f{balance}{unit}'
 
-# 拡張ショップシステム
-shop-extended:
-  menu:
-    category-title: '§6§lショップ - カテゴリ選択'
-    shop-title: '§6§lショップ - {category}'
-    category-click: '§7クリックして{category}を見る'
-    balance-display: '§b所持金: §f{balance}{unit}'
-  
-  item:
-    price-format: '§6価格: §f{price}{unit}'
-    purchase-limit: '§7購入制限: §f{current}/{max}'
-    cooldown: '§cクールダウン: {time}秒'
-    insufficient-funds: '§c✗ {unit}が不足しています'
-    cannot-purchase: '§c✗ 購入できません'
-    click-to-purchase: '§a✓ クリックして購入'
-  
-  buttons:
-    back: '§a← 戻る'
-    back-description: '§7カテゴリ選択に戻る'
-    close: '§c閉じる'
-    balance-title: '§6所持金'
-    balance-amount: '§b残高: §f{balance}{unit}'
 
 # 言語システム
 language:
