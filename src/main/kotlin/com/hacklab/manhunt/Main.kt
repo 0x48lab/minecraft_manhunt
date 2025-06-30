@@ -17,6 +17,7 @@ class Main : JavaPlugin() {
     private lateinit var eventListener: EventListener
     private lateinit var uiManager: UIManager
     private lateinit var spectatorMenu: SpectatorMenu
+    private lateinit var roleSelectorMenu: RoleSelectorMenu
     private lateinit var teamChatCommand: TeamChatCommand
     private lateinit var positionShareCommand: PositionShareCommand
     
@@ -42,6 +43,7 @@ class Main : JavaPlugin() {
         
         // Initialize managers
         gameManager = GameManager(this, configManager, messageManager)
+        gameManager.initialize() // 統計とリザルトシステムを初期化
         compassTracker = CompassTracker(this, gameManager, configManager, messageManager)
         uiManager = UIManager(this, gameManager, configManager)
         
@@ -53,13 +55,14 @@ class Main : JavaPlugin() {
         shopCommand = ShopCommand(this, shopManager, economyManager, messageManager)
         shopListener = ShopListener(this, shopManager, currencyTracker)
         
-        eventListener = EventListener(gameManager, uiManager, messageManager)
-        spectatorMenu = SpectatorMenu(gameManager)
+        spectatorMenu = SpectatorMenu(gameManager, messageManager)
+        roleSelectorMenu = RoleSelectorMenu(gameManager, messageManager)
+        eventListener = EventListener(gameManager, uiManager, messageManager, roleSelectorMenu)
         teamChatCommand = TeamChatCommand(gameManager, messageManager)
         positionShareCommand = PositionShareCommand(gameManager, messageManager)
         
         // Register commands
-        val manhuntCommand = ManhuntCommand(gameManager, compassTracker, spectatorMenu, messageManager)
+        val manhuntCommand = ManhuntCommand(gameManager, compassTracker, spectatorMenu, messageManager, roleSelectorMenu)
         getCommand("manhunt")?.setExecutor(manhuntCommand)
         getCommand("manhunt")?.tabCompleter = manhuntCommand
         
@@ -77,6 +80,7 @@ class Main : JavaPlugin() {
         // Register events
         server.pluginManager.registerEvents(eventListener, this)
         server.pluginManager.registerEvents(spectatorMenu, this)
+        server.pluginManager.registerEvents(roleSelectorMenu, this)
         server.pluginManager.registerEvents(shopListener, this)
         
         // Start UI system
@@ -99,6 +103,15 @@ class Main : JavaPlugin() {
         compassTracker.stopTracking()
         uiManager.stopDisplaySystem()
         spectatorMenu.cleanup()
+        roleSelectorMenu.cleanup()
+        
+        // ゲーム結果マネージャーのクリーンアップ
+        try {
+            gameManager.cleanup()
+        } catch (e: Exception) {
+            logger.warning("ゲームマネージャーのクリーンアップでエラー: ${e.message}")
+        }
+        
         logger.info("Manhunt プラグインが無効になりました。")
     }
 }

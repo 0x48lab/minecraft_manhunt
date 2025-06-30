@@ -113,303 +113,27 @@ class MessageManager(private val plugin: Main) {
     }
     
     private fun createDefaultMessageFile(language: String, file: File) {
-        try {
-            plugin.logger.info("Creating default message file for language: $language at ${file.absolutePath}")
-            
-            // 親ディレクトリが存在することを確認
-            file.parentFile?.let { parent ->
-                if (!parent.exists()) {
-                    parent.mkdirs()
-                    plugin.logger.info("Created parent directory: ${parent.absolutePath}")
-                }
+        plugin.logger.info("Creating default message file for language: $language at ${file.absolutePath}")
+        
+        // 親ディレクトリが存在することを確認
+        file.parentFile?.let { parent ->
+            if (!parent.exists()) {
+                parent.mkdirs()
+                plugin.logger.info("Created parent directory: ${parent.absolutePath}")
             }
-            
-            val config = YamlConfiguration()
-            
-            when (language) {
-                "ja" -> {
-                    plugin.logger.info("Adding Japanese messages...")
-                    addJapaneseMessages(config)
-                }
-                "en" -> {
-                    plugin.logger.info("Adding English messages...")
-                    addEnglishMessages(config)
-                }
-            }
-            
-            config.save(file)
-            plugin.logger.info("Successfully created default message file: ${file.name} (${file.length()} bytes)")
-            
-            // ファイルが実際に作成されたか確認
-            if (!file.exists()) {
-                plugin.logger.severe("File was not created despite successful save: ${file.absolutePath}")
-            }
-            
-        } catch (e: Exception) {
-            plugin.logger.severe("Failed to create default message file for $language: ${e.message}")
-            e.printStackTrace()
         }
+        
+        // リソースからデフォルトファイルをコピー
+        val resourcePath = "messages/$language.yml"
+        plugin.getResource(resourcePath)!!.use { inputStream ->
+            file.outputStream().use { outputStream ->
+                inputStream.copyTo(outputStream)
+            }
+        }
+        plugin.logger.info("Copied default message file from resources: $resourcePath")
     }
     
-    private fun addJapaneseMessages(config: YamlConfiguration) {
-        // ゲーム基本メッセージ
-        config.set("game.start", "§6[Manhunt] ゲーム開始！")
-        config.set("game.end", "§6[Manhunt] ゲーム終了！")
-        config.set("game.reset", "§7ゲームがリセットされました。")
-        config.set("game.hunter-win", "§c追う人の勝利！逃げる人を全員倒しました！")
-        config.set("game.runner-win", "§a逃げる人の勝利！エンダードラゴンを倒しました！")
-        
-        // 役割メッセージ
-        config.set("role.changed", "§a役割を{role}に変更しました！")
-        config.set("role.runner", "逃げる人")
-        config.set("role.hunter", "追う人")
-        config.set("role.spectator", "観戦者")
-        config.set("role.invalid", "§c無効な役割です。runner, hunter, spectator のいずれかを指定してください。")
-        config.set("role.game-running", "§cゲーム開始後は役割を変更できません。")
-        
-        // コンパスメッセージ
-        config.set("compass.activated", "§6[追跡コンパス] §a有効化されました！")
-        config.set("compass.usage", "§e使い方: §7コンパスを持って右クリックでランナーを追跡")
-        config.set("compass.slot-hint", "§e§l※コンパスが必要です（重複不可）")
-        config.set("compass.hunter-only", "§c追う人のみがコンパスを使用できます！")
-        config.set("compass.game-only", "§cゲーム進行中のみコンパスを使用できます。")
-        config.set("compass.cooldown", "§cコンパスのクールダウン中... ({time}秒)")
-        config.set("compass.no-target", "§c追跡対象のランナーが見つかりません。")
-        config.set("compass.different-world", "§cランナーは別のワールドにいます: §e{world}")
-        config.set("compass.tracking", "§6[コンパス] §e{player} §7- {distance}")
-        config.set("compass.target-switched", "§b[ターゲット切り替え] §7[{index}/{total}] §e{player} §7- {distance}")
-        config.set("compass.hint", "§6[ヒント] §eコンパスを持って右クリックでランナーを追跡できます！")
-        config.set("compass.actionbar-hint", "§e§lコンパス右クリックでランナーを追跡")
-        config.set("compass.actionbar-use", "§e§lコンパス右クリックで追跡開始")
-        config.set("compass.title-activated", "§6§l仮想コンパス")
-        config.set("compass.subtitle-activated", "§e右クリックで追跡開始")
-        
-        // 観戦メニューメッセージ
-        config.set("spectate.menu-title", "§6観戦メニュー")
-        config.set("spectate.spectator-only", "§c観戦者のみがこのメニューを使用できます。")
-        config.set("spectate.teleported", "§a{player}にテレポートしました！")
-        config.set("spectate.player-offline", "§cそのプレイヤーはオンラインではありません。")
-        
-        // コマンドメッセージ
-        config.set("command.player-only", "§cプレイヤーのみが実行できるコマンドです。")
-        config.set("command.no-permission", "§cこのコマンドを実行する権限がありません。")
-        config.set("command.unknown", "§c不明なコマンドです。/manhunt help で使用法を確認してください。")
-        config.set("command.usage", "§c使用法: {usage}")
-        
-        // ゲーム状況メッセージ
-        config.set("status.header", "§6=== Manhunt ゲーム状況 ===")
-        config.set("status.state", "§eゲーム状態: {state}")
-        config.set("status.min-players", "§e最小プレイヤー数: {count}")
-        config.set("status.runners", "§a逃げる人: {count}人 {players}")
-        config.set("status.hunters", "§c追う人: {count}人 {players}")
-        config.set("status.spectators", "§7観戦者: {count}人 {players}")
-        config.set("status.total-players", "§e総プレイヤー数: {count}")
-        config.set("status.can-start", "§e自動開始可能: {status}")
-        
-        // プレイヤー参加/退出メッセージ
-        config.set("join.game-running", "§7ゲーム進行中のため、観戦者として参加しました。")
-        config.set("join.next-game", "§e次回のゲームから役割を選択できます。")
-        config.set("join.welcome", "§6[Manhunt] ゲームに参加しました！")
-        config.set("join.role-select", "§e/manhunt role <runner|hunter> で役割を選択してください。")
-        config.set("join.spectator", "§7観戦者として参加しました。")
-        
-        // 近接警告メッセージ
-        config.set("proximity.level-1", "§c§l[警告] 追う人が1チャンク以内にいます！")
-        config.set("proximity.level-2", "§6§l[警告] 追う人が2チャンク以内にいます！")
-        config.set("proximity.level-3", "§e§l[警告] 追う人が3チャンク以内にいます！")
-        
-        // UI表示メッセージ
-        config.set("ui.hunter-mode", "🗡 ハンターモード | 最寄りターゲット: {target} ({distance}m)")
-        config.set("ui.runner-mode", "🏃 ランナーモード | エンダードラゴンを倒そう！")
-        config.set("ui.spectator-mode", "👁 観戦モード | ゲームを観戦中...")
-        
-        // ヘルプメッセージ
-        config.set("help.header", "§6=== Manhunt コマンド ===")
-        config.set("help.role", "§e/manhunt role <runner|hunter|spectator> - 役割変更")
-        config.set("help.compass", "§e/manhunt compass - 仮想追跡コンパスを有効化")
-        config.set("help.status", "§e/manhunt status - ゲーム状況確認")
-        config.set("help.spectate", "§e/manhunt spectate - 観戦メニューを開く（観戦者のみ）")
-        config.set("help.note", "§7※ サーバー参加時に自動的にゲームに参加します")
-        config.set("help.virtual-compass", "§b=== 仮想コンパスの使い方 ===")
-        config.set("help.compass-usage", "§7• 空手で右クリック = 最寄りランナーを追跡")
-        config.set("help.compass-display", "§7• パーティクルと矢印で方向を表示")
-        config.set("help.compass-benefits", "§7• アイテムドロップや重複の心配なし")
-        config.set("help.admin-header", "§c=== 管理者コマンド ===")
-        
-        // チームチャットメッセージ
-        config.set("teamchat.player-only", "§cこのコマンドはプレイヤーのみが実行できます。")
-        config.set("teamchat.game-only", "§cチームチャットはゲーム中のみ使用できます。")
-        config.set("teamchat.spectator-cannot-use", "§c観戦者はチームチャットを使用できません。")
-        config.set("teamchat.usage", "§c使用法: /r <メッセージ>")
-        config.set("teamchat.usage-hint", "§7味方同士でのみメッセージを送信します。")
-        config.set("teamchat.empty-message", "§cメッセージが空です。")
-        config.set("teamchat.no-teammates", "§c現在チームメンバーがいません。")
-        config.set("teamchat.hunter-prefix", "§c[🗡チーム]")
-        config.set("teamchat.runner-prefix", "§a[🏃チーム]")
-        config.set("teamchat.format", "{prefix} §f{sender}: §7{message}")
-        
-        // 座標共有メッセージ
-        config.set("position.player-only", "§cこのコマンドはプレイヤーのみが実行できます。")
-        config.set("position.game-only", "§c座標共有はゲーム中のみ使用できます。")
-        config.set("position.spectator-cannot-use", "§c観戦者は座標共有を使用できません。")
-        config.set("position.no-teammates", "§c現在チームメンバーがいません。")
-        config.set("position.hunter-prefix", "§c[🗡座標]")
-        config.set("position.runner-prefix", "§a[🏃座標]")
-        config.set("position.format", "{prefix} §f{sender}: §bX:{x} Y:{y} Z:{z} §7({world})")
-        config.set("position.sent-format", "{prefix} §f{sender}: §bX:{x} Y:{y} Z:{z} §7({world}) §7(味方{count}人に送信)")
-        config.set("position.relative", "§7  └→ 相対座標: X:{x} Y:{y} Z:{z} (距離: {distance}m)")
-        config.set("position.different-world", "§7  └→ §e別ワールドにいます")
-        
-        // 退出メッセージ
-        config.set("quit.changed-to-spectator", "§7ゲームから退出したため、観戦者になりました。")
-        
-        // 再接続メッセージ
-        config.set("rejoin.success", "§aネットワークエラーから復帰しました！役割: {role}")
-        
-        // 自動割り当てメッセージ
-        config.set("auto-assign.hunter", "§cハンターが不足のため、自動的にハンターに割り当てられました！")
-        config.set("auto-assign.runner", "§aランナーが不足のため、自動的にランナーに割り当てられました！")
-        
-        // ゲーム開始メッセージ
-        config.set("game.hunter-start", "§c[ハンター] 逃げる人を追いかけろ！")
-        config.set("game.runner-start", "§a[ランナー] エンダードラゴンを倒せ！")
-        config.set("game.spectator-start", "§7[観戦者] ゲームを観戦してください。")
-        
-        // リスポンメッセージ
-        config.set("respawn.hunter", "§c[ハンター] リスポンしました！追跡を続けてください。")
-        config.set("respawn.runner-death", "§c[ランナー] 死亡しました。{time}秒後にリスポンします...")
-        config.set("respawn.waiting", "§7[リスポン待ち] スペクテーターモードでゲームを観戦できます。")
-    }
     
-    private fun addEnglishMessages(config: YamlConfiguration) {
-        // Game basic messages
-        config.set("game.start", "§6[Manhunt] Game Started!")
-        config.set("game.end", "§6[Manhunt] Game Ended!")
-        config.set("game.reset", "§7Game has been reset.")
-        config.set("game.hunter-win", "§cHunters Win! All runners have been eliminated!")
-        config.set("game.runner-win", "§aRunners Win! The Ender Dragon has been defeated!")
-        
-        // Role messages
-        config.set("role.changed", "§aRole changed to {role}!")
-        config.set("role.runner", "Runner")
-        config.set("role.hunter", "Hunter")
-        config.set("role.spectator", "Spectator")
-        config.set("role.invalid", "§cInvalid role. Please specify runner, hunter, or spectator.")
-        config.set("role.game-running", "§cCannot change role after the game has started.")
-        
-        // Compass messages
-        config.set("compass.activated", "§6[Tracking Compass] §aActivated!")
-        config.set("compass.usage", "§eUsage: §7Hold compass and right-click to track runners")
-        config.set("compass.slot-hint", "§e§l※Compass required (no duplicates allowed)")
-        config.set("compass.hunter-only", "§cOnly hunters can use the compass!")
-        config.set("compass.game-only", "§cCompass can only be used during the game.")
-        config.set("compass.cooldown", "§cCompass on cooldown... ({time}s)")
-        config.set("compass.no-target", "§cNo runner targets found.")
-        config.set("compass.different-world", "§cRunner is in a different world: §e{world}")
-        config.set("compass.tracking", "§6[Compass] §e{player} §7- {distance}")
-        config.set("compass.target-switched", "§b[Target Switch] §7[{index}/{total}] §e{player} §7- {distance}")
-        config.set("compass.hint", "§6[Hint] §eHold compass and right-click to track runners!")
-        config.set("compass.actionbar-hint", "§e§lCompass right-click to track runners")
-        config.set("compass.actionbar-use", "§e§lCompass right-click to start tracking")
-        config.set("compass.title-activated", "§6§lVirtual Compass")
-        config.set("compass.subtitle-activated", "§eRight-click to start tracking")
-        
-        // Spectate menu messages
-        config.set("spectate.menu-title", "§6Spectator Menu")
-        config.set("spectate.spectator-only", "§cOnly spectators can use this menu.")
-        config.set("spectate.teleported", "§aTeleported to {player}!")
-        config.set("spectate.player-offline", "§cThat player is not online.")
-        
-        // Command messages
-        config.set("command.player-only", "§cThis command can only be executed by players.")
-        config.set("command.no-permission", "§cYou don't have permission to execute this command.")
-        config.set("command.unknown", "§cUnknown command. Use /manhunt help to see usage.")
-        config.set("command.usage", "§cUsage: {usage}")
-        
-        // Game status messages
-        config.set("status.header", "§6=== Manhunt Game Status ===")
-        config.set("status.state", "§eGame State: {state}")
-        config.set("status.min-players", "§eMinimum Players: {count}")
-        config.set("status.runners", "§aRunners: {count} players {players}")
-        config.set("status.hunters", "§cHunters: {count} players {players}")
-        config.set("status.spectators", "§7Spectators: {count} players {players}")
-        config.set("status.total-players", "§eTotal Players: {count}")
-        config.set("status.can-start", "§eCan Auto-start: {status}")
-        
-        // Player join/quit messages
-        config.set("join.game-running", "§7Joined as spectator because the game is in progress.")
-        config.set("join.next-game", "§eYou can select a role for the next game.")
-        config.set("join.welcome", "§6[Manhunt] Joined the game!")
-        config.set("join.role-select", "§eUse /manhunt role <runner|hunter> to select your role.")
-        config.set("join.spectator", "§7Joined as spectator.")
-        
-        // Proximity warning messages
-        config.set("proximity.level-1", "§c§l[WARNING] Hunter within 1 chunk!")
-        config.set("proximity.level-2", "§6§l[WARNING] Hunter within 2 chunks!")
-        config.set("proximity.level-3", "§e§l[WARNING] Hunter within 3 chunks!")
-        
-        // UI display messages
-        config.set("ui.hunter-mode", "🗡 Hunter Mode | Nearest Target: {target} ({distance}m)")
-        config.set("ui.runner-mode", "🏃 Runner Mode | Defeat the Ender Dragon!")
-        config.set("ui.spectator-mode", "👁 Spectator Mode | Watching the game...")
-        
-        // Help messages
-        config.set("help.header", "§6=== Manhunt Commands ===")
-        config.set("help.role", "§e/manhunt role <runner|hunter|spectator> - Change role")
-        config.set("help.compass", "§e/manhunt compass - Activate virtual tracking compass")
-        config.set("help.status", "§e/manhunt status - Check game status")
-        config.set("help.spectate", "§e/manhunt spectate - Open spectator menu (spectators only)")
-        config.set("help.note", "§7※ You automatically join the game when entering the server")
-        config.set("help.virtual-compass", "§b=== Virtual Compass Usage ===")
-        config.set("help.compass-usage", "§7• Right-click with empty hand = Track nearest runner")
-        config.set("help.compass-display", "§7• Particles and arrows show direction")
-        config.set("help.compass-benefits", "§7• No item drops or duplication issues")
-        config.set("help.admin-header", "§c=== Admin Commands ===")
-        
-        // Team Chat messages
-        config.set("teamchat.player-only", "§cThis command can only be used by players.")
-        config.set("teamchat.game-only", "§cTeam chat can only be used during the game.")
-        config.set("teamchat.spectator-cannot-use", "§cSpectators cannot use team chat.")
-        config.set("teamchat.usage", "§cUsage: /r <message>")
-        config.set("teamchat.usage-hint", "§7Send message to teammates only.")
-        config.set("teamchat.empty-message", "§cMessage is empty.")
-        config.set("teamchat.no-teammates", "§cNo teammates online.")
-        config.set("teamchat.hunter-prefix", "§c[🗡Team]")
-        config.set("teamchat.runner-prefix", "§a[🏃Team]")
-        config.set("teamchat.format", "{prefix} §f{sender}: §7{message}")
-        
-        // Position Share messages
-        config.set("position.player-only", "§cThis command can only be used by players.")
-        config.set("position.game-only", "§cPosition sharing can only be used during the game.")
-        config.set("position.spectator-cannot-use", "§cSpectators cannot share position.")
-        config.set("position.no-teammates", "§cNo teammates online.")
-        config.set("position.hunter-prefix", "§c[🗡Pos]")
-        config.set("position.runner-prefix", "§a[🏃Pos]")
-        config.set("position.format", "{prefix} §f{sender}: §bX:{x} Y:{y} Z:{z} §7({world})")
-        config.set("position.sent-format", "{prefix} §f{sender}: §bX:{x} Y:{y} Z:{z} §7({world}) §7(Sent to {count} teammates)")
-        config.set("position.relative", "§7  └→ Relative: X:{x} Y:{y} Z:{z} (Distance: {distance}m)")
-        config.set("position.different-world", "§7  └→ §eIn different world")
-        
-        // Quit messages
-        config.set("quit.changed-to-spectator", "§7You became a spectator after leaving the game.")
-        
-        // Rejoin messages
-        config.set("rejoin.success", "§aRecovered from network error! Role: {role}")
-        
-        // Auto-assign messages
-        config.set("auto-assign.hunter", "§cAutomatically assigned as Hunter due to shortage!")
-        config.set("auto-assign.runner", "§aAutomatically assigned as Runner due to shortage!")
-        
-        // Game start messages
-        config.set("game.hunter-start", "§c[Hunter] Chase the runners!")
-        config.set("game.runner-start", "§a[Runner] Defeat the Ender Dragon!")
-        config.set("game.spectator-start", "§7[Spectator] Please spectate the game.")
-        
-        // Respawn messages
-        config.set("respawn.hunter", "§c[Hunter] Respawned! Continue the chase.")
-        config.set("respawn.runner-death", "§c[Runner] You died. Respawning in {time} seconds...")
-        config.set("respawn.waiting", "§7[Waiting] You can spectate in spectator mode.")
-    }
     
     fun getMessage(player: Player?, key: String, vararg args: Any): String {
         val language = getPlayerLanguage(player)
@@ -439,6 +163,7 @@ class MessageManager(private val plugin: Main) {
         
         // 名前付きプレースホルダーの置換（マップで渡された場合）
         if (args.size == 1 && args[0] is Map<*, *>) {
+            @Suppress("UNCHECKED_CAST")
             val placeholders = args[0] as Map<String, Any>
             for ((key, value) in placeholders) {
                 result = result.replace("{$key}", value.toString())

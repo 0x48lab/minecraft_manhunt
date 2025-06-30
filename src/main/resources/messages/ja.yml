@@ -30,11 +30,32 @@ compass:
   actionbar-use: '§e§lコンパス右クリックで追跡開始'
   title-activated: '§6§l仮想コンパス'
   subtitle-activated: '§e右クリックで追跡開始'
+  already-have: '§e既に追跡コンパスを持っています'
+  inventory-full: '§eインベントリが満杯のため、コンパスを配置できませんでした'
 spectate:
-  menu-title: '§6観戦者メニュー'
+  menu-title: '§6観戦メニュー'
+  menu-title-with-page: '§6観戦メニュー §7- ページ {current}/{total}'
   spectator-only: '§c観戦者のみこのメニューを使用できます。'
   teleported: '§a{player}にテレポートしました！'
   player-offline: '§cそのプレイヤーはオンラインではありません。'
+  lore:
+    role: '§7役割: {roleColor}{role}'
+    health: '§7体力: §c{health}§7/§c20.0'
+    world: '§7ワールド: §e{world}'
+    click-teleport: '§eクリックでテレポート！'
+  button:
+    previous-page: '§a◀ 前のページ'
+    next-page: '§a次のページ ▶'
+    to-page: '§7ページ {page}へ'
+    close: '§c閉じる'
+    refresh: '§b更新'
+    refresh-description: '§7プレイヤーリストを更新'
+  info:
+    title: '§6観戦メニュー'
+    description-1: '§7プレイヤーをクリックして'
+    description-2: '§7テレポートできます。'
+    runner-legend: '§a● ランナー'
+    hunter-legend: '§c● ハンター'
 command:
   player-only: '§cこのコマンドはプレイヤーのみが実行できます。'
   no-permission: '§cこのコマンドを実行する権限がありません。'
@@ -53,7 +74,7 @@ join:
   game-running: '§7ゲーム進行中のため観戦者として参加しました。'
   next-game: '§e次のゲームで役割を選択できます。'
   welcome: '§6[Manhunt] ゲームに参加しました！'
-  role-select: '§e/manhunt role <runner|hunter> で役割を選択してください。'
+  role-select: '§e/manhunt roles でメニューを開いて役割を選択してください。'
   spectator: '§7観戦者として参加しました。'
 proximity:
   level-1: '§c§l[警告] ハンターが1チャンク以内にいます！'
@@ -111,6 +132,13 @@ respawn:
   runner-success: '§a[ランナー] リスポンしました！エンダードラゴンを倒してください。'
   countdown: '§c[リスポン] あと{time}秒...'
   countdown-final: '§e§l{time}...'
+
+ui:
+  title:
+    manhunt: '§6🏃 MANHUNT'
+    manhunt-welcome: '§e🎮 MANHUNT'
+    game-running-spectator: '§7ゲーム進行中 - 観戦モード'
+    role-selection: '§f/manhunt role で役割を選択しよう！'
 
 # ManhuntCommand関連
 admin:
@@ -203,6 +231,67 @@ shop:
   purchase-success: '§a{item}を購入しました！（-{price}{unit}）'
   balance-remaining: '§7残高: §f{balance}{unit}'
 
+# 拡張ショップシステム
+shop-extended:
+  menu:
+    category-title: '§6§lショップ - カテゴリ選択'
+    shop-title: '§6§lショップ - {category}'
+    category-click: '§7クリックして{category}を見る'
+    balance-display: '§b所持金: §f{balance}{unit}'
+  
+  item:
+    price-format: '§6価格: §f{price}{unit}'
+    purchase-limit: '§7購入制限: §f{current}/{max}'
+    cooldown: '§cクールダウン: {time}秒'
+    insufficient-funds: '§c✗ {unit}が不足しています'
+    cannot-purchase: '§c✗ 購入できません'
+    click-to-purchase: '§a✓ クリックして購入'
+  
+  buttons:
+    back: '§a← 戻る'
+    back-description: '§7カテゴリ選択に戻る'
+    close: '§c閉じる'
+    balance-title: '§6所持金'
+    balance-amount: '§b残高: §f{balance}{unit}'
+
+# 言語システム
+language:
+  changed: '言語が{language}に変更されました'
+  unsupported: 'サポートされていない言語です: {language}'
+
+# 役割選択メニュー
+role-selector:
+  menu-title: '§6§l役割選択'
+  game-running: '§cゲーム中は役割を変更できません。'
+  not-in-game: '§cゲームに参加していません。'
+  change-failed: '§c役割の変更に失敗しました。'
+  already-selected: '§e既に{role}が選択されています。'
+  currently-selected: '§a§l現在選択中'
+  click-to-select: '§eクリックして選択'
+  current-count: '§7現在の人数: §f{count}人'
+  
+  runner:
+    name: '§a🏃 ランナー'
+    description: '§7エンダードラゴンを倒して勝利を目指します。\\n§7ハンターから逃げながら進行しましょう。'
+  
+  hunter:
+    name: '§c🗡 ハンター'
+    description: '§7ランナーを追跡・討伐して勝利を目指します。\\n§7コンパスを使ってランナーを追いかけましょう。'
+  
+  spectator:
+    name: '§7👁 観戦者'
+    description: '§7ゲームを観戦します。\\n§7プレイには参加しません。'
+  
+  info:
+    title: '§6ℹ ゲーム情報'
+    description-1: '§7右クリックで役割を選択できます'
+    description-2: '§7ゲーム開始まで変更可能です'
+    waiting-state: '§e状態: 開始待機中'
+    min-players: '§e最小人数: {count}人'
+  
+  button:
+    close: '§c閉じる'
+
 # ゲーム進行メッセージ
 game-progress:
   reset-failed: '§cゲーム中にプレイヤーが退出し、観戦者になりました。'
@@ -294,6 +383,7 @@ command-interface:
   minplayers-set: '§a最小プレイヤー数を{count}に設定しました。'
   help-commands-header: '§6=== Manhunt コマンド ==='
   help-role-change: '§e/manhunt role <runner|hunter|spectator> - 役割変更'
+  help-role-menu: '§e/manhunt roles - 役割選択メニューを開く'
   help-compass-activate: '§e/manhunt compass - 仮想追跡コンパスを有効化'
   help-status-check: '§e/manhunt status - ゲーム状況確認'
   help-spectate-menu: '§e/manhunt spectate - 観戦メニューを開く（観戦者のみ）'
@@ -422,32 +512,34 @@ economy:
   validation:
     balance-negative: '残高は0以上である必要があります'
     amount-negative: '金額は0以上である必要があります'
+    amount-non-negative: '金額は0以上である必要があります'
+    balance-non-negative: '残高は0以上である必要があります'
     insufficient-balance: '残高が不足しています'
   
   # 通貨関連メッセージ
   currency:
     gained: '§a[+{amount}{unit}] {reason}'
     lost: '§c[-{amount}{unit}] {reason}'
+    hunter-earned: '§a[+{amount}{unit}] {reason}'
+    runner-earned: '§a[+{amount}{unit}] {reason}'
     balance-updated: '残高が更新されました: {balance}{unit}'
     statistics-error: '統計記録でエラーが発生しました: {error}'
   
-  # 獲得理由（ハンター）
-  earn-reasons:
-    hunter:
-      damage-dealt: 'ランナーに{damage}ダメージを与えた'
-      kill: '{runnerName}を倒した'
-      proximity: 'ランナーとの距離{distance}m以内に接近'
-      time-bonus: '追跡ボーナス'
-    
-    # 獲得理由（ランナー）
-    runner:
-      survival-bonus: '生存ボーナス'
-      progress:
-        nether-enter: 'ネザーに到達'
-        fortress-found: '要塞を発見'
-        end-enter: 'エンドに到達'
-      item-collected: '{itemName}を{count}個収集'
-      escape-bonus: '逃走成功ボーナス'
+# 獲得理由システム
+earn-reasons:
+  hunter:
+    damage-dealt: 'ランナーに{damage}ダメージを与えた'
+    kill: '{runner}を倒した'
+    proximity: 'ランナーとの距離{distance}m以内に接近'
+    time-bonus: '追跡ボーナス'
+  
+  runner:
+    survival-bonus: '生存ボーナス'
+    nether-enter: 'ネザーに到達'
+    fortress-found: '要塞を発見'
+    end-enter: 'エンドに到達'
+    item-collected: '{item}を{count}個収集'
+    escape-bonus: '逃走成功ボーナス'
   
   # リセット関連
   reset:
@@ -495,30 +587,29 @@ materials:
 
 # ショップ関連（拡張）
 shop-extended:
-  # インターフェース
-  interface:
-    category-menu-title: '§6§lショップ - カテゴリ選択'
-    category-shop-title: '§6§lショップ - {category}'
-    category-description: '§7クリックして{category}を見る'
+  # メニュー
+  menu:
+    category-title: '§6§lショップ - カテゴリ選択'
+    shop-title: '§6§lショップ - {category}'
+    category-click: '§7クリックして{category}を見る'
     balance-display: '§b所持金: §f{balance}{unit}'
-    
-    # ボタン
-    back-button: '§c戻る'
-    back-description: '§7カテゴリ選択に戻る'
-    close-button: '§c閉じる'
-    balance-button: '§6所持金'
-    
-    # フィラー
-    filler-name: ' '
   
   # アイテム表示
-  item-display:
+  item:
     price-format: '§6価格: §f{price}{unit}'
-    purchase-limit: '§7購入制限: §f{count}/{max}'
-    cooldown-remaining: '§cクールダウン: {time}秒'
+    purchase-limit: '§7購入制限: §f{current}/{max}'
+    cooldown: '§cクールダウン: {time}秒'
     insufficient-funds: '§c✗ {unit}が不足しています'
     cannot-purchase: '§c✗ 購入できません'
-    can-purchase: '§a✓ クリックして購入'
+    click-to-purchase: '§a✓ クリックして購入'
+  
+  # ボタン
+  buttons:
+    back: '§c戻る'
+    back-description: '§7カテゴリ選択に戻る'
+    close: '§c閉じる'
+    balance-title: '§6所持金'
+    balance-amount: '§b残高: §f{balance}{unit}'
   
   # 購入処理
   purchase:

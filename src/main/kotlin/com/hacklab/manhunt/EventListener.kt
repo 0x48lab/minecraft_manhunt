@@ -6,14 +6,18 @@ import org.bukkit.entity.EnderDragon
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
+import org.bukkit.event.block.Action
 import org.bukkit.event.entity.EntityDeathEvent
+import org.bukkit.event.inventory.InventoryCloseEvent
+import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
 
 class EventListener(
     private val gameManager: GameManager,
     private val uiManager: UIManager,
-    private val messageManager: MessageManager
+    private val messageManager: MessageManager,
+    private val roleSelectorMenu: RoleSelectorMenu
 ) : Listener {
     
     @EventHandler
@@ -38,7 +42,7 @@ class EventListener(
                 player.sendMessage(messageManager.getMessage(player, "join.next-game"))
                 
                 // ゲーム状況をタイトルで表示
-                uiManager.showTitle(player, "§6🏃 MANHUNT", "§7ゲーム進行中 - 観戦モード")
+                uiManager.showTitle(player, messageManager.getMessage(player, "ui.title.manhunt"), messageManager.getMessage(player, "ui.title.game-running-spectator"))
             }
             GameState.WAITING -> {
                 // 待機中は観戦者として参加（後で役割変更可能）
@@ -48,7 +52,7 @@ class EventListener(
                 player.sendMessage(messageManager.getMessage(player, "join.role-select"))
                 
                 // 参加案内をタイトルで表示
-                uiManager.showTitle(player, "§e🎮 MANHUNT", "§f/manhunt role で役割を選択しよう！")
+                uiManager.showTitle(player, messageManager.getMessage(player, "ui.title.manhunt-welcome"), messageManager.getMessage(player, "ui.title.role-selection"))
             }
             else -> {
                 // その他の状態では観戦者として参加
@@ -90,5 +94,12 @@ class EventListener(
             // プレイヤー死亡処理をGameManagerに委託
             gameManager.onPlayerDeath(player)
         }
+    }
+
+
+    @EventHandler
+    fun onInventoryClose(event: InventoryCloseEvent) {
+        val player = event.player as? Player ?: return
+        roleSelectorMenu.onInventoryClose(player)
     }
 }

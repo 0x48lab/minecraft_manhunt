@@ -100,7 +100,7 @@ economy:
   # ランナー用設定
   runner:
     # 生存ボーナス（1秒あたり）
-    survival-bonus: 0.5
+    survival-bonus: 0.3
     # 生存ボーナスの支給間隔（秒）
     survival-interval: 5
     # ネザー到達報酬

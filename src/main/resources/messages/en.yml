@@ -30,11 +30,32 @@ compass:
   actionbar-use: '§e§lCompass right-click to start tracking'
   title-activated: '§6§lVirtual Compass'
   subtitle-activated: '§eRight-click to start tracking'
+  already-have: '§eYou already have a tracking compass'
+  inventory-full: '§eCould not place compass due to full inventory'
 spectate:
   menu-title: '§6Spectator Menu'
+  menu-title-with-page: '§6Spectator Menu §7- Page {current}/{total}'
   spectator-only: '§cOnly spectators can use this menu.'
   teleported: '§aTeleported to {player}!'
   player-offline: '§cThat player is not online.'
+  lore:
+    role: '§7Role: {roleColor}{role}'
+    health: '§7Health: §c{health}§7/§c20.0'
+    world: '§7World: §e{world}'
+    click-teleport: '§eClick to teleport!'
+  button:
+    previous-page: '§a◀ Previous Page'
+    next-page: '§aNext Page ▶'
+    to-page: '§7To page {page}'
+    close: '§cClose'
+    refresh: '§bRefresh'
+    refresh-description: '§7Refresh player list'
+  info:
+    title: '§6Spectator Menu'
+    description-1: '§7Click on players to'
+    description-2: '§7teleport to them.'
+    runner-legend: '§a● Runners'
+    hunter-legend: '§c● Hunters'
 command:
   player-only: '§cThis command can only be executed by players.'
   no-permission: '§cYou don''t have permission to execute this command.'
@@ -53,7 +74,7 @@ join:
   game-running: '§7Joined as spectator because the game is in progress.'
   next-game: '§eYou can select a role for the next game.'
   welcome: '§6[Manhunt] Joined the game!'
-  role-select: '§eUse /manhunt role <runner|hunter> to select your role.'
+  role-select: '§eUse /manhunt roles to open menu and select your role.'
   spectator: '§7Joined as spectator.'
 proximity:
   level-1: '§c§l[WARNING] Hunter within 1 chunk!'
@@ -111,6 +132,13 @@ respawn:
   runner-success: '§a[Runner] Respawned! Defeat the Ender Dragon.'
   countdown: '§c[Respawn] {time} seconds remaining...'
   countdown-final: '§e§l{time}...'
+
+ui:
+  title:
+    manhunt: '§6🏃 MANHUNT'
+    manhunt-welcome: '§e🎮 MANHUNT'
+    game-running-spectator: '§7Game in progress - Spectator mode'
+    role-selection: '§fUse /manhunt role to select your role!'
 
 # ManhuntCommand related
 admin:
@@ -203,6 +231,67 @@ shop:
   purchase-success: '§aPurchased {item}! (-{price}{unit})'
   balance-remaining: '§7Balance: §f{balance}{unit}'
 
+# Extended shop system
+shop-extended:
+  menu:
+    category-title: '§6§lShop - Category Selection'
+    shop-title: '§6§lShop - {category}'
+    category-click: '§7Click to view {category}'
+    balance-display: '§bBalance: §f{balance}{unit}'
+  
+  item:
+    price-format: '§6Price: §f{price}{unit}'
+    purchase-limit: '§7Purchase limit: §f{current}/{max}'
+    cooldown: '§cCooldown: {time} seconds'
+    insufficient-funds: '§c✗ Insufficient {unit}'
+    cannot-purchase: '§c✗ Cannot purchase'
+    click-to-purchase: '§a✓ Click to purchase'
+  
+  buttons:
+    back: '§a← Back'
+    back-description: '§7Return to category selection'
+    close: '§cClose'
+    balance-title: '§6Balance'
+    balance-amount: '§bBalance: §f{balance}{unit}'
+
+# Language system
+language:
+  changed: 'Language changed to {language}'
+  unsupported: 'Unsupported language: {language}'
+
+# Role selector menu
+role-selector:
+  menu-title: '§6§lRole Selection'
+  game-running: '§cCannot change role during the game.'
+  not-in-game: '§cYou are not in the game.'
+  change-failed: '§cFailed to change role.'
+  already-selected: '§e{role} is already selected.'
+  currently-selected: '§a§lCurrently Selected'
+  click-to-select: '§eClick to select'
+  current-count: '§7Current count: §f{count} players'
+  
+  runner:
+    name: '§a🏃 Runner'
+    description: '§7Aim for victory by defeating the Ender Dragon.\\n§7Progress while escaping from hunters.'
+  
+  hunter:
+    name: '§c🗡 Hunter'
+    description: '§7Aim for victory by tracking and eliminating runners.\\n§7Use compass to chase runners.'
+  
+  spectator:
+    name: '§7👁 Spectator'
+    description: '§7Spectate the game.\\n§7Does not participate in gameplay.'
+  
+  info:
+    title: '§6ℹ Game Info'
+    description-1: '§7Right-click to select your role'
+    description-2: '§7Can be changed until game starts'
+    waiting-state: '§eStatus: Waiting to start'
+    min-players: '§eMin players: {count} players'
+  
+  button:
+    close: '§cClose'
+
 # Game progress messages
 game-progress:
   reset-failed: '§cPlayer left during the game and became spectator.'
@@ -294,6 +383,7 @@ command-interface:
   minplayers-set: '§aMinimum players set to {count}.'
   help-commands-header: '§6=== Manhunt Commands ==='
   help-role-change: '§e/manhunt role <runner|hunter|spectator> - Change role'
+  help-role-menu: '§e/manhunt roles - Open role selection menu'
   help-compass-activate: '§e/manhunt compass - Activate virtual tracking compass'
   help-status-check: '§e/manhunt status - Check game status'
   help-spectate-menu: '§e/manhunt spectate - Open spectator menu (spectators only)'
@@ -422,32 +512,34 @@ economy:
   validation:
     balance-negative: 'Balance must be 0 or greater'
     amount-negative: 'Amount must be 0 or greater'
+    amount-non-negative: 'Amount must be 0 or greater'
+    balance-non-negative: 'Balance must be 0 or greater'
     insufficient-balance: 'Insufficient balance'
   
   # Currency related messages
   currency:
     gained: '§a[+{amount}{unit}] {reason}'
     lost: '§c[-{amount}{unit}] {reason}'
+    hunter-earned: '§a[+{amount}{unit}] {reason}'
+    runner-earned: '§a[+{amount}{unit}] {reason}'
     balance-updated: 'Balance updated: {balance}{unit}'
     statistics-error: 'Error occurred in statistics recording: {error}'
   
-  # Earning reasons (Hunter)
-  earn-reasons:
-    hunter:
-      damage-dealt: 'Dealt {damage} damage to runner'
-      kill: 'Killed {runnerName}'
-      proximity: 'Approached runner within {distance}m'
-      time-bonus: 'Tracking bonus'
-    
-    # Earning reasons (Runner)
-    runner:
-      survival-bonus: 'Survival bonus'
-      progress:
-        nether-enter: 'Reached the Nether'
-        fortress-found: 'Found fortress'
-        end-enter: 'Reached the End'
-      item-collected: 'Collected {count} {itemName}'
-      escape-bonus: 'Successful escape bonus'
+# Earning reason system
+earn-reasons:
+  hunter:
+    damage-dealt: 'Dealt {damage} damage to runner'
+    kill: 'Killed {runner}'
+    proximity: 'Approached runner within {distance}m'
+    time-bonus: 'Tracking bonus'
+  
+  runner:
+    survival-bonus: 'Survival bonus'
+    nether-enter: 'Reached the Nether'
+    fortress-found: 'Found fortress'
+    end-enter: 'Reached the End'
+    item-collected: 'Collected {count} {item}'
+    escape-bonus: 'Successful escape bonus'
   
   # Reset related
   reset:
@@ -495,30 +587,29 @@ materials:
 
 # Shop related (Extended)
 shop-extended:
-  # Interface
-  interface:
-    category-menu-title: '§6§lShop - Category Selection'
-    category-shop-title: '§6§lShop - {category}'
-    category-description: '§7Click to view {category}'
+  # Menu
+  menu:
+    category-title: '§6§lShop - Category Selection'
+    shop-title: '§6§lShop - {category}'
+    category-click: '§7Click to view {category}'
     balance-display: '§bBalance: §f{balance}{unit}'
-    
-    # Buttons
-    back-button: '§cBack'
-    back-description: '§7Return to category selection'
-    close-button: '§cClose'
-    balance-button: '§6Balance'
-    
-    # Filler
-    filler-name: ' '
   
   # Item display
-  item-display:
+  item:
     price-format: '§6Price: §f{price}{unit}'
-    purchase-limit: '§7Purchase limit: §f{count}/{max}'
-    cooldown-remaining: '§cCooldown: {time}s'
+    purchase-limit: '§7Purchase limit: §f{current}/{max}'
+    cooldown: '§cCooldown: {time} seconds'
     insufficient-funds: '§c✗ Insufficient {unit}'
     cannot-purchase: '§c✗ Cannot purchase'
-    can-purchase: '§a✓ Click to purchase'
+    click-to-purchase: '§a✓ Click to purchase'
+  
+  # Buttons
+  buttons:
+    back: '§a← Back'
+    back-description: '§7Return to category selection'
+    close: '§cClose'
+    balance-title: '§6Balance'
+    balance-amount: '§bBalance: §f{balance}{unit}'
   
   # Purchase processing
   purchase:

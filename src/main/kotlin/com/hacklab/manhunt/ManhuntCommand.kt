@@ -12,7 +12,8 @@ class ManhuntCommand(
     private val gameManager: GameManager,
     private val compassTracker: CompassTracker,
     private val spectatorMenu: SpectatorMenu,
-    private val messageManager: MessageManager
+    private val messageManager: MessageManager,
+    private val roleSelectorMenu: RoleSelectorMenu
 ) : CommandExecutor, TabCompleter {
     
     private val configManager: ConfigManager
@@ -26,6 +27,7 @@ class ManhuntCommand(
         
         when (args[0].lowercase()) {
             "role" -> handleRole(sender, args)
+            "roles" -> handleRoleMenu(sender)
             "start" -> handleStart(sender)
             "compass" -> handleCompass(sender)
             "status" -> handleStatus(sender)
@@ -55,7 +57,7 @@ class ManhuntCommand(
         }
         
         if (args.size < 2) {
-            sender.sendMessage(messageManager.getMessage(sender, "command.usage", "/manhunt role <runner|hunter|spectator>"))
+            sender.sendMessage(messageManager.getMessage(sender, "command.usage", mapOf("usage" to "/manhunt role <runner|hunter|spectator>")))
             return
         }
         
@@ -71,7 +73,7 @@ class ManhuntCommand(
         
         gameManager.setPlayerRole(sender, role)
         val roleText = messageManager.getMessage(sender, "role.${role.name.lowercase()}")
-        sender.sendMessage(messageManager.getMessage(sender, "role.changed", roleText))
+        sender.sendMessage(messageManager.getMessage(sender, "role.changed", mapOf("role" to roleText)))
     }
     
     private fun handleStart(sender: CommandSender) {
@@ -104,120 +106,124 @@ class ManhuntCommand(
     }
     
     private fun handleStatus(sender: CommandSender) {
+        val lang = if (sender is Player) messageManager.getPlayerLanguage(sender) else "ja"
         val state = when (gameManager.getGameState()) {
-            GameState.WAITING -> "待機中"
-            GameState.STARTING -> "開始中"
-            GameState.RUNNING -> "進行中"
-            GameState.ENDED -> "終了"
+            GameState.WAITING -> messageManager.getMessage(lang, "command-interface.status-waiting")
+            GameState.STARTING -> messageManager.getMessage(lang, "command-interface.status-starting")
+            GameState.RUNNING -> messageManager.getMessage(lang, "command-interface.status-running")
+            GameState.ENDED -> messageManager.getMessage(lang, "command-interface.status-ended")
         }
         
         val hunters = gameManager.getAllHunters()
         val runners = gameManager.getAllRunners()
         val spectators = gameManager.getAllSpectators()
         
-        sender.sendMessage("§6=== Manhunt ゲーム状況 ===")
-        sender.sendMessage("§eゲーム状態: $state")
-        sender.sendMessage("§e最小プレイヤー数: ${gameManager.getMinPlayers()}")
-        sender.sendMessage("§a逃げる人: ${runners.size}人 ${if (runners.isNotEmpty()) runners.map { it.name } else ""}")
-        sender.sendMessage("§c追う人: ${hunters.size}人 ${if (hunters.isNotEmpty()) hunters.map { it.name } else ""}")
-        sender.sendMessage("§7観戦者: ${spectators.size}人 ${if (spectators.isNotEmpty()) spectators.map { it.name } else ""}")
+        sender.sendMessage(messageManager.getMessage(lang, "command-interface.status-game-header"))
+        sender.sendMessage(messageManager.getMessage(lang, "command-interface.status-game-state", mapOf("state" to state)))
+        sender.sendMessage(messageManager.getMessage(lang, "command-interface.status-min-players", mapOf("count" to gameManager.getMinPlayers())))
+        sender.sendMessage(messageManager.getMessage(lang, "command-interface.status-runners-list", mapOf("count" to runners.size, "players" to if (runners.isNotEmpty()) runners.map { it.name } else "")))
+        sender.sendMessage(messageManager.getMessage(lang, "command-interface.status-hunters-list", mapOf("count" to hunters.size, "players" to if (hunters.isNotEmpty()) hunters.map { it.name } else "")))
+        sender.sendMessage(messageManager.getMessage(lang, "command-interface.status-spectators-list", mapOf("count" to spectators.size, "players" to if (spectators.isNotEmpty()) spectators.map { it.name } else "")))
         
         // 開始条件のチェック状況
         val totalPlayers = hunters.size + runners.size + spectators.size
-        sender.sendMessage("§e総プレイヤー数: $totalPlayers")
+        sender.sendMessage(messageManager.getMessage(lang, "command-interface.status-total-players", mapOf("count" to totalPlayers)))
         
         if (gameManager.getGameState() == GameState.WAITING) {
             val canStart = totalPlayers >= gameManager.getMinPlayers() && hunters.isNotEmpty() && runners.isNotEmpty()
-            sender.sendMessage("§e自動開始可能: ${if (canStart) "§a✓" else "§c✗"}")
+            sender.sendMessage(messageManager.getMessage(lang, "command-interface.status-can-start", mapOf("status" to if (canStart) "§a✓" else "§c✗")))
             
             if (!canStart) {
                 if (totalPlayers < gameManager.getMinPlayers()) {
-                    sender.sendMessage("§c  - プレイヤー数不足 (${totalPlayers}/${gameManager.getMinPlayers()})")
+                    sender.sendMessage(messageManager.getMessage(lang, "status-detail.insufficient-players", mapOf("current" to totalPlayers, "required" to gameManager.getMinPlayers())))
                 }
                 if (hunters.isEmpty()) {
-                    sender.sendMessage("§c  - ハンターが不足")
+                    sender.sendMessage(messageManager.getMessage(lang, "status-detail.insufficient-hunters"))
                 }
                 if (runners.isEmpty()) {
-                    sender.sendMessage("§c  - ランナーが不足")
+                    sender.sendMessage(messageManager.getMessage(lang, "status-detail.insufficient-runners"))
                 }
             }
         }
     }
     
     private fun handleSetHunter(sender: CommandSender, args: Array<out String>) {
+        val lang = if (sender is Player) messageManager.getPlayerLanguage(sender) else "ja"
         if (!sender.hasPermission("manhunt.admin")) {
-            sender.sendMessage("§cこのコマンドを実行する権限がありません。")
+            sender.sendMessage(messageManager.getMessage(lang, "command-interface.admin-no-permission"))
             return
         }
         
         if (args.size < 2) {
-            sender.sendMessage("§c使用法: /manhunt sethunter <プレイヤー名>")
+            sender.sendMessage(messageManager.getMessage(lang, "command-interface.sethunter-usage"))
             return
         }
         
         val playerName = args[1]
         if (playerName.isBlank()) {
-            sender.sendMessage("§cプレイヤー名を指定してください。")
+            sender.sendMessage(messageManager.getMessage(lang, "admin.player-name-required"))
             return
         }
         
         val targetPlayer = Bukkit.getPlayer(playerName)
         if (targetPlayer == null || !targetPlayer.isOnline) {
-            sender.sendMessage("§cプレイヤー '$playerName' がオンラインではありません。")
+            sender.sendMessage(messageManager.getMessage(lang, "admin.player-not-found", mapOf("player" to playerName)))
             return
         }
         
         if (gameManager.getGameState() != GameState.WAITING) {
-            sender.sendMessage("§cゲーム開始後は役割を変更できません。")
+            sender.sendMessage(messageManager.getMessage(lang, "role.game-running"))
             return
         }
         
         gameManager.setPlayerRole(targetPlayer, PlayerRole.HUNTER)
-        sender.sendMessage("§a${targetPlayer.name}を追う人に設定しました。")
-        targetPlayer.sendMessage("§cあなたは追う人に設定されました！")
+        sender.sendMessage(messageManager.getMessage(lang, "command-interface.sethunter-success", mapOf("player" to targetPlayer.name)))
+        targetPlayer.sendMessage(messageManager.getMessage(targetPlayer, "command-interface.sethunter-notify"))
     }
     
     private fun handleMinPlayers(sender: CommandSender, args: Array<out String>) {
+        val lang = if (sender is Player) messageManager.getPlayerLanguage(sender) else "ja"
         if (!sender.hasPermission("manhunt.admin")) {
-            sender.sendMessage("§cこのコマンドを実行する権限がありません。")
+            sender.sendMessage(messageManager.getMessage(lang, "command-interface.admin-no-permission"))
             return
         }
         
         if (args.size < 2) {
-            sender.sendMessage("§c現在の最小プレイヤー数: ${gameManager.getMinPlayers()}")
-            sender.sendMessage("§c変更するには: /manhunt minplayers <数値>")
+            sender.sendMessage(messageManager.getMessage(lang, "command-interface.minplayers-current", mapOf("count" to gameManager.getMinPlayers())))
+            sender.sendMessage(messageManager.getMessage(lang, "command-interface.minplayers-change"))
             return
         }
         
         val countStr = args[1]
         if (countStr.isBlank()) {
-            sender.sendMessage("§c数値を指定してください。")
+            sender.sendMessage(messageManager.getMessage(lang, "admin.input-required"))
             return
         }
         
         val count = countStr.toIntOrNull()
         if (count == null) {
-            sender.sendMessage("§c'$countStr' は有効な数値ではありません。")
+            sender.sendMessage(messageManager.getMessage(lang, "admin.invalid-number", mapOf("input" to countStr)))
             return
         }
         
         if (count < 2) {
-            sender.sendMessage("§c最小プレイヤー数は2以上である必要があります。")
+            sender.sendMessage(messageManager.getMessage(lang, "admin.min-players-too-low"))
             return
         }
         
         if (count > 100) {
-            sender.sendMessage("§c最小プレイヤー数は100以下である必要があります。")
+            sender.sendMessage(messageManager.getMessage(lang, "admin.min-players-too-high"))
             return
         }
         
         gameManager.setMinPlayers(count)
-        sender.sendMessage("§a最小プレイヤー数を${count}に設定しました。")
+        sender.sendMessage(messageManager.getMessage(lang, "command-interface.minplayers-set", mapOf("count" to count)))
     }
     
     private fun handleReload(sender: CommandSender, args: Array<out String>) {
+        val lang = if (sender is Player) messageManager.getPlayerLanguage(sender) else "ja"
         if (!sender.hasPermission("manhunt.admin")) {
-            sender.sendMessage("§cこのコマンドを実行する権限がありません。")
+            sender.sendMessage(messageManager.getMessage(lang, "command-interface.admin-no-permission"))
             return
         }
         
@@ -226,98 +232,114 @@ class ManhuntCommand(
         try {
             when (reloadType) {
                 "config" -> {
-                    sender.sendMessage("§7config.yml をリロードしています...")
+                    sender.sendMessage(messageManager.getMessage(lang, "reload.config-start"))
                     gameManager.configManager.reloadConfig()
-                    sender.sendMessage("§aconfig.yml のリロードが完了しました。")
+                    sender.sendMessage(messageManager.getMessage(lang, "reload.config-complete"))
                 }
                 "shop" -> {
-                    sender.sendMessage("§7shop.yml をリロードしています...")
+                    sender.sendMessage(messageManager.getMessage(lang, "reload.shop-start"))
                     gameManager.getPlugin().getShopManager().reloadShopConfig()
-                    sender.sendMessage("§ashop.yml のリロードが完了しました。")
+                    sender.sendMessage(messageManager.getMessage(lang, "reload.shop-complete"))
                 }
                 "all" -> {
-                    sender.sendMessage("§7全設定ファイルをリロードしています...")
+                    sender.sendMessage(messageManager.getMessage(lang, "reload.all-start"))
                     gameManager.configManager.reloadConfig()
                     gameManager.getPlugin().getShopManager().reloadShopConfig()
-                    sender.sendMessage("§a全設定ファイルのリロードが完了しました。")
+                    sender.sendMessage(messageManager.getMessage(lang, "reload.all-complete"))
                 }
                 else -> {
-                    sender.sendMessage("§c使用法: /manhunt reload [config|shop|all]")
+                    sender.sendMessage(messageManager.getMessage(lang, "reload.usage"))
                     return
                 }
             }
-            sender.sendMessage("§e注意: 一部の設定はゲーム再開始後に反映されます。")
+            sender.sendMessage(messageManager.getMessage(lang, "reload.note"))
         } catch (e: Exception) {
-            sender.sendMessage("§c設定ファイルのリロードに失敗しました: ${e.message}")
+            sender.sendMessage(messageManager.getMessage(lang, "reload.failed", mapOf("error" to (e.message ?: "Unknown error"))))
         }
     }
     
     private fun handleUI(sender: CommandSender, args: Array<out String>) {
+        val lang = if (sender is Player) messageManager.getPlayerLanguage(sender) else "ja"
         if (!sender.hasPermission("manhunt.admin")) {
-            sender.sendMessage("§cこのコマンドを実行する権限がありません。")
+            sender.sendMessage(messageManager.getMessage(lang, "command-interface.admin-no-permission"))
             return
         }
         
         if (args.size < 2) {
-            sender.sendMessage("§c使用法: /manhunt ui <toggle|status>")
+            sender.sendMessage(messageManager.getMessage(lang, "ui-settings.usage"))
             return
         }
         
         when (args[1].lowercase()) {
             "status" -> {
-                sender.sendMessage("§6=== UI表示設定 ===")
-                sender.sendMessage("§eスコアボード: ${if (configManager.isScoreboardEnabled()) "§a有効" else "§c無効"}")
-                sender.sendMessage("§eActionBar: ${if (configManager.isActionBarEnabled()) "§a有効" else "§c無効"}")
-                sender.sendMessage("§eBossBar: ${if (configManager.isBossBarEnabled()) "§a有効" else "§c無効"}")
-                sender.sendMessage("§eタイトル: ${if (configManager.isTitleEnabled()) "§a有効" else "§c無効"}")
+                sender.sendMessage(messageManager.getMessage(lang, "ui-settings.header"))
+                val scoreboardStatus = if (configManager.isScoreboardEnabled()) messageManager.getMessage(lang, "ui-settings.enabled") else messageManager.getMessage(lang, "ui-settings.disabled")
+                val actionbarStatus = if (configManager.isActionBarEnabled()) messageManager.getMessage(lang, "ui-settings.enabled") else messageManager.getMessage(lang, "ui-settings.disabled")
+                val bossbarStatus = if (configManager.isBossBarEnabled()) messageManager.getMessage(lang, "ui-settings.enabled") else messageManager.getMessage(lang, "ui-settings.disabled")
+                val titleStatus = if (configManager.isTitleEnabled()) messageManager.getMessage(lang, "ui-settings.enabled") else messageManager.getMessage(lang, "ui-settings.disabled")
+                sender.sendMessage(messageManager.getMessage(lang, "ui-settings.scoreboard", mapOf("status" to scoreboardStatus)))
+                sender.sendMessage(messageManager.getMessage(lang, "ui-settings.actionbar", mapOf("status" to actionbarStatus)))
+                sender.sendMessage(messageManager.getMessage(lang, "ui-settings.bossbar", mapOf("status" to bossbarStatus)))
+                sender.sendMessage(messageManager.getMessage(lang, "ui-settings.title", mapOf("status" to titleStatus)))
             }
             "toggle" -> {
-                sender.sendMessage("§7現在のUI設定の表示・非表示は config.yml で変更できます。")
-                sender.sendMessage("§7/manhunt reload でconfig.ymlの変更を反映してください。")
+                sender.sendMessage(messageManager.getMessage(lang, "ui-settings.config-note"))
+                sender.sendMessage(messageManager.getMessage(lang, "ui-settings.reload-note"))
             }
             else -> {
-                sender.sendMessage("§c使用法: /manhunt ui <toggle|status>")
+                sender.sendMessage(messageManager.getMessage(lang, "ui-settings.usage"))
             }
         }
     }
     
     private fun handleSpectate(sender: CommandSender) {
         if (sender !is Player) {
-            sender.sendMessage("§cプレイヤーのみが実行できるコマンドです。")
+            sender.sendMessage(messageManager.getMessage(null, "command.player-only"))
             return
         }
         
         spectatorMenu.openMenu(sender)
     }
     
+    private fun handleRoleMenu(sender: CommandSender) {
+        if (sender !is Player) {
+            sender.sendMessage(messageManager.getMessage(null, "command.player-only"))
+            return
+        }
+        
+        roleSelectorMenu.openMenu(sender)
+    }
+    
     
     private fun showHelp(sender: CommandSender) {
-        sender.sendMessage("§6=== Manhunt コマンド ===")
-        sender.sendMessage("§e/manhunt role <runner|hunter|spectator> - 役割変更")
-        sender.sendMessage("§e/manhunt compass - 仮想追跡コンパスを有効化")
-        sender.sendMessage("§e/manhunt status - ゲーム状況確認")
-        sender.sendMessage("§e/manhunt spectate - 観戦メニューを開く（観戦者のみ）")
-        sender.sendMessage("§7※ サーバー参加時に自動的にゲームに参加します")
+        val lang = if (sender is Player) messageManager.getPlayerLanguage(sender) else "ja"
+        sender.sendMessage(messageManager.getMessage(lang, "command-interface.help-commands-header"))
+        sender.sendMessage(messageManager.getMessage(lang, "command-interface.help-role-change"))
+        sender.sendMessage(messageManager.getMessage(lang, "command-interface.help-role-menu"))
+        sender.sendMessage(messageManager.getMessage(lang, "command-interface.help-compass-activate"))
+        sender.sendMessage(messageManager.getMessage(lang, "command-interface.help-status-check"))
+        sender.sendMessage(messageManager.getMessage(lang, "command-interface.help-spectate-menu"))
+        sender.sendMessage(messageManager.getMessage(lang, "command-interface.help-note"))
         sender.sendMessage("")
-        sender.sendMessage("§a=== その他のコマンド ===")
-        sender.sendMessage("§a/r <メッセージ> - チームチャット（味方のみ）")
-        sender.sendMessage("§a/pos - 座標を味方に共有")
-        sender.sendMessage("§a/shop - ショップを開く")
-        sender.sendMessage("§a/shop balance - 所持金確認")
+        sender.sendMessage(messageManager.getMessage(lang, "command-interface.help-other-commands"))
+        sender.sendMessage(messageManager.getMessage(lang, "command-interface.help-teamchat"))
+        sender.sendMessage(messageManager.getMessage(lang, "command-interface.help-position"))
+        sender.sendMessage(messageManager.getMessage(lang, "command-interface.help-shop-open"))
+        sender.sendMessage(messageManager.getMessage(lang, "command-interface.help-shop-balance"))
         sender.sendMessage("")
-        sender.sendMessage("§b=== 仮想コンパスの使い方 ===")
-        sender.sendMessage("§7• 空手で右クリック = 最寄りランナーを追跡")
-        sender.sendMessage("§7• パーティクルと矢印で方向を表示")
-        sender.sendMessage("§7• アイテムドロップや重複の心配なし")
+        sender.sendMessage(messageManager.getMessage(lang, "command-interface.help-virtual-compass"))
+        sender.sendMessage(messageManager.getMessage(lang, "command-interface.help-compass-usage"))
+        sender.sendMessage(messageManager.getMessage(lang, "command-interface.help-compass-display"))
+        sender.sendMessage(messageManager.getMessage(lang, "command-interface.help-compass-benefits"))
         
         if (sender.hasPermission("manhunt.admin")) {
             sender.sendMessage("")
-            sender.sendMessage("§c=== 管理者コマンド ===")
-            sender.sendMessage("§c/manhunt start - ゲーム強制開始")
-            sender.sendMessage("§c/manhunt sethunter <プレイヤー> - 追う人に指定")
-            sender.sendMessage("§c/manhunt minplayers [数値] - 最小プレイヤー数設定")
-            sender.sendMessage("§c/manhunt reload [config|shop|all] - 設定ファイルをリロード")
-            sender.sendMessage("§c/manhunt ui <toggle|status> - UI表示制御")
+            sender.sendMessage(messageManager.getMessage(lang, "command-interface.help-admin-commands"))
+            sender.sendMessage(messageManager.getMessage(lang, "command-interface.help-admin-start"))
+            sender.sendMessage(messageManager.getMessage(lang, "command-interface.help-admin-sethunter"))
+            sender.sendMessage(messageManager.getMessage(lang, "command-interface.help-admin-minplayers"))
+            sender.sendMessage(messageManager.getMessage(lang, "command-interface.help-admin-reload"))
+            sender.sendMessage(messageManager.getMessage(lang, "command-interface.help-admin-ui"))
         }
     }
     
@@ -330,7 +352,7 @@ class ManhuntCommand(
         try {
             return when (args.size) {
                 1 -> {
-                    val subcommands = mutableListOf("role", "compass", "status", "spectate", "help")
+                    val subcommands = mutableListOf("role", "roles", "compass", "status", "spectate", "help")
                     if (sender.hasPermission("manhunt.admin")) {
                         subcommands.addAll(listOf("start", "sethunter", "minplayers", "ui", "reload"))
                     }
