@@ -3,7 +3,7 @@
 # 言語設定
 language:
   # デフォルト言語 (ja: 日本語, en: 英語)
-  default: "ja"
+  default: "en"
   # プレイヤー単位での言語設定を有効にする
   per-player: true
 

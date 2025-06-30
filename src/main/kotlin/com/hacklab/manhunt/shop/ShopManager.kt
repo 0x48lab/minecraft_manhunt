@@ -1,6 +1,7 @@
 package com.hacklab.manhunt.shop
 
 import com.hacklab.manhunt.Main
+import com.hacklab.manhunt.MessageManager
 import com.hacklab.manhunt.PlayerRole
 import com.hacklab.manhunt.economy.EconomyManager
 import org.bukkit.Bukkit
@@ -17,6 +18,8 @@ class ShopManager(
     private val plugin: Main,
     private val economyManager: EconomyManager
 ) {
+    private val messageManager: MessageManager
+        get() = plugin.getMessageManager()
     private val shopItems = mutableListOf<ShopItem>()
     private val purchaseHistory = mutableMapOf<UUID, MutableMap<String, PurchaseRecord>>()
     private val openShops = mutableMapOf<UUID, ShopCategory?>()
@@ -38,10 +41,10 @@ class ShopManager(
             val configItems = shopConfigManager.loadShopItems()
             if (configItems.isNotEmpty()) {
                 shopItems.addAll(configItems)
-                plugin.logger.info("shop.yml から ${configItems.size} 個のアイテムを読み込みました")
+                plugin.logger.info("Loaded ${configItems.size} items from shop.yml")
             } else {
                 // フォールバック: ハードコーディングされたアイテムを使用
-                plugin.logger.warning("shop.yml からアイテムを読み込めませんでした。デフォルトアイテムを使用します")
+                plugin.logger.warning("Could not load items from shop.yml. Using default items")
                 shopItems.addAll(ShopItem.getDefaultItems())
             }
             
@@ -49,7 +52,7 @@ class ShopManager(
             categories = shopConfigManager.loadCategories()
             
         } catch (e: Exception) {
-            plugin.logger.severe("ショップアイテムの読み込みでエラー: ${e.message}")
+            plugin.logger.severe("Error loading shop items: ${e.message}")
             // エラー時はデフォルトアイテムを使用
             shopItems.addAll(ShopItem.getDefaultItems())
         }
@@ -62,9 +65,9 @@ class ShopManager(
         try {
             shopConfigManager.reloadShopConfig()
             loadShopItems()
-            plugin.logger.info("ショップ設定をリロードしました")
+            plugin.logger.info("Shop configuration reloaded")
         } catch (e: Exception) {
-            plugin.logger.severe("ショップ設定のリロードでエラー: ${e.message}")
+            plugin.logger.severe("Error reloading shop configuration: ${e.message}")
         }
     }
     
@@ -74,7 +77,7 @@ class ShopManager(
     fun openShop(player: Player, category: ShopCategory? = null) {
         val role = plugin.getGameManager().getPlayerRole(player)
         if (role == null || role == PlayerRole.SPECTATOR) {
-            player.sendMessage("§c観戦者はショップを使用できません。")
+            player.sendMessage(messageManager.getMessage(player, "shop.spectator-denied"))
             return
         }
         
@@ -92,7 +95,7 @@ class ShopManager(
      * カテゴリ選択メニューを作成
      */
     private fun createCategoryMenu(player: Player, role: PlayerRole): Inventory {
-        val inventory = Bukkit.createInventory(null, 27, "§6§lショップ - カテゴリ選択")
+        val inventory = Bukkit.createInventory(null, 27, messageManager.getMessage(player, "shop-extended.menu.category-title"))
         
         // 背景をグレーのガラスで埋める
         for (i in 0 until 27) {
@@ -114,9 +117,9 @@ class ShopManager(
                 val unit = plugin.getConfigManager().getCurrencyConfig().currencyUnit
                 meta.setDisplayName("§e${displayName}")
                 meta.lore = listOf(
-                    "§7クリックして${displayName}を見る",
+                    messageManager.getMessage(player, "shop-extended.menu.category-click", mapOf("category" to displayName)),
                     "",
-                    "§b所持金: §f${economyManager.getBalance(player)}${unit}"
+                    messageManager.getMessage(player, "shop-extended.menu.balance-display", mapOf("balance" to economyManager.getBalance(player), "unit" to unit))
                 )
                 item.itemMeta = meta
                 inventory.setItem(startSlot + index, item)
@@ -135,7 +138,9 @@ class ShopManager(
     private fun createCategoryShop(player: Player, role: PlayerRole, category: ShopCategory): Inventory {
         val items = getItemsForCategory(role, category)
         val size = ((items.size - 1) / 9 + 2) * 9 // 最低2行、アイテム数に応じて拡張
-        val inventory = Bukkit.createInventory(null, size.coerceIn(18, 54), "§6§lショップ - ${category.displayName}")
+        val categoryDisplayName = categories[category]?.displayName ?: category.displayName
+        val title = messageManager.getMessage(player, "shop-extended.menu.shop-title", mapOf("category" to categoryDisplayName))
+        val inventory = Bukkit.createInventory(null, size.coerceIn(18, 54), title)
         
         // アイテムを配置
         items.forEachIndexed { index, shopItem ->
@@ -170,29 +175,29 @@ class ShopManager(
         lore.addAll(shopItem.description)
         lore.add("")
         val unit = plugin.getConfigManager().getCurrencyConfig().currencyUnit
-        lore.add("§6価格: §f${shopItem.price}${unit}")
+        lore.add(messageManager.getMessage(player, "shop-extended.item.price-format", mapOf("price" to shopItem.price, "unit" to unit)))
         
         if (shopItem.maxPurchases > 0) {
-            lore.add("§7購入制限: §f${purchaseCount}/${shopItem.maxPurchases}")
+            lore.add(messageManager.getMessage(player, "shop-extended.item.purchase-limit", mapOf("current" to purchaseCount, "max" to shopItem.maxPurchases)))
         }
         
         if (shopItem.cooldown > 0 && purchaseRecord != null) {
             val remainingCooldown = getRemainingCooldown(purchaseRecord, shopItem.cooldown)
             if (remainingCooldown > 0) {
-                lore.add("§cクールダウン: ${remainingCooldown}秒")
+                lore.add(messageManager.getMessage(player, "shop-extended.item.cooldown", mapOf("time" to remainingCooldown)))
             }
         }
         
         lore.add("")
         when {
             !economyManager.hasEnoughMoney(player, shopItem.price) -> {
-                lore.add("§c✗ ${unit}が不足しています")
+                lore.add(messageManager.getMessage(player, "shop-extended.item.insufficient-funds", mapOf("unit" to unit)))
             }
             !canPurchase -> {
-                lore.add("§c✗ 購入できません")
+                lore.add(messageManager.getMessage(player, "shop-extended.item.cannot-purchase"))
             }
             else -> {
-                lore.add("§a✓ クリックして購入")
+                lore.add(messageManager.getMessage(player, "shop-extended.item.click-to-purchase"))
             }
         }
         
@@ -208,20 +213,20 @@ class ShopManager(
     fun purchaseItem(player: Player, shopItem: ShopItem): Boolean {
         // 購入可能かチェック
         if (!canPlayerPurchase(player, shopItem)) {
-            player.sendMessage("§cこのアイテムは購入できません。")
+            player.sendMessage(messageManager.getMessage(player, "shop.cannot-purchase"))
             return false
         }
         
         // 残高チェック
         if (!economyManager.hasEnoughMoney(player, shopItem.price)) {
             val unit = plugin.getConfigManager().getCurrencyConfig().currencyUnit
-            player.sendMessage("§c${unit}が不足しています。(必要: ${shopItem.price}${unit})")
+            player.sendMessage(messageManager.getMessage(player, "shop.insufficient-funds", mapOf("unit" to unit, "price" to shopItem.price)))
             return false
         }
         
         // 支払い処理
         if (!economyManager.removeMoney(player, shopItem.price)) {
-            player.sendMessage("§c購入処理中にエラーが発生しました。")
+            player.sendMessage(messageManager.getMessage(player, "shop.purchase-error"))
             return false
         }
         
@@ -233,7 +238,7 @@ class ShopManager(
                     val material = Material.valueOf(materialName.uppercase())
                     player.inventory.addItem(ItemStack(material))
                 } catch (e: IllegalArgumentException) {
-                    plugin.logger.warning("無効なマテリアル: $materialName (セットアイテム: ${shopItem.id})")
+                    plugin.logger.warning("Invalid material: $materialName (set item: ${shopItem.id})")
                 }
             }
         } else {
@@ -249,13 +254,13 @@ class ShopManager(
         
         // 成功メッセージ
         val unit = plugin.getConfigManager().getCurrencyConfig().currencyUnit
-        player.sendMessage("§a${shopItem.displayName}§aを購入しました！ (-${shopItem.price}${unit})")
-        player.sendMessage("§7残高: §f${economyManager.getBalance(player)}${unit}")
+        player.sendMessage(messageManager.getMessage(player, "shop.purchase-success", mapOf("item" to shopItem.displayName, "price" to shopItem.price, "unit" to unit)))
+        player.sendMessage(messageManager.getMessage(player, "shop.balance-remaining", mapOf("balance" to economyManager.getBalance(player), "unit" to unit)))
         
         // 効果音
         player.playSound(player.location, org.bukkit.Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
         
-        plugin.logger.info("${player.name} が ${shopItem.displayName} を購入 (${shopItem.price}${unit})")
+        plugin.logger.info("${player.name} purchased ${shopItem.displayName} (${shopItem.price}${unit})")
         
         return true
     }
@@ -353,8 +358,8 @@ class ShopManager(
     private fun createBackButton(): ItemStack {
         val item = ItemStack(Material.ARROW)
         val meta = item.itemMeta!!
-        meta.setDisplayName("§c戻る")
-        meta.lore = listOf("§7カテゴリ選択に戻る")
+        meta.setDisplayName(messageManager.getMessage("ja", "shop-extended.buttons.back"))
+        meta.lore = listOf(messageManager.getMessage("ja", "shop-extended.buttons.back-description"))
         item.itemMeta = meta
         return item
     }
@@ -362,7 +367,7 @@ class ShopManager(
     private fun createCloseButton(): ItemStack {
         val item = ItemStack(Material.BARRIER)
         val meta = item.itemMeta!!
-        meta.setDisplayName("§c閉じる")
+        meta.setDisplayName(messageManager.getMessage("ja", "shop-extended.buttons.close"))
         item.itemMeta = meta
         return item
     }
@@ -371,8 +376,8 @@ class ShopManager(
         val item = ItemStack(Material.GOLD_NUGGET)
         val meta = item.itemMeta!!
         val unit = plugin.getConfigManager().getCurrencyConfig().currencyUnit
-        meta.setDisplayName("§6所持金")
-        meta.lore = listOf("§f${economyManager.getBalance(player)}${unit}")
+        meta.setDisplayName(messageManager.getMessage(player, "shop-extended.buttons.balance-title"))
+        meta.lore = listOf(messageManager.getMessage(player, "shop-extended.buttons.balance-amount", mapOf("balance" to economyManager.getBalance(player), "unit" to unit)))
         item.itemMeta = meta
         return item
     }

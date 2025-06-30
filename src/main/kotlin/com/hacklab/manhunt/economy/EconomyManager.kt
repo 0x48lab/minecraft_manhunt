@@ -1,6 +1,7 @@
 package com.hacklab.manhunt.economy
 
 import com.hacklab.manhunt.Main
+import com.hacklab.manhunt.MessageManager
 import com.hacklab.manhunt.PlayerRole
 import org.bukkit.entity.Player
 import java.util.*
@@ -11,6 +12,13 @@ import java.util.*
 class EconomyManager(private val plugin: Main) {
     private val playerBalances = mutableMapOf<UUID, Int>()
     private val earnHistory = mutableMapOf<UUID, MutableList<EarnRecord>>()
+    private val messageManager: MessageManager
+        get() = plugin.getMessageManager()
+    
+    init {
+        // EarnReasonクラスでMessageManagerにアクセスできるよう設定
+        EarnReason.setMessageManagerGetter { plugin.getMessageManager() }
+    }
     
     private fun getCurrencyUnit(): String {
         return plugin.getConfigManager().getCurrencyConfig().currencyUnit
@@ -27,7 +35,7 @@ class EconomyManager(private val plugin: Main) {
      * プレイヤーの残高を設定
      */
     fun setBalance(player: Player, amount: Int) {
-        require(amount >= 0) { "残高は0以上である必要があります" }
+        require(amount >= 0) { messageManager.getMessage(player, "economy.validation.balance-non-negative") }
         playerBalances[player.uniqueId] = amount
     }
     
@@ -35,11 +43,18 @@ class EconomyManager(private val plugin: Main) {
      * プレイヤーに通貨を追加
      */
     fun addMoney(player: Player, amount: Int, reason: EarnReason) {
-        require(amount >= 0) { "追加金額は0以上である必要があります" }
+        require(amount >= 0) { messageManager.getMessage(player, "economy.validation.amount-non-negative") }
         
         val currentBalance = getBalance(player)
         val newBalance = currentBalance + amount
         playerBalances[player.uniqueId] = newBalance
+        
+        // ゲーム統計に通貨獲得を記録
+        try {
+            plugin.getGameManager().recordEarnedCurrency(player, amount)
+        } catch (e: Exception) {
+            plugin.logger.warning("Error recording earned currency statistics: ${e.message}")
+        }
         
         // 獲得履歴を記録
         val history = earnHistory.getOrPut(player.uniqueId) { mutableListOf() }
@@ -56,10 +71,18 @@ class EconomyManager(private val plugin: Main) {
             if (shouldShowMessage) {
                 val unit = getCurrencyUnit()
                 val message = when (reason) {
-                    is EarnReason.Hunter -> "§c[+${amount}${unit}] ${reason.getDescription()}"
-                    is EarnReason.Runner -> "§a[+${amount}${unit}] ${reason.getDescription()}"
+                    is EarnReason.Hunter -> messageManager.getMessage(player, "economy.currency.hunter-earned", mapOf(
+                        "amount" to amount,
+                        "unit" to unit,
+                        "reason" to reason.getDescription(player)
+                    ))
+                    is EarnReason.Runner -> messageManager.getMessage(player, "economy.currency.runner-earned", mapOf(
+                        "amount" to amount,
+                        "unit" to unit,
+                        "reason" to reason.getDescription(player)
+                    ))
                 }
-                player.sendMessage(message)
+                player.sendMessage(message as String)
             }
         }
         
@@ -72,7 +95,7 @@ class EconomyManager(private val plugin: Main) {
         
         if (shouldLog) {
             val unit = getCurrencyUnit()
-            plugin.logger.info("${player.name} が ${amount}${unit}獲得 (理由: ${reason.getDescription()}, 残高: $newBalance${unit})")
+            plugin.logger.info("${player.name} earned ${amount}${unit} (reason: ${reason.getDescription(null)}, balance: $newBalance${unit})")
         }
     }
     
@@ -80,7 +103,7 @@ class EconomyManager(private val plugin: Main) {
      * プレイヤーから通貨を差し引く
      */
     fun removeMoney(player: Player, amount: Int): Boolean {
-        require(amount >= 0) { "差引金額は0以上である必要があります" }
+        require(amount >= 0) { messageManager.getMessage(player, "economy.validation.amount-non-negative") }
         
         val currentBalance = getBalance(player)
         if (currentBalance < amount) {
@@ -88,6 +111,14 @@ class EconomyManager(private val plugin: Main) {
         }
         
         playerBalances[player.uniqueId] = currentBalance - amount
+        
+        // ゲーム統計に通貨消費を記録
+        try {
+            plugin.getGameManager().recordSpentCurrency(player, amount)
+        } catch (e: Exception) {
+            plugin.logger.warning("Error recording spent currency statistics: ${e.message}")
+        }
+        
         return true
     }
     
@@ -104,7 +135,7 @@ class EconomyManager(private val plugin: Main) {
     fun resetAllBalances() {
         playerBalances.clear()
         earnHistory.clear()
-        plugin.logger.info("全プレイヤーの残高をリセットしました")
+        plugin.logger.info("Reset all player balances")
     }
     
     /**
@@ -127,47 +158,66 @@ class EconomyManager(private val plugin: Main) {
  * 通貨獲得の理由を表す封印クラス
  */
 sealed class EarnReason {
-    abstract fun getDescription(): String
+    abstract fun getDescription(player: Player?): String
+    
+    companion object {
+        private var messageManagerGetter: (() -> MessageManager)? = null
+        
+        fun setMessageManagerGetter(getter: () -> MessageManager) {
+            messageManagerGetter = getter
+        }
+        
+        protected fun getMessage(player: Player?, key: String, placeholders: Map<String, Any> = emptyMap()): String {
+            return messageManagerGetter?.invoke()?.getMessage(player, key, placeholders) ?: key
+        }
+    }
     
     // ハンター用の獲得理由
     sealed class Hunter : EarnReason() {
         data class DamageDealt(val damage: Int) : Hunter() {
-            override fun getDescription() = "ランナーに${damage}ダメージを与えた"
+            override fun getDescription(player: Player?) = 
+                getMessage(player, "earn-reasons.hunter.damage-dealt", mapOf("damage" to damage))
         }
         
         data class Kill(val runnerName: String) : Hunter() {
-            override fun getDescription() = "${runnerName}を倒した"
+            override fun getDescription(player: Player?) = 
+                getMessage(player, "earn-reasons.hunter.kill", mapOf("runner" to runnerName))
         }
         
         data class Proximity(val distance: Int) : Hunter() {
-            override fun getDescription() = "ランナーとの距離${distance}m以内に接近"
+            override fun getDescription(player: Player?) = 
+                getMessage(player, "earn-reasons.hunter.proximity", mapOf("distance" to distance))
         }
         
         object TimeBonus : Hunter() {
-            override fun getDescription() = "追跡ボーナス"
+            override fun getDescription(player: Player?) = 
+                getMessage(player, "earn-reasons.hunter.time-bonus")
         }
     }
     
     // ランナー用の獲得理由
     sealed class Runner : EarnReason() {
         object SurvivalBonus : Runner() {
-            override fun getDescription() = "生存ボーナス"
+            override fun getDescription(player: Player?) = 
+                getMessage(player, "earn-reasons.runner.survival-bonus")
         }
         
         data class Progress(val type: ProgressType) : Runner() {
-            override fun getDescription() = when (type) {
-                ProgressType.NETHER_ENTER -> "ネザーに到達"
-                ProgressType.FORTRESS_FOUND -> "要塞を発見"
-                ProgressType.END_ENTER -> "エンドに到達"
+            override fun getDescription(player: Player?) = when (type) {
+                ProgressType.NETHER_ENTER -> getMessage(player, "earn-reasons.runner.nether-enter")
+                ProgressType.FORTRESS_FOUND -> getMessage(player, "earn-reasons.runner.fortress-found")
+                ProgressType.END_ENTER -> getMessage(player, "earn-reasons.runner.end-enter")
             }
         }
         
         data class ItemCollected(val itemName: String, val count: Int) : Runner() {
-            override fun getDescription() = "${itemName}を${count}個収集"
+            override fun getDescription(player: Player?) = 
+                getMessage(player, "earn-reasons.runner.item-collected", mapOf("item" to itemName, "count" to count))
         }
         
         object EscapeBonus : Runner() {
-            override fun getDescription() = "逃走成功ボーナス"
+            override fun getDescription(player: Player?) = 
+                getMessage(player, "earn-reasons.runner.escape-bonus")
         }
     }
 }

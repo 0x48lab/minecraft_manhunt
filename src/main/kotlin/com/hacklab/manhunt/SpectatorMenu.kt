@@ -13,13 +13,14 @@ import kotlin.math.ceil
 import kotlin.math.min
 
 class SpectatorMenu(
-    private val gameManager: GameManager
+    private val gameManager: GameManager,
+    private val messageManager: MessageManager
 ) : Listener {
     
     companion object {
         private const val ITEMS_PER_PAGE = 28 // 7x4 グリッド（ナビゲーション用の行を除く）
         private const val INVENTORY_SIZE = 54 // 6行（9x6）
-        private const val MENU_TITLE = "§6観戦メニュー"
+        private const val MENU_TITLE_KEY = "spectate.menu-title"
     }
     
     private val playerMenus = mutableMapOf<Player, MenuState>()
@@ -31,7 +32,7 @@ class SpectatorMenu(
     
     fun openMenu(spectator: Player) {
         if (gameManager.getPlayerRole(spectator) != PlayerRole.SPECTATOR) {
-            spectator.sendMessage("§c観戦者のみがこのメニューを使用できます。")
+            spectator.sendMessage(messageManager.getMessage(spectator, "spectate.spectator-only"))
             return
         }
         
@@ -59,7 +60,7 @@ class SpectatorMenu(
         val inventory = Bukkit.createInventory(
             null, 
             INVENTORY_SIZE, 
-            "$MENU_TITLE §7- ページ ${currentPage + 1}/$totalPages"
+            messageManager.getMessage("ja", "spectate.menu-title-with-page", mapOf("current" to (currentPage + 1), "total" to totalPages))
         )
         
         // プレイヤーヘッドを配置
@@ -95,19 +96,19 @@ class SpectatorMenu(
         }
         
         val roleText = when (playerInfo.role) {
-            PlayerRole.RUNNER -> "逃げる人"
-            PlayerRole.HUNTER -> "追う人"
-            else -> "観戦者"
+            PlayerRole.RUNNER -> messageManager.getMessage("ja", "role.runner")
+            PlayerRole.HUNTER -> messageManager.getMessage("ja", "role.hunter")
+            else -> messageManager.getMessage("ja", "role.spectator")
         }
         
         meta.setDisplayName("$roleColor${playerInfo.player.name}")
         
         val lore = mutableListOf<String>()
-        lore.add("§7役割: $roleColor$roleText")
-        lore.add("§7体力: §c${String.format("%.1f", playerInfo.player.health)}§7/§c20.0")
-        lore.add("§7ワールド: §e${playerInfo.player.world.name}")
+        lore.add(messageManager.getMessage("ja", "spectate.lore.role", mapOf("roleColor" to roleColor, "role" to roleText)))
+        lore.add(messageManager.getMessage("ja", "spectate.lore.health", mapOf("health" to String.format("%.1f", playerInfo.player.health))))
+        lore.add(messageManager.getMessage("ja", "spectate.lore.world", mapOf("world" to playerInfo.player.world.name)))
         lore.add("")
-        lore.add("§eクリックでテレポート！")
+        lore.add(messageManager.getMessage("ja", "spectate.lore.click-teleport"))
         
         meta.lore = lore
         item.itemMeta = meta
@@ -120,8 +121,8 @@ class SpectatorMenu(
         if (currentPage > 0) {
             val previousButton = ItemStack(Material.ARROW)
             val meta = previousButton.itemMeta
-            meta?.setDisplayName("§a◀ 前のページ")
-            meta?.lore = listOf("§7ページ ${currentPage}へ")
+            meta?.setDisplayName(messageManager.getMessage("ja", "spectate.button.previous-page"))
+            meta?.lore = listOf(messageManager.getMessage("ja", "spectate.button.to-page", mapOf("page" to currentPage)))
             previousButton.itemMeta = meta
             inventory.setItem(45, previousButton)
         }
@@ -130,8 +131,8 @@ class SpectatorMenu(
         if (currentPage < totalPages - 1) {
             val nextButton = ItemStack(Material.ARROW)
             val meta = nextButton.itemMeta
-            meta?.setDisplayName("§a次のページ ▶")
-            meta?.lore = listOf("§7ページ ${currentPage + 2}へ")
+            meta?.setDisplayName(messageManager.getMessage("ja", "spectate.button.next-page"))
+            meta?.lore = listOf(messageManager.getMessage("ja", "spectate.button.to-page", mapOf("page" to (currentPage + 2))))
             nextButton.itemMeta = meta
             inventory.setItem(53, nextButton)
         }
@@ -139,13 +140,13 @@ class SpectatorMenu(
         // 情報アイテム
         val infoItem = ItemStack(Material.BOOK)
         val infoMeta = infoItem.itemMeta
-        infoMeta?.setDisplayName("§6観戦メニュー")
+        infoMeta?.setDisplayName(messageManager.getMessage("ja", "spectate.info.title"))
         infoMeta?.lore = listOf(
-            "§7プレイヤーをクリックして",
-            "§7テレポートできます。",
+            messageManager.getMessage("ja", "spectate.info.description-1"),
+            messageManager.getMessage("ja", "spectate.info.description-2"),
             "",
-            "§a● ランナー",
-            "§c● ハンター"
+            messageManager.getMessage("ja", "spectate.info.runner-legend"),
+            messageManager.getMessage("ja", "spectate.info.hunter-legend")
         )
         infoItem.itemMeta = infoMeta
         inventory.setItem(49, infoItem)
@@ -153,15 +154,15 @@ class SpectatorMenu(
         // 閉じるボタン
         val closeButton = ItemStack(Material.BARRIER)
         val closeMeta = closeButton.itemMeta
-        closeMeta?.setDisplayName("§c閉じる")
+        closeMeta?.setDisplayName(messageManager.getMessage("ja", "spectate.button.close"))
         closeButton.itemMeta = closeMeta
         inventory.setItem(48, closeButton)
         
         // リフレッシュボタン
         val refreshButton = ItemStack(Material.COMPASS)
         val refreshMeta = refreshButton.itemMeta
-        refreshMeta?.setDisplayName("§b更新")
-        refreshMeta?.lore = listOf("§7プレイヤーリストを更新")
+        refreshMeta?.setDisplayName(messageManager.getMessage("ja", "spectate.button.refresh"))
+        refreshMeta?.lore = listOf(messageManager.getMessage("ja", "spectate.button.refresh-description"))
         refreshButton.itemMeta = refreshMeta
         inventory.setItem(50, refreshButton)
     }
@@ -173,7 +174,7 @@ class SpectatorMenu(
         
         // メニュータイトルをチェック
         val view = event.view
-        if (!view.title.startsWith(MENU_TITLE)) return
+        if (!view.title.contains(messageManager.getMessage("ja", "spectate.menu-title"))) return
         
         event.isCancelled = true
         
@@ -215,9 +216,9 @@ class SpectatorMenu(
                     if (targetPlayer != null && targetPlayer.isOnline) {
                         player.teleport(targetPlayer.location)
                         player.closeInventory()
-                        player.sendMessage("§a${targetPlayer.name}にテレポートしました！")
+                        player.sendMessage(messageManager.getMessage(player, "spectate.teleported", mapOf("player" to targetPlayer.name)))
                     } else {
-                        player.sendMessage("§cそのプレイヤーはオンラインではありません。")
+                        player.sendMessage(messageManager.getMessage(player, "spectate.player-offline"))
                     }
                 }
             }

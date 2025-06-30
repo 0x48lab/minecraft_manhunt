@@ -121,6 +121,13 @@ class ShopListener(
         val damage = event.finalDamage
         
         currencyTracker.onDamageDealt(attacker, victim, damage)
+        
+        // ゲーム統計にダメージを記録
+        try {
+            plugin.getGameManager().recordDamage(attacker, victim, damage)
+        } catch (e: Exception) {
+            plugin.logger.warning("ダメージ統計記録でエラー: ${e.message}")
+        }
     }
     
     /**
@@ -133,6 +140,13 @@ class ShopListener(
         
         if (killer != null) {
             currencyTracker.onPlayerKill(killer, victim)
+            
+            // ゲーム統計にキルを記録
+            try {
+                plugin.getGameManager().recordKill(killer, victim)
+            } catch (e: Exception) {
+                plugin.logger.warning("キル統計記録でエラー: ${e.message}")
+            }
         }
     }
     

@@ -2,6 +2,7 @@ package com.hacklab.manhunt.economy
 
 import com.hacklab.manhunt.GameState
 import com.hacklab.manhunt.Main
+import com.hacklab.manhunt.MessageManager
 import com.hacklab.manhunt.PlayerRole
 import org.bukkit.Bukkit
 import org.bukkit.Material
@@ -18,6 +19,8 @@ class CurrencyTracker(
     private val economyManager: EconomyManager,
     private val config: CurrencyConfig
 ) {
+    private val messageManager: MessageManager
+        get() = plugin.getMessageManager()
     private val lastProximityCheck = mutableMapOf<UUID, Long>()
     private val lastEscapeCheck = mutableMapOf<UUID, Long>()
     private val visitedDimensions = mutableMapOf<UUID, MutableSet<World.Environment>>()
@@ -37,7 +40,7 @@ class CurrencyTracker(
         // 時間ボーナスタスクを開始
         startTimeBonusTask()
         
-        plugin.logger.info("通貨トラッキングを開始しました")
+        plugin.logger.info("Currency tracking started")
     }
     
     /**
@@ -53,7 +56,7 @@ class CurrencyTracker(
         visitedDimensions.clear()
         collectedDiamonds.clear()
         
-        plugin.logger.info("通貨トラッキングを停止しました")
+        plugin.logger.info("Currency tracking stopped")
     }
     
     /**
@@ -247,11 +250,15 @@ class CurrencyTracker(
             collectedDiamonds[player.uniqueId] = collected + amount
             
             val reward = config.runnerDiamondReward * amount
+            val diamondName = messageManager.getMessage(player, "materials.diamond")
             economyManager.addMoney(
                 player,
                 reward,
-                EarnReason.Runner.ItemCollected("ダイヤモンド", amount)
+                EarnReason.Runner.ItemCollected(diamondName, amount)
             )
+            
+            // Record diamond collection for statistics
+            plugin.getGameManager().recordDiamondCollected(player, amount)
         }
     }
 }

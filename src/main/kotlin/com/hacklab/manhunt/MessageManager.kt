@@ -10,7 +10,7 @@ class MessageManager(private val plugin: Main) {
     
     private val messages = mutableMapOf<String, Map<String, String>>()
     private val playerLanguages = mutableMapOf<UUID, String>()
-    private var defaultLanguage = "ja"
+    private var defaultLanguage = "en"
     private var perPlayerEnabled = true
     
     companion object {
@@ -28,7 +28,7 @@ class MessageManager(private val plugin: Main) {
     
     private fun loadConfiguration() {
         val config = plugin.config
-        defaultLanguage = config.getString("language.default", "ja") ?: "ja"
+        defaultLanguage = config.getString("language.default", "en") ?: "en"
         perPlayerEnabled = config.getBoolean("language.per-player", true)
         
         // サポートされていない言語の場合はデフォルトに戻す

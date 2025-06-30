@@ -51,21 +51,21 @@ class ShopCommand(
                         // 残高確認
                         val balance = economyManager.getBalance(sender)
                         val unit = plugin.getConfigManager().getCurrencyConfig().currencyUnit
-                        sender.sendMessage("§6===============================")
-                        sender.sendMessage("§e所持金: §f${balance}${unit}")
-                        sender.sendMessage("§6===============================")
+                        sender.sendMessage(messageManager.getMessage(sender, "shop.balance-header"))
+                        sender.sendMessage(messageManager.getMessage(sender, "shop.balance-display", mapOf("balance" to balance, "unit" to unit)))
+                        sender.sendMessage(messageManager.getMessage(sender, "shop.balance-footer"))
                     }
                     "help" -> {
                         // ヘルプ表示
                         showHelp(sender)
                     }
                     else -> {
-                        sender.sendMessage("§c不明なサブコマンドです。/shop help でヘルプを確認してください。")
+                        sender.sendMessage(messageManager.getMessage(sender, "shop.unknown-subcommand"))
                     }
                 }
             }
             else -> {
-                sender.sendMessage("§c引数が多すぎます。/shop help でヘルプを確認してください。")
+                sender.sendMessage(messageManager.getMessage(sender, "shop.too-many-args"))
             }
         }
         
@@ -90,30 +90,30 @@ class ShopCommand(
     }
     
     private fun showHelp(player: Player) {
-        player.sendMessage("§6=== ショップコマンド ヘルプ ===")
-        player.sendMessage("§e/shop §7- ショップを開く")
-        player.sendMessage("§e/shop balance §7- 所持金を確認")
-        player.sendMessage("§e/shop help §7- このヘルプを表示")
+        player.sendMessage(messageManager.getMessage(player, "shop.help-header"))
+        player.sendMessage(messageManager.getMessage(player, "shop.help-open"))
+        player.sendMessage(messageManager.getMessage(player, "shop.help-balance"))
+        player.sendMessage(messageManager.getMessage(player, "shop.help-help"))
         player.sendMessage("")
-        player.sendMessage("§7ゲーム中にコインを獲得して")
-        player.sendMessage("§7様々なアイテムを購入できます。")
+        player.sendMessage(messageManager.getMessage(player, "shop.help-description1"))
+        player.sendMessage(messageManager.getMessage(player, "shop.help-description2"))
         
         val role = plugin.getGameManager().getPlayerRole(player)
         when (role) {
             PlayerRole.HUNTER -> {
                 player.sendMessage("")
-                player.sendMessage("§c[ハンター] コイン獲得方法:")
-                player.sendMessage("§7- ランナーにダメージを与える")
-                player.sendMessage("§7- ランナーを倒す")
-                player.sendMessage("§7- 時間経過ボーナス")
+                player.sendMessage(messageManager.getMessage(player, "shop.help-hunter-header"))
+                player.sendMessage(messageManager.getMessage(player, "shop.help-hunter-damage"))
+                player.sendMessage(messageManager.getMessage(player, "shop.help-hunter-kill"))
+                player.sendMessage(messageManager.getMessage(player, "shop.help-hunter-time"))
             }
             PlayerRole.RUNNER -> {
                 player.sendMessage("")
-                player.sendMessage("§a[ランナー] コイン獲得方法:")
-                player.sendMessage("§7- 生存時間ボーナス")
-                player.sendMessage("§7- ディメンション到達")
-                player.sendMessage("§7- ダイヤモンド収集")
-                player.sendMessage("§7- ハンターから逃走成功")
+                player.sendMessage(messageManager.getMessage(player, "shop.help-runner-header"))
+                player.sendMessage(messageManager.getMessage(player, "shop.help-runner-survival"))
+                player.sendMessage(messageManager.getMessage(player, "shop.help-runner-dimension"))
+                player.sendMessage(messageManager.getMessage(player, "shop.help-runner-diamond"))
+                player.sendMessage(messageManager.getMessage(player, "shop.help-runner-escape"))
             }
             else -> {}
         }

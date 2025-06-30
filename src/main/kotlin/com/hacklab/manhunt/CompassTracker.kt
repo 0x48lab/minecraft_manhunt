@@ -106,7 +106,7 @@ class CompassTracker(
         
         // 既に1個以上持っている場合は追加しない
         if (compassCount >= 1) {
-            hunter.sendMessage("§e既に追跡コンパスを持っています")
+            hunter.sendMessage(messageManager.getMessage(hunter, "compass.already-have"))
             return
         }
         
@@ -128,7 +128,7 @@ class CompassTracker(
             // 空きスロットに配置
             val remainingItems = inventory.addItem(compass)
             if (remainingItems.isNotEmpty()) {
-                hunter.sendMessage("§eインベントリが満杯のため、コンパスを配置できませんでした")
+                hunter.sendMessage(messageManager.getMessage(hunter, "compass.inventory-full"))
             }
         }
     }
