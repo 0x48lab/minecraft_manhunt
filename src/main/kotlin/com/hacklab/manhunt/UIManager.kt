@@ -91,7 +91,7 @@ class UIManager(
         
         // ゲーム状態表示
         addScoreboardLine("§r", line--) // 空行
-        addScoreboardLine(messageManager.getMessage("ui.scoreboard.state", mapOf("state" to getGameStateDisplay(gameState))), line--)
+        addScoreboardLine(messageManager.getMessage("ui.scoreboard.state", mapOf("state" to getGameStateDisplay(null, gameState))), line--)
         addScoreboardLine("§r ", line--) // 空行
         
         // ゲーム状態に応じた詳細情報
@@ -137,7 +137,7 @@ class UIManager(
     private fun createPlayerScoreboard(player: Player) {
         // 各プレイヤー用の完全なスコアボードを作成
         val playerScoreboard = Bukkit.getScoreboardManager()?.newScoreboard ?: return
-        val playerObjective = playerScoreboard.registerNewObjective("manhunt", "dummy", messageManager.getMessage("ui.scoreboard.player-title"))
+        val playerObjective = playerScoreboard.registerNewObjective("manhunt", "dummy", messageManager.getMessage(player, "ui.scoreboard.player-title"))
         playerObjective.displaySlot = DisplaySlot.SIDEBAR
         
         val gameState = gameManager.getGameState()
@@ -150,7 +150,7 @@ class UIManager(
         
         // ゲーム状態表示
         addPlayerScoreboardLine(playerObjective, "§r", line--) // 空行
-        addPlayerScoreboardLine(playerObjective, messageManager.getMessage("ui.scoreboard.state", mapOf("state" to getGameStateDisplay(gameState))), line--)
+        addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.state", mapOf("state" to getGameStateDisplay(player, gameState))), line--)
         addPlayerScoreboardLine(playerObjective, "§r ", line--) // 空行
         
         // ゲーム状態に応じた詳細情報
@@ -161,24 +161,24 @@ class UIManager(
             val deadHunters = hunters.filter { it.isDead }
             val deadRunners = runners.filter { it.isDead }
             
-            addPlayerScoreboardLine(playerObjective, messageManager.getMessage("ui.scoreboard.hunters-alive", mapOf("count" to aliveHunters.size)), line--)
-            addPlayerScoreboardLine(playerObjective, messageManager.getMessage("ui.scoreboard.hunters-dead", mapOf("count" to deadHunters.size)), line--)
-            addPlayerScoreboardLine(playerObjective, messageManager.getMessage("ui.scoreboard.runners-alive", mapOf("count" to aliveRunners.size)), line--)
-            addPlayerScoreboardLine(playerObjective, messageManager.getMessage("ui.scoreboard.runners-dead", mapOf("count" to deadRunners.size)), line--)
+            addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.hunters-alive", mapOf("count" to aliveHunters.size)), line--)
+            addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.hunters-dead", mapOf("count" to deadHunters.size)), line--)
+            addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.runners-alive", mapOf("count" to aliveRunners.size)), line--)
+            addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.runners-dead", mapOf("count" to deadRunners.size)), line--)
             addPlayerScoreboardLine(playerObjective, "§r   ", line--) // 空行
             
             // 所持金表示（ゲーム中のみ）
             if (role != null && role != PlayerRole.SPECTATOR) {
                 val balance = plugin.getEconomyManager().getBalance(player)
                 val unit = plugin.getConfigManager().getCurrencyConfig().currencyUnit
-                addPlayerScoreboardLine(playerObjective, messageManager.getMessage("ui.scoreboard.balance", mapOf("balance" to balance, "unit" to unit)), line--)
+                addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.balance", mapOf("balance" to balance, "unit" to unit)), line--)
                 addPlayerScoreboardLine(playerObjective, "§r     ", line--) // 空行
             }
         } else {
             // ゲーム開始前：プレイヤー数表示
-            addPlayerScoreboardLine(playerObjective, messageManager.getMessage("ui.scoreboard.hunters-total", mapOf("count" to hunters.size)), line--)
-            addPlayerScoreboardLine(playerObjective, messageManager.getMessage("ui.scoreboard.runners-total", mapOf("count" to runners.size)), line--)
-            addPlayerScoreboardLine(playerObjective, messageManager.getMessage("ui.scoreboard.spectators-total", mapOf("count" to spectators.size)), line--)
+            addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.hunters-total", mapOf("count" to hunters.size)), line--)
+            addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.runners-total", mapOf("count" to runners.size)), line--)
+            addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.spectators-total", mapOf("count" to spectators.size)), line--)
             addPlayerScoreboardLine(playerObjective, "§r  ", line--) // 空行
         }
         
@@ -187,14 +187,14 @@ class UIManager(
         if (gameState == GameState.WAITING) {
             val minPlayers = gameManager.getMinPlayers()
             val totalPlayers = hunters.size + runners.size
-            addPlayerScoreboardLine(playerObjective, messageManager.getMessage("ui.scoreboard.required-players", mapOf("current" to totalPlayers, "min" to minPlayers)), line--)
+            addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.required-players", mapOf("current" to totalPlayers, "min" to minPlayers)), line--)
             addPlayerScoreboardLine(playerObjective, "§r    ", line--) // 空行
         }
         
         // コマンド情報
-        addPlayerScoreboardLine(playerObjective, messageManager.getMessage("ui.scoreboard.separator"), line--)
-        addPlayerScoreboardLine(playerObjective, messageManager.getMessage("ui.scoreboard.help-command"), line--)
-        addPlayerScoreboardLine(playerObjective, messageManager.getMessage("ui.scoreboard.help-text"), line--)
+        addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.separator"), line--)
+        addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.help-command"), line--)
+        addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.help-text"), line--)
         
         // プレイヤーリスト（Tabキー）表示を設定
         setupPlayerListDisplay(player, playerScoreboard)
@@ -205,7 +205,7 @@ class UIManager(
     
     private fun setupPlayerListDisplay(viewer: Player, scoreboard: Scoreboard) {
         // プレイヤーリスト用のObjectiveを作成
-        val playerListObjective = scoreboard.registerNewObjective("playerlist", "dummy", messageManager.getMessage("ui.playerlist.title"))
+        val playerListObjective = scoreboard.registerNewObjective("playerlist", "dummy", messageManager.getMessage(viewer, "ui.playerlist.title"))
         playerListObjective.displaySlot = DisplaySlot.PLAYER_LIST
         
         val viewerRole = gameManager.getPlayerRole(viewer)
@@ -220,7 +220,7 @@ class UIManager(
                     val selfTeam = scoreboard.getTeam("self_${target.name}") ?: scoreboard.registerNewTeam("self_${target.name}")
                     selfTeam.color = org.bukkit.ChatColor.YELLOW
                     selfTeam.prefix = "⭐"
-                    selfTeam.suffix = messageManager.getMessage("ui.scoreboard.self-suffix")
+                    selfTeam.suffix = messageManager.getMessage(viewer, "ui.scoreboard.self-suffix")
                     selfTeam.addEntry(target.name)
                 } else if (isAlly(viewerRole, targetRole)) {
                     // 味方同士のみ表示（同じ役割かつ観戦者以外）
@@ -253,7 +253,7 @@ class UIManager(
             
             "X:$xSign$deltaX Y:$ySign$deltaY Z:$zSign$deltaZ"
         } catch (e: Exception) {
-            messageManager.getMessage("ui.coordinate-error")
+            messageManager.getMessage(viewer, "ui.coordinate-error")
         }
     }
     
@@ -333,9 +333,9 @@ class UIManager(
             val message = when {
                 gameState == GameState.WAITING -> {
                     if (role == null) {
-                        messageManager.getMessage("ui.actionbar.join-game")
+                        messageManager.getMessage(player, "ui.actionbar.join-game")
                     } else {
-                        messageManager.getMessage("ui.actionbar.waiting", mapOf("role" to getRoleDisplay(role)))
+                        messageManager.getMessage(player, "ui.actionbar.waiting", mapOf("role" to getRoleDisplay(player, role)))
                     }
                 }
                 gameState == GameState.RUNNING && role != null -> {
@@ -350,18 +350,18 @@ class UIManager(
                                 } catch (e: Exception) {
                                     -1
                                 }
-                                messageManager.getMessage("ui.actionbar.hunter-with-target", mapOf("target" to nearestRunner.name, "distance" to distance))
+                                messageManager.getMessage(player, "ui.actionbar.hunter-with-target", mapOf("target" to nearestRunner.name, "distance" to distance))
                             } else {
-                                messageManager.getMessage("ui.actionbar.hunter-no-target")
+                                messageManager.getMessage(player, "ui.actionbar.hunter-no-target")
                             }
                         }
                         PlayerRole.RUNNER -> {
-                            messageManager.getMessage("ui.actionbar.runner")
+                            messageManager.getMessage(player, "ui.actionbar.runner")
                         }
-                        PlayerRole.SPECTATOR -> messageManager.getMessage("ui.actionbar.spectator")
+                        PlayerRole.SPECTATOR -> messageManager.getMessage(player, "ui.actionbar.spectator")
                     }
                 }
-                else -> messageManager.getMessage("ui.actionbar.default")
+                else -> messageManager.getMessage(player, "ui.actionbar.default")
             }
             
             sendActionBar(player, message)
@@ -425,34 +425,41 @@ class UIManager(
     }
     
     fun showGameStateChange(newState: GameState) {
-        val (title, subtitle, color) = when (newState) {
-            GameState.STARTING -> Triple(messageManager.getMessage("ui.bossbar.starting.title"), messageManager.getMessage("ui.bossbar.starting.subtitle"), BarColor.YELLOW)
-            GameState.RUNNING -> Triple(messageManager.getMessage("ui.bossbar.running.title"), messageManager.getMessage("ui.bossbar.running.subtitle"), BarColor.GREEN)
-            GameState.ENDED -> Triple(messageManager.getMessage("ui.bossbar.ended.title"), messageManager.getMessage("ui.bossbar.ended.subtitle"), BarColor.RED)
+        val color = when (newState) {
+            GameState.STARTING -> BarColor.YELLOW
+            GameState.RUNNING -> BarColor.GREEN
+            GameState.ENDED -> BarColor.RED
             else -> return
         }
         
         Bukkit.getOnlinePlayers().forEach { player ->
+            val (title, subtitle) = when (newState) {
+                GameState.STARTING -> Pair(messageManager.getMessage(player, "ui.bossbar.starting.title"), messageManager.getMessage(player, "ui.bossbar.starting.subtitle"))
+                GameState.RUNNING -> Pair(messageManager.getMessage(player, "ui.bossbar.running.title"), messageManager.getMessage(player, "ui.bossbar.running.subtitle"))
+                GameState.ENDED -> Pair(messageManager.getMessage(player, "ui.bossbar.ended.title"), messageManager.getMessage(player, "ui.bossbar.ended.subtitle"))
+                else -> return@forEach
+            }
+            
             showTitle(player, title, subtitle)
             if (newState == GameState.RUNNING) {
-                showGameProgressBossBar(player, messageManager.getMessage("ui.bossbar.progress"), 1.0, color)
+                showGameProgressBossBar(player, messageManager.getMessage(player, "ui.bossbar.progress"), 1.0, color)
             }
         }
     }
     
     // ======== 便利メソッド ========
     
-    private fun getGameStateDisplay(state: GameState): String = when (state) {
-        GameState.WAITING -> messageManager.getMessage("ui.gamestate.waiting")
-        GameState.STARTING -> messageManager.getMessage("ui.gamestate.starting")
-        GameState.RUNNING -> messageManager.getMessage("ui.gamestate.running")
-        GameState.ENDED -> messageManager.getMessage("ui.gamestate.ended")
+    private fun getGameStateDisplay(player: Player?, state: GameState): String = when (state) {
+        GameState.WAITING -> messageManager.getMessage(player, "ui.gamestate.waiting")
+        GameState.STARTING -> messageManager.getMessage(player, "ui.gamestate.starting")
+        GameState.RUNNING -> messageManager.getMessage(player, "ui.gamestate.running")
+        GameState.ENDED -> messageManager.getMessage(player, "ui.gamestate.ended")
     }
     
-    private fun getRoleDisplay(role: PlayerRole): String = when (role) {
-        PlayerRole.HUNTER -> messageManager.getMessage("ui.role-display.hunter")
-        PlayerRole.RUNNER -> messageManager.getMessage("ui.role-display.runner")
-        PlayerRole.SPECTATOR -> messageManager.getMessage("ui.role-display.spectator")
+    private fun getRoleDisplay(player: Player?, role: PlayerRole): String = when (role) {
+        PlayerRole.HUNTER -> messageManager.getMessage(player, "ui.role-display.hunter")
+        PlayerRole.RUNNER -> messageManager.getMessage(player, "ui.role-display.runner")
+        PlayerRole.SPECTATOR -> messageManager.getMessage(player, "ui.role-display.spectator")
     }
     
     private fun findNearestRunner(hunter: Player): Player? {
@@ -489,7 +496,7 @@ class UIManager(
         
         // ゲーム中の場合、状況を表示
         if (gameManager.getGameState() == GameState.RUNNING) {
-            showGameProgressBossBar(player, messageManager.getMessage("ui.bossbar.progress"), 1.0, BarColor.GREEN)
+            showGameProgressBossBar(player, messageManager.getMessage(player, "ui.bossbar.progress"), 1.0, BarColor.GREEN)
         }
     }
     

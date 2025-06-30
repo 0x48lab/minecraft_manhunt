@@ -65,7 +65,7 @@ ui:
 # 経済・ショップ設定
 economy:
   # 開始時の所持金
-  starting-balance: 1000
+  starting-balance: 0
   # 最大所持金
   max-balance: 999999
   # 通貨単位（例: g, コイン, 円, $ など）
@@ -74,32 +74,32 @@ economy:
   # ハンター用設定
   hunter:
     # ダメージ報酬（1ダメージあたり）
-    damage-reward: 55
+    damage-reward: 5
     # キル報酬
-    kill-reward: 500
+    kill-reward: 150
     # 接近ボーナス（削除済み - ログが多すぎるため）
     # proximity-reward: 100
     # proximity-distance: 50
     # 時間ボーナス（1秒あたり）
-    time-bonus: 0.3
+    time-bonus: 0.05
     # 時間ボーナスの支給間隔（秒）
-    time-bonus-interval: 10
+    time-bonus-interval: 30
   
   # ランナー用設定
   runner:
     # 生存ボーナス（1秒あたり）
-    survival-bonus: 0.3
+    survival-bonus: 0.05
     # 生存ボーナスの支給間隔（秒）
-    survival-interval: 5
+    survival-interval: 30
     # ネザー到達報酬
-    nether-reward: 1000
+    nether-reward: 200
     # 要塞発見報酬
-    fortress-reward: 1500
+    fortress-reward: 300
     # エンド到達報酬
-    end-reward: 2000
+    end-reward: 500
     # ダイヤモンド収集報酬（1個あたり）
-    diamond-reward: 100
+    diamond-reward: 25
     # 逃走成功ボーナス
-    escape-reward: 50
+    escape-reward: 20
     # 逃走成功とみなす距離（メートル）
     escape-distance: 100

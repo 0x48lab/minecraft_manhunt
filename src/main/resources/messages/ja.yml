@@ -66,7 +66,7 @@ ui:
     separator: '§7━━━━━━━━━━━━━'
     help-command: '§f/manhunt help'
     help-text: '§7でコマンド確認'
-    balance: '§6💰 所持金: §e{balance}{unit}'
+    balance: '§6💰 : §e{balance}{unit}'
     self-suffix: ' §f(自分)'
   playerlist:
     title: '§6プレイヤー情報'
@@ -444,22 +444,22 @@ result:
   # Result display formatting
   header:
     separator: '='
-    title: '§6§l                 🏆 GAME RESULT 🏆'
+    title: '§6§l                 🏆 ゲーム結果 🏆'
     length: 50
   
   # Title display messages
   title:
-    hunters-win: 'HUNTERS WIN!'
-    runners-win: 'RUNNERS WIN!'
-    game-end: 'GAME END'
+    hunters-win: 'ハンター勝利！'
+    runners-win: 'ランナー勝利！'
+    game-end: 'ゲーム終了'
   
   # Subtitle display messages
   subtitle:
-    dragon-defeated: '§fEnder Dragon Defeated'
-    all-eliminated: '§fAll Runners Eliminated'
-    hunters-abandoned: '§fHunters Abandoned'
-    runners-abandoned: '§fRunners Abandoned'
-    game-complete: '§fGame Complete'
+    dragon-defeated: '§fエンダードラゴン討伐'
+    all-eliminated: '§f全ランナー撃破'
+    hunters-abandoned: '§fハンター全員退出'
+    runners-abandoned: '§fランナー全員退出'
+    game-complete: '§fゲーム完了'
   
   # Detailed statistics section
   stats:

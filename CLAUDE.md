@@ -37,17 +37,22 @@ Minecraft Manhuntは、複数のプレイヤーがハンター（追う人）と
 - `/manhunt join [runner|hunter|spectator]` - ゲームに参加
 - `/manhunt leave` - ゲームから退出
 - `/manhunt role <runner|hunter|spectator>` - 役割変更（待機中のみ）
+- `/manhunt roles` - 役割選択メニューを開く
 - `/manhunt compass` - 追跡コンパス取得（ハンターのみ、ゲーム中のみ）
 - `/manhunt status` - ゲーム状況確認
+- `/manhunt spectate` - 観戦メニューを開く（観戦者のみ）
 - `/manhunt help` - ヘルプ表示
 - `/r <メッセージ>` - チームチャット（味方同士のみ、ゲーム中のみ）
 - `/pos` - 自分の座標を味方に共有（ゲーム中のみ）
+- `/shop` - ショップを開く（ゲーム中のみ）
+- `/shop balance` - 所持金確認
 
 ### 管理者コマンド（manhunt.admin権限）
 - `/manhunt start` - ゲーム強制開始
 - `/manhunt sethunter <プレイヤー>` - 指定プレイヤーをハンターに設定
 - `/manhunt minplayers [数値]` - 最小プレイヤー数設定・確認
-- `/manhunt reload` - 設定ファイルをリロード
+- `/manhunt reload [config|shop|all]` - 設定ファイルをリロード
+- `/manhunt ui <toggle|status>` - UI表示制御
 
 ## システム機能
 
@@ -106,6 +111,44 @@ Minecraft Manhuntは、複数のプレイヤーがハンター（追う人）と
 - **プライバシー**: 敵チームには見えない座標情報
 - **便利機能**: 送信者には味方の人数も表示
 
+### 8. 役割選択メニューシステム
+- **コマンド**: `/manhunt roles`
+- **機能**: GUIメニューでの直感的な役割選択
+- **表示内容**: 各役割の説明、現在の人数、選択状態
+- **制限**: ゲーム開始前のみ使用可能
+- **視覚的表示**: アイコンと色分けによる分かりやすいUI
+
+### 9. 観戦メニューシステム
+- **コマンド**: `/manhunt spectate`
+- **対象**: 観戦者のみ使用可能
+- **機能**: 他プレイヤーへの瞬間移動
+- **表示情報**: プレイヤー名、役割、体力、ワールド
+- **ページング**: 多数のプレイヤーに対応
+
+### 10. 経済・ショップシステム
+- **通貨単位**: G（コイン）
+- **開始時所持金**: 0G
+- **獲得方法**:
+  - **ハンター**: ダメージ報酬（5G/ダメージ）、キル報酬（150G）、時間ボーナス（30秒ごとに1.5G）
+  - **ランナー**: 生存ボーナス（30秒ごとに1.5G）、進歩報酬（ネザー200G、要塞300G、エンド500G）、ダイヤモンド収集（25G/個）
+- **ショップカテゴリ**: 武器、防具、ツール、消耗品、食料、特殊アイテム
+- **購入制限**: アイテム別購入制限、クールダウン、役割制限
+- **UI**: カテゴリ別メニュー、所持金表示、購入可否判定
+
+### 11. 多言語対応システム
+- **対応言語**: 日本語（ja）、英語（en）
+- **設定**: config.ymlで言語設定可能
+- **個人設定**: プレイヤー個別の言語設定対応
+- **メッセージファイル**: messages/ja.yml、messages/en.yml
+- **完全国際化**: UI、ショップ、コマンド、エラーメッセージすべて対応
+
+### 12. ゲーム結果・統計システム
+- **詳細統計**: プレイヤー別の戦績、収入、行動履歴
+- **MVP選出**: 最も活躍したプレイヤーを自動選出
+- **結果表示**: 段階的な結果発表（基本結果→統計→MVP→個人成績）
+- **視覚効果**: 花火演出、音響効果、タイトル表示
+- **ランキング**: チーム別・個人別ランキング表示
+
 
 ## 勝利条件
 
@@ -119,6 +162,13 @@ Minecraft Manhuntは、複数のプレイヤーがハンター（追う人）と
 
 ## 設定ファイル（config.yml）
 
+### 言語設定
+```yaml
+language:
+  default: "en"                    # デフォルト言語（ja: 日本語, en: 英語）
+  per-player: true                 # プレイヤー個別言語設定
+```
+
 ### ゲーム設定
 ```yaml
 game:
@@ -130,9 +180,32 @@ game:
     cooldown-seconds: 5             # 警告頻度制御（秒）
   compass-update-interval: 1        # コンパス更新間隔（秒）
   proximity-check-interval: 1       # 近接チェック間隔（秒）
+  start-countdown: 10               # ゲーム開始カウントダウン（秒）
   respawn:
     runner-respawn-time: 300        # ランナーリスポン時間（秒）
     hunter-instant-respawn: true    # ハンター即座リスポン
+```
+
+### 経済設定
+```yaml
+economy:
+  starting-balance: 0               # 開始時所持金
+  max-balance: 999999              # 最大所持金
+  currency-unit: "G"               # 通貨単位
+  hunter:
+    damage-reward: 5               # ダメージ報酬（1ダメージあたり）
+    kill-reward: 150               # キル報酬
+    time-bonus: 0.05               # 時間ボーナス（1秒あたり）
+    time-bonus-interval: 30        # 時間ボーナス間隔（秒）
+  runner:
+    survival-bonus: 0.05           # 生存ボーナス（1秒あたり）
+    survival-interval: 30          # 生存ボーナス間隔（秒）
+    nether-reward: 200             # ネザー到達報酬
+    fortress-reward: 300           # 要塞発見報酬
+    end-reward: 500                # エンド到達報酬
+    diamond-reward: 25             # ダイヤモンド収集報酬（1個あたり）
+    escape-reward: 20              # 逃走成功ボーナス
+    escape-distance: 100           # 逃走成功距離（メートル）
 ```
 
 ### UI設定
@@ -149,14 +222,10 @@ ui:
 ```
 
 ### メッセージ設定
-```yaml
-messages:
-  game-start: "§6[Manhunt] ゲーム開始！"
-  hunter-win: "§c追う人の勝利！逃げる人を全員倒しました！"
-  runner-win: "§a逃げる人の勝利！エンダードラゴンを倒しました！"
-  proximity-warnings:
-    level-1: "§c§l[警告] 追う人が1チャンク以内にいます！"
-```
+- **ファイル構成**: messages/ja.yml、messages/en.yml
+- **階層構造**: ネストしたキーでメッセージを分類管理
+- **プレースホルダー**: `{key}`形式でパラメータ置換対応
+- **完全多言語化**: 全システムメッセージを言語別に管理
 
 ## クラス構成
 
@@ -165,7 +234,30 @@ messages:
 - `GameManager.kt` - ゲーム状態・プレイヤー管理
 - `CompassTracker.kt` - コンパス追跡システム
 - `EventListener.kt` - イベント処理
-- `ManhuntCommand.kt` - コマンド処理
+- `ManhuntCommand.kt` - メインコマンド処理
+- `ShopCommand.kt` - ショップコマンド処理
+- `TeamChatCommand.kt` - チームチャットコマンド処理
+- `PositionCommand.kt` - 座標共有コマンド処理
+
+### Manager Classes
+- `ConfigManager.kt` - 設定ファイル管理
+- `MessageManager.kt` - 多言語メッセージ管理
+- `UIManager.kt` - UI表示システム管理
+- `GameResultManager.kt` - ゲーム結果・統計管理
+- `EconomyManager.kt` - 経済システム管理
+- `ShopManager.kt` - ショップシステム管理
+- `CurrencyTracker.kt` - 通貨獲得追跡
+
+### Shop System Classes
+- `ShopConfigManager.kt` - ショップ設定管理
+- `ShopCategory.kt` - ショップカテゴリ管理
+- `ShopItem.kt` - ショップアイテム定義
+- `ShopGUI.kt` - ショップGUI管理
+
+### Statistics Classes
+- `GameStats.kt` - ゲーム統計データ
+- `PlayerStatistics.kt` - プレイヤー統計
+- `EarnReason.kt` - 通貨獲得理由管理
 
 ### Data Classes
 - `GameState.kt` - ゲーム状態列挙型
@@ -243,6 +335,8 @@ messages:
 🏃 ランナー生存: 2
 💀 ランナー死亡: 1
 
+💰 : 150G
+
 ```
 
 ### Tabキー（プレイヤーリスト）表示
@@ -293,8 +387,11 @@ messages:
 - **必須要件**: 文言は英語と日本語の両方を準備すること
 - **実装方法**: 
   - 設定ファイル（config.yml）で言語切り替え可能
-  - メッセージファイルを言語別に管理
-  - デフォルトは日本語
+  - メッセージファイルを言語別に管理（messages/ja.yml、messages/en.yml）
+  - プレイヤー個別の言語設定対応
+  - デフォルトは英語（config.yml language.default: "en"）
+- **完全国際化**: UI、ショップアイテム、コマンド応答、エラーメッセージ全て対応
+- **ショップ国際化**: shop.ymlはゲームデータのみ、表示名・説明は言語ファイルで管理
 
 ### コーディング規約
 - Kotlinのコーディング規約に従う
