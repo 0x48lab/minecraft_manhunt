@@ -15,7 +15,8 @@
       "Bash(echo)",
       "Bash(done)",
       "Bash(python3:*)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(git push:*)"
     ],
     "deny": []
   }
