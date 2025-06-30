@@ -16,6 +16,8 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
     private var minPlayers = configManager.getMinPlayers()
     private var proximityTask: BukkitRunnable? = null
     
+    fun getPlugin(): Main = plugin
+    
     // ネットワークエラーで退出したプレイヤーの情報を保持
     private val disconnectedPlayers = mutableMapOf<UUID, PlayerRole>()
     
@@ -25,7 +27,8 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
     // パフォーマンス最適化用キャッシュ
     private var cachedHunters: List<Player>? = null
     private var cachedRunners: List<Player>? = null
-    private var cacheExpiry = 0L
+    private var hunterCacheExpiry = 0L
+    private var runnerCacheExpiry = 0L
     private val CACHE_DURATION = 500L // 0.5秒キャッシュ
     
     // リスポン管理
@@ -123,11 +126,16 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
     }
     
     fun setPlayerRole(player: Player, role: PlayerRole) {
+        val oldRole = players[player.uniqueId]?.role
+        plugin.logger.info("役割変更: ${player.name} ${oldRole} -> ${role}")
+        
         // プレイヤーがゲームに参加していない場合は自動的に参加させる
         if (!players.containsKey(player.uniqueId)) {
             players[player.uniqueId] = ManhuntPlayer(player, role)
+            plugin.logger.info("新規プレイヤー追加: ${player.name} as ${role}")
         } else {
             players[player.uniqueId]?.role = role
+            plugin.logger.info("既存プレイヤーの役割変更: ${player.name} to ${role}")
         }
         
         if (role == PlayerRole.HUNTER) {
@@ -136,6 +144,15 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
             fixedHunters.remove(player.uniqueId)
         }
         invalidateCache()
+        
+        // 変更後の状態をログ出力
+        val hunters = getAllHunters()
+        val runners = getAllRunners()
+        val spectators = getAllSpectators()
+        plugin.logger.info("役割変更後の状況: ハンター${hunters.size}人, ランナー${runners.size}人, 観戦者${spectators.size}人")
+        plugin.logger.info("ハンター: ${hunters.map { it.name }}")
+        plugin.logger.info("ランナー: ${runners.map { it.name }}")
+        plugin.logger.info("観戦者: ${spectators.map { it.name }}")
         
         // UIの即座更新
         try {
@@ -151,18 +168,24 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
     
     fun getAllRunners(): List<Player> {
         val currentTime = System.currentTimeMillis()
-        if (cachedRunners == null || currentTime > cacheExpiry) {
+        if (cachedRunners == null || currentTime > runnerCacheExpiry) {
+            val allPlayers = players.values.map { "${it.player.name}(${it.role})" }
+            plugin.logger.info("ランナーキャッシュ更新中: 全プレイヤー=${allPlayers}")
             cachedRunners = players.values.filter { it.role == PlayerRole.RUNNER }.map { it.player }
-            cacheExpiry = currentTime + CACHE_DURATION
+            runnerCacheExpiry = currentTime + CACHE_DURATION
+            plugin.logger.info("ランナーキャッシュ更新完了: ${cachedRunners!!.map { it.name }}")
         }
         return cachedRunners!!
     }
     
     fun getAllHunters(): List<Player> {
         val currentTime = System.currentTimeMillis()
-        if (cachedHunters == null || currentTime > cacheExpiry) {
+        if (cachedHunters == null || currentTime > hunterCacheExpiry) {
+            val allPlayers = players.values.map { "${it.player.name}(${it.role})" }
+            plugin.logger.info("ハンターキャッシュ更新中: 全プレイヤー=${allPlayers}")
             cachedHunters = players.values.filter { it.role == PlayerRole.HUNTER }.map { it.player }
-            cacheExpiry = currentTime + CACHE_DURATION
+            hunterCacheExpiry = currentTime + CACHE_DURATION
+            plugin.logger.info("ハンターキャッシュ更新完了: ${cachedHunters!!.map { it.name }}")
         }
         return cachedHunters!!
     }
@@ -174,7 +197,8 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
     private fun invalidateCache() {
         cachedHunters = null
         cachedRunners = null
-        cacheExpiry = 0L
+        hunterCacheExpiry = 0L
+        runnerCacheExpiry = 0L
     }
     
     private fun checkStartConditions() {
@@ -407,6 +431,12 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
             plugin.logger.warning("Error stopping compass tracking: ${e.message}")
         }
         
+        try {
+            plugin.getCurrencyTracker().stopTracking()
+        } catch (e: Exception) {
+            plugin.logger.warning("Error stopping currency tracking: ${e.message}")
+        }
+        
         Bukkit.broadcastMessage("§6[Manhunt] ゲーム終了！")
         Bukkit.broadcastMessage(message)
         
@@ -447,6 +477,12 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
             plugin.getCompassTracker().stopTracking()
         } catch (e: Exception) {
             plugin.logger.warning("Error stopping compass tracking during reset: ${e.message}")
+        }
+        
+        try {
+            plugin.getCurrencyTracker().stopTracking()
+        } catch (e: Exception) {
+            plugin.logger.warning("Error stopping currency tracking during reset: ${e.message}")
         }
         
         // データをクリア
@@ -601,6 +637,48 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
     private fun isLocationSafeDistance(location: Location, minDistance: Double): Boolean {
         // 現在は簡単な実装（複数の転送地点を記録して比較する場合に使用）
         return true
+    }
+    
+    // ======== インベントリ管理システム ========
+    
+    /**
+     * 全プレイヤーのインベントリをクリア
+     */
+    private fun clearAllPlayerInventories() {
+        val hunters = getAllHunters().filter { it.isOnline }
+        val runners = getAllRunners().filter { it.isOnline }
+        val spectators = getAllSpectators().filter { it.isOnline }
+        
+        (hunters + runners + spectators).forEach { player ->
+            try {
+                // インベントリとアーマーをクリア
+                player.inventory.clear()
+                player.inventory.setArmorContents(arrayOfNulls(4))
+                
+                // 体力とハンガーをリセット
+                player.health = player.maxHealth
+                player.foodLevel = 20
+                player.saturation = 5.0f
+                player.exhaustion = 0.0f
+                
+                // エフェクトをクリア
+                player.activePotionEffects.forEach { effect ->
+                    player.removePotionEffect(effect.type)
+                }
+                
+                // 経験値をリセット
+                player.level = 0
+                player.exp = 0.0f
+                player.totalExperience = 0
+                
+                plugin.logger.info("プレイヤー ${player.name} のインベントリをクリアしました")
+                
+            } catch (e: Exception) {
+                plugin.logger.warning("プレイヤー ${player.name} のインベントリクリアでエラー: ${e.message}")
+            }
+        }
+        
+        Bukkit.broadcastMessage("§6[Manhunt] プレイヤーのインベントリがクリアされました！")
     }
     
     // ======== 死亡・リスポン管理システム ========
@@ -849,6 +927,9 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
     }
     
     private fun actuallyStartGame() {
+        // プレイヤーのインベントリをクリア（ゲーム開始前のアイテムを削除）
+        clearAllPlayerInventories()
+        
         // ハンターとランナーをランダムな場所に転送し、サバイバルモードに設定
         teleportPlayersToStartPositions()
         
@@ -872,6 +953,13 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
         
         // Start compass tracking
         plugin.getCompassTracker().startTracking()
+        
+        // Start currency tracking
+        plugin.getCurrencyTracker().startTracking()
+        
+        // Reset economy for all players
+        plugin.getEconomyManager().resetAllBalances()
+        plugin.getShopManager().resetAllPurchases()
         
         // ハンターに仮想コンパスの使い方を自動通知
         getAllHunters().forEach { hunter ->

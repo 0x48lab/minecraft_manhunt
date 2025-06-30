@@ -18,6 +18,10 @@ commands:
     description: Share your position with teammates
     usage: /pos
     aliases: [position, coords]
+  shop:
+    description: Open the in-game shop or check balance
+    usage: /shop [balance|help]
+    aliases: [store]
 
 permissions:
   manhunt.admin:

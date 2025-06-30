@@ -114,6 +114,6 @@ class TeamChatCommand(
         }
         
         // ログに記録
-        gameManager.plugin.logger.info("TeamChat [${senderRole.name}] ${sender.name}: $message (${teammates.size} recipients)")
+        gameManager.getPlugin().logger.info("TeamChat [${senderRole.name}] ${sender.name}: $message (${teammates.size} recipients)")
     }
 }

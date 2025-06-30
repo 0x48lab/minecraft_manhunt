@@ -132,6 +132,6 @@ class PositionShareCommand(
         }
         
         // ログに記録
-        gameManager.plugin.logger.info("Position Share [${senderRole.name}] ${sender.name}: X:$x Y:$y Z:$z in $world (${teammates.size} recipients)")
+        gameManager.getPlugin().logger.info("Position Share [${senderRole.name}] ${sender.name}: X:$x Y:$y Z:$z in $world (${teammates.size} recipients)")
     }
 }

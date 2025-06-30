@@ -73,3 +73,45 @@ messages:
     level-1: "§c§l[警告] 追う人が1チャンク以内にいます！"
     level-2: "§6§l[警告] 追う人が2チャンク以内にいます！"
     level-3: "§e§l[警告] 追う人が3チャンク以内にいます！"
+
+# 経済・ショップ設定
+economy:
+  # 開始時の所持金
+  starting-balance: 0
+  # 最大所持金
+  max-balance: 999999
+  # 通貨単位（例: g, コイン, 円, $ など）
+  currency-unit: "G"
+  
+  # ハンター用設定
+  hunter:
+    # ダメージ報酬（1ダメージあたり）
+    damage-reward: 55
+    # キル報酬
+    kill-reward: 500
+    # 接近ボーナス（削除済み - ログが多すぎるため）
+    # proximity-reward: 100
+    # proximity-distance: 50
+    # 時間ボーナス（1秒あたり）
+    time-bonus: 0.3
+    # 時間ボーナスの支給間隔（秒）
+    time-bonus-interval: 10
+  
+  # ランナー用設定
+  runner:
+    # 生存ボーナス（1秒あたり）
+    survival-bonus: 0.5
+    # 生存ボーナスの支給間隔（秒）
+    survival-interval: 5
+    # ネザー到達報酬
+    nether-reward: 1000
+    # 要塞発見報酬
+    fortress-reward: 1500
+    # エンド到達報酬
+    end-reward: 2000
+    # ダイヤモンド収集報酬（1個あたり）
+    diamond-reward: 100
+    # 逃走成功ボーナス
+    escape-reward: 50
+    # 逃走成功とみなす距離（メートル）
+    escape-distance: 100

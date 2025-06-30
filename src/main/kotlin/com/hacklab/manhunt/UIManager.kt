@@ -163,6 +163,14 @@ class UIManager(
             addPlayerScoreboardLine(playerObjective, "§a🏃 ランナー生存: §f${aliveRunners.size}", line--)
             addPlayerScoreboardLine(playerObjective, "§a💀 ランナー死亡: §f${deadRunners.size}", line--)
             addPlayerScoreboardLine(playerObjective, "§r   ", line--) // 空行
+            
+            // 所持金表示（ゲーム中のみ）
+            if (role != null && role != PlayerRole.SPECTATOR) {
+                val balance = plugin.getEconomyManager().getBalance(player)
+                val unit = plugin.getConfigManager().getCurrencyConfig().currencyUnit
+                addPlayerScoreboardLine(playerObjective, "§6💰 所持金: §e${balance}${unit}", line--)
+                addPlayerScoreboardLine(playerObjective, "§r     ", line--) // 空行
+            }
         } else {
             // ゲーム開始前：プレイヤー数表示
             addPlayerScoreboardLine(playerObjective, "§c🗡 ハンター: §f${hunters.size}", line--)

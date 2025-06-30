@@ -1,5 +1,6 @@
 package com.hacklab.manhunt
 
+import com.hacklab.manhunt.economy.CurrencyConfig
 import org.bukkit.configuration.file.FileConfiguration
 
 class ConfigManager(private val plugin: Main) {
@@ -110,4 +111,37 @@ class ConfigManager(private val plugin: Main) {
         plugin.reloadConfig()
         validateAndFixConfig()
     }
+    
+    // 通貨設定を取得
+    fun getCurrencyConfig(): CurrencyConfig {
+        val economySection = config.getConfigurationSection("economy") ?: return CurrencyConfig()
+        
+        return CurrencyConfig(
+            // ハンター設定
+            hunterDamageReward = economySection.getInt("hunter.damage-reward", 50),
+            hunterKillReward = economySection.getInt("hunter.kill-reward", 500),
+            hunterProximityReward = economySection.getInt("hunter.proximity-reward", 100),
+            hunterProximityDistance = economySection.getInt("hunter.proximity-distance", 50),
+            hunterTimeBonus = economySection.getDouble("hunter.time-bonus", 0.3),
+            hunterTimeBonusInterval = economySection.getInt("hunter.time-bonus-interval", 10),
+            
+            // ランナー設定
+            runnerSurvivalBonus = economySection.getDouble("runner.survival-bonus", 0.5),
+            runnerSurvivalInterval = economySection.getInt("runner.survival-interval", 5),
+            runnerNetherReward = economySection.getInt("runner.nether-reward", 1000),
+            runnerFortressReward = economySection.getInt("runner.fortress-reward", 1500),
+            runnerEndReward = economySection.getInt("runner.end-reward", 2000),
+            runnerDiamondReward = economySection.getInt("runner.diamond-reward", 100),
+            runnerEscapeReward = economySection.getInt("runner.escape-reward", 50),
+            runnerEscapeDistance = economySection.getInt("runner.escape-distance", 100),
+            
+            // 共通設定
+            startingBalance = economySection.getInt("starting-balance", 0),
+            maxBalance = economySection.getInt("max-balance", 999999),
+            currencyUnit = economySection.getString("currency-unit", "g") ?: "g"
+        )
+    }
+    
+    // 言語設定を取得
+    fun getDefaultLanguage(): String = config.getString("language.default", "ja") ?: "ja"
 }
