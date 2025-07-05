@@ -663,31 +663,43 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
         }
         
         try {
-            // ハンターとランナーの転送地点を生成
-            val hunterSpawn = generateRandomSpawnLocation(world)
-            val runnerSpawn = generateRandomSpawnLocation(world, minDistanceFromOther = 1000.0)
+            // 既にスポーンした位置を記録
+            val spawnedLocations = mutableListOf<Location>()
             
-            // ハンターを転送してサバイバルモードに設定
-            hunters.forEach { hunter ->
-                try {
-                    hunter.teleport(hunterSpawn)
-                    hunter.gameMode = GameMode.SURVIVAL
-                    hunter.sendMessage(messageManager.getMessage(hunter, "game-start-role.hunter"))
-                    plugin.logger.info("Hunter ${hunter.name} teleported to ${hunterSpawn.blockX}, ${hunterSpawn.blockY}, ${hunterSpawn.blockZ}")
-                } catch (e: Exception) {
-                    plugin.logger.warning("Error teleporting hunter ${hunter.name}: ${e.message}")
-                }
-            }
+            // 各プレイヤーを500-1000ブロックの範囲でバラバラにスポーン
+            val allPlayers = hunters + runners
             
-            // ランナーを転送してサバイバルモードに設定
-            runners.forEach { runner ->
+            allPlayers.forEach { player ->
                 try {
-                    runner.teleport(runnerSpawn)
-                    runner.gameMode = GameMode.SURVIVAL
-                    runner.sendMessage(messageManager.getMessage(runner, "game-start-role.runner"))
-                    plugin.logger.info("Runner ${runner.name} teleported to ${runnerSpawn.blockX}, ${runnerSpawn.blockY}, ${runnerSpawn.blockZ}")
+                    // 500-1000ブロックの範囲で他のプレイヤーから離れた場所を生成
+                    val spawnLocation = generateRandomSpawnLocation(world, spawnedLocations, 500.0, 1000.0)
+                    spawnedLocations.add(spawnLocation)
+                    
+                    player.teleport(spawnLocation)
+                    player.gameMode = GameMode.SURVIVAL
+                    
+                    // 役割に応じたメッセージを送信
+                    val role = getPlayerRole(player)
+                    when (role) {
+                        PlayerRole.HUNTER -> {
+                            player.sendMessage(messageManager.getMessage(player, "game-start-role.hunter"))
+                            plugin.logger.info("Hunter ${player.name} teleported to ${spawnLocation.blockX}, ${spawnLocation.blockY}, ${spawnLocation.blockZ}")
+                        }
+                        PlayerRole.RUNNER -> {
+                            player.sendMessage(messageManager.getMessage(player, "game-start-role.runner"))
+                            plugin.logger.info("Runner ${player.name} teleported to ${spawnLocation.blockX}, ${spawnLocation.blockY}, ${spawnLocation.blockZ}")
+                        }
+                        else -> {}
+                    }
                 } catch (e: Exception) {
-                    plugin.logger.warning("Error teleporting runner ${runner.name}: ${e.message}")
+                    plugin.logger.warning("Error teleporting player ${player.name}: ${e.message}")
+                    // エラーの場合はワールドスポーンに転送
+                    try {
+                        player.teleport(world.spawnLocation)
+                        player.gameMode = GameMode.SURVIVAL
+                    } catch (ex: Exception) {
+                        plugin.logger.severe("Critical error teleporting ${player.name}: ${ex.message}")
+                    }
                 }
             }
             
@@ -716,16 +728,26 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
         }
     }
     
-    private fun generateRandomSpawnLocation(world: World, minDistanceFromOther: Double = 0.0): Location {
-        val maxAttempts = 50
+    private fun generateRandomSpawnLocation(
+        world: World, 
+        existingLocations: List<Location> = emptyList(),
+        minDistance: Double = 500.0,
+        maxDistance: Double = 1000.0
+    ): Location {
+        val maxAttempts = 100
         var attempts = 0
+        val minDistanceBetweenPlayers = 100.0 // プレイヤー間の最小距離
         
         while (attempts < maxAttempts) {
             attempts++
             
-            // ランダムな座標を生成（-1500 ~ +1500の範囲）
-            val x = Random.nextDouble(-1500.0, 1500.0)
-            val z = Random.nextDouble(-1500.0, 1500.0)
+            // 500-1000ブロックの範囲でランダムな角度と距離を生成
+            val angle = Random.nextDouble(0.0, 2 * Math.PI)
+            val distance = Random.nextDouble(minDistance, maxDistance)
+            
+            // 極座標から直交座標に変換
+            val x = distance * cos(angle)
+            val z = distance * sin(angle)
             
             // 安全な高度を見つける
             val safeY = findSafeY(world, x.toInt(), z.toInt())
@@ -733,17 +755,31 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
             if (safeY > 0) {
                 val location = Location(world, x, safeY.toDouble(), z)
                 
-                // 他の転送地点との距離をチェック（必要な場合）
-                if (minDistanceFromOther <= 0.0 || isLocationSafeDistance(location, minDistanceFromOther)) {
-                    plugin.logger.info("Safe teleport location generated: ${x.toInt()}, $safeY, ${z.toInt()} (attempts: $attempts)")
+                // 他のプレイヤーとの距離をチェック
+                var tooClose = false
+                for (existing in existingLocations) {
+                    if (location.distance(existing) < minDistanceBetweenPlayers) {
+                        tooClose = true
+                        break
+                    }
+                }
+                
+                if (!tooClose) {
+                    plugin.logger.info("Safe teleport location generated: ${x.toInt()}, $safeY, ${z.toInt()} (distance: ${distance.toInt()}m, attempts: $attempts)")
                     return location
                 }
             }
         }
         
-        // フォールバック: ワールドスポーン地点
-        plugin.logger.warning("Failed to generate safe teleport location. Using world spawn.")
-        return world.spawnLocation
+        // フォールバック: 角度を変えて再試行
+        plugin.logger.warning("Difficult to find isolated location, using fallback.")
+        val fallbackAngle = Random.nextDouble(0.0, 2 * Math.PI)
+        val fallbackDistance = Random.nextDouble(minDistance, maxDistance)
+        val fallbackX = fallbackDistance * cos(fallbackAngle)
+        val fallbackZ = fallbackDistance * sin(fallbackAngle)
+        val fallbackY = world.getHighestBlockYAt(fallbackX.toInt(), fallbackZ.toInt()) + 2
+        
+        return Location(world, fallbackX, fallbackY.toDouble(), fallbackZ)
     }
     
     private fun findSafeY(world: World, x: Int, z: Int): Int {
@@ -767,10 +803,6 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
         return world.getHighestBlockYAt(x, z) + 2
     }
     
-    private fun isLocationSafeDistance(location: Location, minDistance: Double): Boolean {
-        // 現在は簡単な実装（複数の転送地点を記録して比較する場合に使用）
-        return true
-    }
     
     // ======== インベントリ管理システム ========
     
