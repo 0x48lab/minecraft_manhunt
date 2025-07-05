@@ -34,6 +34,10 @@ class ConfigManager(private val plugin: Main) {
     // 距離表示設定
     fun getMinimumDisplayDistance(): Int = config.getInt("ui.distance-display.minimum-distance", 5)
     
+    // 名前タグ設定
+    fun isHideNameTagsDuringGame(): Boolean = config.getBoolean("game.name-tag.hide-during-game", true)
+    fun getNameTagVisibilityMode(): String = config.getString("game.name-tag.visibility-mode", "all") ?: "all"
+    
     
     // 設定値の検証と修正
     fun validateAndFixConfig() {

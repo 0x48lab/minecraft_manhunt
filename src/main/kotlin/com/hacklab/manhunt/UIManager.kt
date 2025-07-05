@@ -140,6 +140,10 @@ class UIManager(
         val playerObjective = playerScoreboard.registerNewObjective("manhunt", "dummy", messageManager.getMessage(player, "ui.scoreboard.player-title"))
         playerObjective.displaySlot = DisplaySlot.SIDEBAR
         
+        // チームを作成（各プレイヤーのスコアボードに）
+        createTeamsForScoreboard(playerScoreboard)
+        assignPlayersToScoreboardTeams(playerScoreboard)
+        
         val gameState = gameManager.getGameState()
         val hunters = gameManager.getAllHunters().filter { it.isOnline }
         val runners = gameManager.getAllRunners().filter { it.isOnline }
@@ -201,6 +205,83 @@ class UIManager(
         
         // プレイヤーにスコアボードを適用
         player.scoreboard = playerScoreboard
+    }
+    
+    private fun createTeamsForScoreboard(scoreboard: Scoreboard) {
+        // 既存のチームを削除
+        scoreboard.getTeam("manhunt_hunters")?.unregister()
+        scoreboard.getTeam("manhunt_runners")?.unregister()
+        scoreboard.getTeam("manhunt_hidden")?.unregister()
+        
+        // 設定に基づいてチームを作成
+        val visibilityMode = plugin.getConfigManager().getNameTagVisibilityMode()
+        val gameState = gameManager.getGameState()
+        val shouldHide = plugin.getConfigManager().isHideNameTagsDuringGame() && gameState == GameState.RUNNING
+        
+        when {
+            shouldHide && visibilityMode == "all" -> {
+                // 全員の名前を隠すチームを作成
+                val hiddenTeam = scoreboard.registerNewTeam("manhunt_hidden").apply {
+                    setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.NEVER)
+                    setCanSeeFriendlyInvisibles(false)
+                }
+            }
+            shouldHide && visibilityMode == "team" -> {
+                // チーム内のみ表示
+                val hunterTeam = scoreboard.registerNewTeam("manhunt_hunters").apply {
+                    setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.FOR_OWN_TEAM)
+                    setCanSeeFriendlyInvisibles(true)
+                    color = org.bukkit.ChatColor.RED
+                }
+                
+                val runnerTeam = scoreboard.registerNewTeam("manhunt_runners").apply {
+                    setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.FOR_OWN_TEAM)
+                    setCanSeeFriendlyInvisibles(true)
+                    color = org.bukkit.ChatColor.GREEN
+                }
+            }
+            else -> {
+                // 通常表示（ゲーム終了時や設定がoffの場合）
+                // チームを作成しても名前タグは常に表示
+                val hunterTeam = scoreboard.registerNewTeam("manhunt_hunters").apply {
+                    setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.ALWAYS)
+                    color = org.bukkit.ChatColor.RED
+                }
+                
+                val runnerTeam = scoreboard.registerNewTeam("manhunt_runners").apply {
+                    setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.ALWAYS)
+                    color = org.bukkit.ChatColor.GREEN
+                }
+            }
+        }
+    }
+    
+    private fun assignPlayersToScoreboardTeams(scoreboard: Scoreboard) {
+        val visibilityMode = plugin.getConfigManager().getNameTagVisibilityMode()
+        val gameState = gameManager.getGameState()
+        val shouldHide = plugin.getConfigManager().isHideNameTagsDuringGame() && gameState == GameState.RUNNING
+        
+        if (shouldHide && visibilityMode == "all") {
+            // 全員をhiddenチームに追加
+            val hiddenTeam = scoreboard.getTeam("manhunt_hidden")
+            Bukkit.getOnlinePlayers().forEach { player ->
+                hiddenTeam?.addEntry(player.name)
+            }
+        } else {
+            // 通常のチーム分け
+            val hunterTeam = scoreboard.getTeam("manhunt_hunters")
+            val runnerTeam = scoreboard.getTeam("manhunt_runners")
+            
+            // ハンターをチームに追加
+            gameManager.getAllHunters().filter { it.isOnline }.forEach { player ->
+                hunterTeam?.addEntry(player.name)
+            }
+            
+            // ランナーをチームに追加
+            gameManager.getAllRunners().filter { it.isOnline }.forEach { player ->
+                runnerTeam?.addEntry(player.name)
+            }
+        }
     }
     
     private fun setupPlayerListDisplay(viewer: Player, scoreboard: Scoreboard) {
@@ -445,6 +526,9 @@ class UIManager(
                 showGameProgressBossBar(player, messageManager.getMessage(player, "ui.bossbar.progress"), 1.0, color)
             }
         }
+        
+        // ゲーム状態が変わったらスコアボードを即座に更新（名前タグの表示設定も反映される）
+        updateScoreboardImmediately()
     }
     
     // ======== 便利メソッド ========

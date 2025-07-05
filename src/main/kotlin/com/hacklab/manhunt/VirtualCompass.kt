@@ -141,8 +141,16 @@ class VirtualCompass(
     }
     
     private fun getAllValidRunners(hunter: Player): List<Player> {
-        return gameManager.getAllRunners()
+        val runners = gameManager.getAllRunners()
             .filter { it.isOnline && !it.isDead && it.world == hunter.world }
+        
+        // デバッグ: ランナーの数をログ出力
+        plugin.logger.info("VirtualCompass: Found ${runners.size} valid runners for hunter ${hunter.name}")
+        runners.forEach { runner ->
+            plugin.logger.info("  - Runner: ${runner.name} at ${runner.location.blockX}, ${runner.location.blockY}, ${runner.location.blockZ}")
+        }
+        
+        return runners
     }
     
     private fun getNextTarget(hunter: Player): Player? {
@@ -157,13 +165,34 @@ class VirtualCompass(
     }
     
     private fun updateCompassTarget(player: Player, targetLocation: Location) {
-        val compass = player.inventory.itemInMainHand
-        if (compass.type != Material.COMPASS) return
+        // デバッグ: ターゲット位置をログ出力
+        plugin.logger.info("VirtualCompass: Setting compass target for ${player.name} to ${targetLocation.blockX}, ${targetLocation.blockY}, ${targetLocation.blockZ}")
         
-        val meta = compass.itemMeta as? CompassMeta ?: return
-        meta.isLodestoneTracked = false
-        meta.lodestone = targetLocation
-        compass.itemMeta = meta
+        // プレイヤーのコンパスターゲットを直接設定
+        player.compassTarget = targetLocation
+        
+        // 手持ちのコンパスアイテムも更新
+        val compass = player.inventory.itemInMainHand
+        if (compass.type == Material.COMPASS) {
+            val meta = compass.itemMeta as? CompassMeta
+            if (meta != null) {
+                meta.isLodestoneTracked = false
+                meta.lodestone = targetLocation
+                compass.itemMeta = meta
+            }
+        }
+        
+        // インベントリ内の全てのコンパスを更新
+        player.inventory.contents.forEach { item ->
+            if (item?.type == Material.COMPASS) {
+                val meta = item.itemMeta as? CompassMeta
+                if (meta != null) {
+                    meta.isLodestoneTracked = false
+                    meta.lodestone = targetLocation
+                    item.itemMeta = meta
+                }
+            }
+        }
         
         // インベントリを更新して変更を反映
         player.updateInventory()
@@ -453,6 +482,9 @@ class VirtualCompass(
     }
     
     private fun updateAllCompassesInInventory(player: Player, targetLocation: Location) {
+        // プレイヤーのコンパスターゲットを直接設定（これが重要）
+        player.compassTarget = targetLocation
+        
         val inventory = player.inventory
         val compassName = messageManager.getMessage("virtual-compass.name")
         
@@ -478,6 +510,9 @@ class VirtualCompass(
                 mainHand.itemMeta = meta
             }
         }
+        
+        // インベントリを更新
+        player.updateInventory()
     }
     
     fun cleanup() {
@@ -485,5 +520,11 @@ class VirtualCompass(
         cooldowns.clear()
         targetIndex.clear()
         currentTargets.clear()
+    }
+    
+    fun setInitialTarget(hunter: Player, target: Player) {
+        currentTargets[hunter] = target
+        targetIndex[hunter] = 0
+        plugin.logger.info("VirtualCompass: Set initial target for ${hunter.name} to ${target.name}")
     }
 }

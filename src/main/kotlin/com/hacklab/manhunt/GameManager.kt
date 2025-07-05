@@ -6,6 +6,7 @@ import org.bukkit.Location
 import org.bukkit.World
 import org.bukkit.entity.Player
 import org.bukkit.scheduler.BukkitRunnable
+import org.bukkit.scoreboard.Team
 import java.util.*
 import kotlin.random.Random
 import kotlin.math.cos
@@ -120,6 +121,10 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
     // ゲーム開始カウントダウン管理
     private var countdownTask: BukkitRunnable? = null
     
+    // チーム管理
+    private var hunterTeam: Team? = null
+    private var runnerTeam: Team? = null
+    
     fun getGameState(): GameState = gameState
     
     fun addPlayer(player: Player, role: PlayerRole) {
@@ -143,6 +148,15 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
     fun removePlayer(player: Player, isIntentionalLeave: Boolean = false) {
         val wasInGame = players.containsKey(player.uniqueId)
         val playerRole = players[player.uniqueId]?.role
+        
+        // チームから削除
+        if (playerRole != null) {
+            when (playerRole) {
+                PlayerRole.HUNTER -> hunterTeam?.removeEntry(player.name)
+                PlayerRole.RUNNER -> runnerTeam?.removeEntry(player.name)
+                PlayerRole.SPECTATOR -> {} // 観戦者はチームに入っていない
+            }
+        }
         
         if (gameState == GameState.RUNNING && wasInGame) {
             // ゲーム進行中にプレイヤーが退出した場合
@@ -231,6 +245,20 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
             // 統計情報の役割を更新
             if (gameState == GameState.RUNNING) {
                 gameStats.updatePlayerRole(player, role)
+            }
+        }
+        
+        // チーム割り当てを更新（ゲーム中の場合）
+        if (gameState == GameState.RUNNING) {
+            // 既存のチームから削除
+            hunterTeam?.removeEntry(player.name)
+            runnerTeam?.removeEntry(player.name)
+            
+            // 新しいチームに追加
+            when (role) {
+                PlayerRole.HUNTER -> hunterTeam?.addEntry(player.name)
+                PlayerRole.RUNNER -> runnerTeam?.addEntry(player.name)
+                PlayerRole.SPECTATOR -> {} // 観戦者はチームに入らない
             }
         }
         
@@ -379,6 +407,80 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
             Bukkit.broadcastMessage(messageManager.getMessage("game-management.start-cancelled-roles"))
             return
         }
+    }
+    
+    private fun createTeams() {
+        val scoreboardManager = Bukkit.getScoreboardManager() ?: return
+        
+        // 全プレイヤーに対してスコアボードを設定
+        for (player in Bukkit.getOnlinePlayers()) {
+            // プレイヤーが個別のスコアボードを持っている場合はメインスコアボードを設定
+            if (player.scoreboard != scoreboardManager.mainScoreboard) {
+                player.scoreboard = scoreboardManager.mainScoreboard
+            }
+        }
+        
+        val scoreboard = scoreboardManager.mainScoreboard
+        
+        // 既存のチームを削除
+        scoreboard.getTeam("manhunt_hunters")?.unregister()
+        scoreboard.getTeam("manhunt_runners")?.unregister()
+        
+        // ハンターチームを作成
+        hunterTeam = scoreboard.registerNewTeam("manhunt_hunters").apply {
+            setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.FOR_OWN_TEAM)
+            setCanSeeFriendlyInvisibles(true)
+            color = org.bukkit.ChatColor.RED
+        }
+        
+        // ランナーチームを作成
+        runnerTeam = scoreboard.registerNewTeam("manhunt_runners").apply {
+            setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.FOR_OWN_TEAM)
+            setCanSeeFriendlyInvisibles(true)
+            color = org.bukkit.ChatColor.GREEN
+        }
+        
+        plugin.logger.info("Teams created: hunters=${hunterTeam != null}, runners=${runnerTeam != null}")
+    }
+    
+    private fun assignPlayersToTeams() {
+        // 全プレイヤーをチームから削除
+        hunterTeam?.entries?.toList()?.forEach { hunterTeam?.removeEntry(it) }
+        runnerTeam?.entries?.toList()?.forEach { runnerTeam?.removeEntry(it) }
+        
+        var hunterCount = 0
+        var runnerCount = 0
+        
+        // ハンターをチームに追加
+        getAllHunters().filter { it.isOnline }.forEach { player ->
+            hunterTeam?.addEntry(player.name)
+            hunterCount++
+            plugin.logger.info("Added ${player.name} to hunter team")
+        }
+        
+        // ランナーをチームに追加
+        getAllRunners().filter { it.isOnline }.forEach { player ->
+            runnerTeam?.addEntry(player.name)
+            runnerCount++
+            plugin.logger.info("Added ${player.name} to runner team")
+        }
+        
+        plugin.logger.info("Team assignment complete: hunters=$hunterCount, runners=$runnerCount")
+        
+        // デバッグ: チーム設定を確認
+        hunterTeam?.let { team ->
+            plugin.logger.info("Hunter team visibility: ${team.getOption(Team.Option.NAME_TAG_VISIBILITY)}")
+        }
+        runnerTeam?.let { team ->
+            plugin.logger.info("Runner team visibility: ${team.getOption(Team.Option.NAME_TAG_VISIBILITY)}")
+        }
+    }
+    
+    private fun removeTeams() {
+        hunterTeam?.unregister()
+        runnerTeam?.unregister()
+        hunterTeam = null
+        runnerTeam = null
     }
     
     private fun startProximityChecking() {
@@ -619,6 +721,10 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
         } catch (e: Exception) {
             plugin.logger.warning("Error stopping currency tracking during reset: ${e.message}")
         }
+        
+        // チームを解散
+        // UIManagerがスコアボードとチームを管理するため、ここでは不要
+        // removeTeams()
         
         // データをクリア
         players.clear()
@@ -1129,6 +1235,11 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
         Bukkit.broadcastMessage(messageManager.getMessage("game-start-role.runner"))
         Bukkit.broadcastMessage(messageManager.getMessage("game-start-role.hunter"))
         Bukkit.broadcastMessage(messageManager.getMessage("game-start-role.spectator"))
+        
+        // チームを作成してプレイヤーを割り当て
+        // UIManagerがスコアボードとチームを管理するため、ここでは不要
+        // createTeams()
+        // assignPlayersToTeams()
         
         // Start proximity checking
         startProximityChecking()

@@ -125,6 +125,9 @@ class CompassTracker(
             if (nearestRunner != null && nearestRunner.world == hunter.world) {
                 meta.isLodestoneTracked = false
                 meta.lodestone = nearestRunner.location
+                
+                // VirtualCompassにも初期ターゲットを設定
+                virtualCompass?.setInitialTarget(hunter, nearestRunner)
             }
             
             compass.itemMeta = meta

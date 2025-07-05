@@ -35,6 +35,13 @@ game:
     runner-respawn-time: 300
     # ハンターの即座リスポン有効
     hunter-instant-respawn: true
+  
+  # 名前タグ表示設定
+  name-tag:
+    # ゲーム中に名前タグを非表示にする
+    hide-during-game: true
+    # 非表示モード (all: 全員非表示, team: チーム内のみ表示, none: 通常表示)
+    visibility-mode: "all"
 
 # UI表示設定
 ui:
