@@ -13,6 +13,7 @@ import org.bukkit.event.entity.PlayerDeathEvent
 import org.bukkit.event.player.PlayerPickupItemEvent
 import org.bukkit.scheduler.BukkitRunnable
 import org.bukkit.util.Vector
+import org.bukkit.inventory.meta.CompassMeta
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
@@ -28,6 +29,8 @@ class VirtualCompass(
     private val targetIndex = mutableMapOf<Player, Int>() // プレイヤーごとのターゲットインデックス
     private val compassSlot = 0 // ホットバーの最初のスロット
     private val cooldownTime = 1000L // 1秒のクールダウン
+    private val currentTargets = mutableMapOf<Player, Player>() // 現在のターゲット
+    private var updateTask: BukkitRunnable? = null
     
     @EventHandler
     fun onPlayerInteract(event: PlayerInteractEvent) {
@@ -87,6 +90,10 @@ class VirtualCompass(
         val direction = calculateDirection(player, targetRunner)
         val distance = player.location.distance(targetRunner.location)
         
+        // コンパスアイテムのメタデータを更新してターゲット位置を設定
+        updateCompassTarget(player, targetRunner.location)
+        currentTargets[player] = targetRunner
+        
         // ビジュアルフィードバック（ターゲット切り替え表示）
         val allRunners = getAllValidRunners(player)
         val currentIndex = targetIndex[player] ?: 0
@@ -115,6 +122,15 @@ class VirtualCompass(
                 // ActionBarでヒントを表示
                 val hintMessage = messageManager.getMessage(player, "compass.actionbar-hint")
                 player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent(hintMessage))
+                
+                // 初回ターゲット設定
+                if (!currentTargets.containsKey(player)) {
+                    val nearestRunner = findNearestRunner(player)
+                    if (nearestRunner != null && nearestRunner.world == player.world) {
+                        currentTargets[player] = nearestRunner
+                        updateCompassTarget(player, nearestRunner.location)
+                    }
+                }
             }
         }
     }
@@ -138,6 +154,19 @@ class VirtualCompass(
         targetIndex[hunter] = nextIndex
         
         return runners[nextIndex]
+    }
+    
+    private fun updateCompassTarget(player: Player, targetLocation: Location) {
+        val compass = player.inventory.itemInMainHand
+        if (compass.type != Material.COMPASS) return
+        
+        val meta = compass.itemMeta as? CompassMeta ?: return
+        meta.isLodestoneTracked = false
+        meta.lodestone = targetLocation
+        compass.itemMeta = meta
+        
+        // インベントリを更新して変更を反映
+        player.updateInventory()
     }
     
     private fun calculateDirection(from: Player, to: Player): Vector {
@@ -388,8 +417,73 @@ class VirtualCompass(
         }
     }
     
+    fun startUpdateTask() {
+        stopUpdateTask()
+        
+        updateTask = object : BukkitRunnable() {
+            override fun run() {
+                if (gameManager.getGameState() != GameState.RUNNING) {
+                    return
+                }
+                
+                // 全ハンターのコンパスを更新
+                for ((hunter, target) in currentTargets) {
+                    if (!hunter.isOnline || hunter.isDead || !target.isOnline || target.isDead) {
+                        continue
+                    }
+                    
+                    // 異なるワールドの場合はスキップ
+                    if (hunter.world != target.world) {
+                        continue
+                    }
+                    
+                    // コンパスを持っているか確認して更新
+                    updateAllCompassesInInventory(hunter, target.location)
+                }
+            }
+        }
+        
+        // 1秒ごとに更新
+        updateTask?.runTaskTimer(plugin, 0L, 20L)
+    }
+    
+    fun stopUpdateTask() {
+        updateTask?.cancel()
+        updateTask = null
+    }
+    
+    private fun updateAllCompassesInInventory(player: Player, targetLocation: Location) {
+        val inventory = player.inventory
+        val compassName = messageManager.getMessage("virtual-compass.name")
+        
+        for (i in 0 until inventory.size) {
+            val item = inventory.getItem(i) ?: continue
+            if (item.type != Material.COMPASS) continue
+            
+            val meta = item.itemMeta as? CompassMeta ?: continue
+            if (meta.displayName == compassName) {
+                meta.isLodestoneTracked = false
+                meta.lodestone = targetLocation
+                item.itemMeta = meta
+            }
+        }
+        
+        // 手に持っているアイテムも確認
+        val mainHand = player.inventory.itemInMainHand
+        if (mainHand.type == Material.COMPASS) {
+            val meta = mainHand.itemMeta as? CompassMeta
+            if (meta?.displayName == compassName) {
+                meta.isLodestoneTracked = false
+                meta.lodestone = targetLocation
+                mainHand.itemMeta = meta
+            }
+        }
+    }
+    
     fun cleanup() {
+        stopUpdateTask()
         cooldowns.clear()
         targetIndex.clear()
+        currentTargets.clear()
     }
 }

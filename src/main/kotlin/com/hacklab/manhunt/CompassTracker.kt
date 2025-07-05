@@ -2,6 +2,7 @@ package com.hacklab.manhunt
 
 import org.bukkit.entity.Player
 import org.bukkit.scheduler.BukkitRunnable
+import org.bukkit.inventory.meta.CompassMeta
 import net.md_5.bungee.api.ChatMessageType
 import net.md_5.bungee.api.chat.TextComponent
 
@@ -21,6 +22,7 @@ class CompassTracker(
         // VirtualCompassを初期化
         virtualCompass = VirtualCompass(plugin, gameManager, configManager, messageManager)
         plugin.server.pluginManager.registerEvents(virtualCompass!!, plugin)
+        virtualCompass?.startUpdateTask()
         
         // ハンターへのヒント表示タスク
         trackingTask = object : BukkitRunnable() {
@@ -113,10 +115,20 @@ class CompassTracker(
         
         // 新しいコンパスを作成
         val compass = org.bukkit.inventory.ItemStack(org.bukkit.Material.COMPASS)
-        val meta = compass.itemMeta
-        meta?.setDisplayName(messageManager.getMessage("virtual-compass.name"))
-        meta?.lore = messageManager.getMessageList("virtual-compass.lore")
-        compass.itemMeta = meta
+        val meta = compass.itemMeta as? CompassMeta
+        if (meta != null) {
+            meta.setDisplayName(messageManager.getMessage("virtual-compass.name"))
+            meta.lore = messageManager.getMessageList("virtual-compass.lore")
+            
+            // 最寄りのランナーを初期ターゲットとして設定
+            val nearestRunner = findNearestRunner(hunter)
+            if (nearestRunner != null && nearestRunner.world == hunter.world) {
+                meta.isLodestoneTracked = false
+                meta.lodestone = nearestRunner.location
+            }
+            
+            compass.itemMeta = meta
+        }
         
         // ホットバーの最初のスロットに優先配置
         if (inventory.getItem(0) == null) {
@@ -128,6 +140,12 @@ class CompassTracker(
                 hunter.sendMessage(messageManager.getMessage(hunter, "compass.inventory-full"))
             }
         }
+    }
+    
+    private fun findNearestRunner(hunter: Player): Player? {
+        return gameManager.getAllRunners()
+            .filter { it.isOnline && !it.isDead && it.world == hunter.world }
+            .minByOrNull { it.location.distance(hunter.location) }
     }
     
     fun removePhysicalCompasses(player: Player) {
