@@ -8,6 +8,8 @@ import org.bukkit.entity.Player
 import org.bukkit.scheduler.BukkitRunnable
 import java.util.*
 import kotlin.random.Random
+import kotlin.math.cos
+import kotlin.math.sin
 
 class GameManager(private val plugin: Main, val configManager: ConfigManager, private val messageManager: MessageManager) {
     private var gameState = GameState.WAITING
