@@ -23,15 +23,21 @@ npx http-server
 
 ## GitHub Pagesへのデプロイ
 
+### GitHub Actions使用（推奨）
+
+1. GitHubリポジトリの Settings > Pages に移動
+2. Source を "GitHub Actions" に設定
+3. Save をクリック
+4. docs フォルダに変更をプッシュすると自動的にデプロイされます
+
+**注意**: 初回は手動でPages設定を有効にする必要があります。上記手順に従ってください。
+
+### ブランチから直接デプロイ（代替方法）
+
 1. GitHubリポジトリの Settings > Pages に移動
 2. Source を "Deploy from a branch" に設定
 3. Branch を "master" (または "main")、フォルダを "/docs" に設定
 4. Save をクリック
-
-または、GitHub Actionsを使用して自動デプロイ：
-
-1. リポジトリの Settings > Pages > Source を "GitHub Actions" に設定
-2. docs フォルダに変更をプッシュすると自動的にデプロイされます
 
 ## 更新方法
 
