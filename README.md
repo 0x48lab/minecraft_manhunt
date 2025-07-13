@@ -1,7 +1,7 @@
 # 🏃 Minecraft Manhunt Latest
 
 [![Modrinth Downloads](https://img.shields.io/modrinth/dt/man-hunt-latest?label=Downloads&logo=modrinth)](https://modrinth.com/plugin/man-hunt-latest)
-[![GitHub Release](https://img.shields.io/github/v/release/yourusername/minecraft_manhunt_latest?label=Latest%20Release)](https://github.com/yourusername/minecraft_manhunt_latest/releases)
+[![GitHub Release](https://img.shields.io/github/v/release/0x48lab/minecraft_manhunt?label=Latest%20Release)](https://github.com/0x48lab/minecraft_manhunt/releases)
 [![Minecraft Version](https://img.shields.io/badge/Minecraft-1.21.4-green.svg)](https://www.minecraft.net/)
 [![Platform](https://img.shields.io/badge/Platform-Spigot%20%7C%20Paper-orange.svg)](https://papermc.io/)
 
@@ -229,10 +229,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🔗 Links
 
-- [Official Guide](https://yourusername.github.io/minecraft_manhunt_latest/)
+- [Official Guide](https://0x48lab.github.io/minecraft_manhunt/)
 - [Modrinth Page](https://modrinth.com/plugin/man-hunt-latest)
-- [GitHub Repository](https://github.com/yourusername/minecraft_manhunt_latest)
-- [Issue Tracker](https://github.com/yourusername/minecraft_manhunt_latest/issues)
+- [GitHub Repository](https://github.com/0x48lab/minecraft_manhunt)
+- [Issue Tracker](https://github.com/0x48lab/minecraft_manhunt/issues)
 
 ---
 
