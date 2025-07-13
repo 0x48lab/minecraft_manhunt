@@ -25,6 +25,8 @@ class CurrencyTracker(
     private val lastEscapeCheck = mutableMapOf<UUID, Long>()
     private val visitedDimensions = mutableMapOf<UUID, MutableSet<World.Environment>>()
     private val collectedDiamonds = mutableMapOf<UUID, Int>()
+    private val lastSprintReward = mutableMapOf<UUID, Long>()
+    private val sprintRewardThisMinute = mutableMapOf<UUID, Int>()
     
     private var timeBonusTask: BukkitRunnable? = null
     
@@ -55,6 +57,8 @@ class CurrencyTracker(
         lastEscapeCheck.clear()
         visitedDimensions.clear()
         collectedDiamonds.clear()
+        lastSprintReward.clear()
+        sprintRewardThisMinute.clear()
         
         plugin.logger.info("Currency tracking stopped")
     }
@@ -259,6 +263,73 @@ class CurrencyTracker(
             
             // Record diamond collection for statistics
             plugin.getGameManager().recordDiamondCollected(player, amount)
+        }
+    }
+    
+    /**
+     * スプリント移動時の処理（3チャンク以内に敵がいる場合のみ）
+     */
+    fun onSprintMovement(player: Player, distance: Double) {
+        if (plugin.getGameManager().getGameState() != GameState.RUNNING) return
+        if (distance <= 0 || !player.isSprinting) return
+        
+        val role = plugin.getGameManager().getPlayerRole(player)
+        if (role == null || role == PlayerRole.SPECTATOR) return
+        
+        // 3チャンク以内に敵がいるかチェック
+        if (!isEnemyWithinProximity(player, role)) return
+        
+        val currentTime = System.currentTimeMillis()
+        val lastReward = lastSprintReward[player.uniqueId] ?: 0L
+        val currentMinute = currentTime / 60000  // 分単位
+        val lastRewardMinute = lastReward / 60000
+        
+        // 分が変わったらカウンターリセット
+        if (currentMinute != lastRewardMinute) {
+            sprintRewardThisMinute[player.uniqueId] = 0
+        }
+        
+        // クールダウンチェック（1秒）
+        if (currentTime - lastReward < 1000) return
+        
+        // 1分間の最大報酬チェック
+        val rewardThisMinute = sprintRewardThisMinute[player.uniqueId] ?: 0
+        val maxRewardPerMinute = plugin.getConfigManager().getMovementConfig().sprintMaxRewardPerMinute
+        
+        if (rewardThisMinute >= maxRewardPerMinute) return
+        
+        // 報酬計算
+        val rewardPerBlock = plugin.getConfigManager().getMovementConfig().sprintRewardPerBlock
+        val rawReward = (distance * rewardPerBlock).toInt()
+        val actualReward = (rewardThisMinute + rawReward).coerceAtMost(maxRewardPerMinute) - rewardThisMinute
+        
+        if (actualReward > 0) {
+            economyManager.addMoney(player, actualReward, EarnReason.Movement.Sprint(distance.toInt()))
+            lastSprintReward[player.uniqueId] = currentTime
+            sprintRewardThisMinute[player.uniqueId] = rewardThisMinute + actualReward
+        }
+    }
+    
+    /**
+     * 3チャンク以内に敵がいるかチェック
+     */
+    private fun isEnemyWithinProximity(player: Player, role: PlayerRole): Boolean {
+        val configManager = plugin.getConfigManager()
+        val proximityDistance = configManager.getProximityLevel3() * 16 // 3チャンク = 48ブロック
+        
+        // プレイヤーの役割に応じて敵を特定
+        val enemies = when (role) {
+            PlayerRole.HUNTER -> plugin.getGameManager().getAllRunners()
+            PlayerRole.RUNNER -> plugin.getGameManager().getAllHunters()
+            PlayerRole.SPECTATOR -> return false
+        }
+        
+        // 生存している敵との距離をチェック
+        return enemies.any { enemy ->
+            enemy.isOnline && 
+            !enemy.isDead && 
+            enemy.world == player.world &&
+            enemy.location.distance(player.location) <= proximityDistance
         }
     }
 }

@@ -133,9 +133,9 @@ class CompassTracker(
             compass.itemMeta = meta
         }
         
-        // ホットバーの最初のスロットに優先配置
-        if (inventory.getItem(0) == null) {
-            inventory.setItem(0, compass)
+        // ホットバーの最後のスロット（8番）に優先配置
+        if (inventory.getItem(8) == null) {
+            inventory.setItem(8, compass)
         } else {
             // 空きスロットに配置
             val remainingItems = inventory.addItem(compass)
@@ -147,7 +147,7 @@ class CompassTracker(
     
     private fun findNearestRunner(hunter: Player): Player? {
         return gameManager.getAllRunners()
-            .filter { it.isOnline && !it.isDead && it.world == hunter.world }
+            .filter { it.isOnline && !gameManager.isRunnerDead(it) && it.world == hunter.world }
             .minByOrNull { it.location.distance(hunter.location) }
     }
     

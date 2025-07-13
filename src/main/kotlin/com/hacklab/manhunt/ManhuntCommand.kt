@@ -29,14 +29,31 @@ class ManhuntCommand(
             "role" -> handleRole(sender, args)
             "roles" -> handleRoleMenu(sender)
             "start" -> handleStart(sender)
+            "stop", "end" -> handleStop(sender)
             "compass" -> handleCompass(sender)
             "status" -> handleStatus(sender)
             "sethunter" -> handleSetHunter(sender, args)
+            "setrunner" -> handleSetRunner(sender, args)
+            "setspectator" -> handleSetSpectator(sender, args)
             "minplayers" -> handleMinPlayers(sender, args)
             "reload" -> handleReload(sender, args)
             "ui" -> handleUI(sender, args)
             "spectate" -> handleSpectate(sender)
+            "respawntime" -> handleRespawnTime(sender, args)
+            "reset" -> handleReset(sender)
             "help" -> showHelp(sender)
+            "validate-messages" -> handleValidateMessages(sender)
+            "diagnose" -> {
+                if (!sender.hasPermission("manhunt.admin")) {
+                    sender.sendMessage(messageManager.getMessage(sender, "command.no-permission"))
+                    return false
+                }
+                // メッセージシステムの診断を実行
+                messageManager.diagnose()
+                sender.sendMessage("§a[Manhunt] Diagnostic information has been output to the server console.")
+                true
+            }
+            "give" -> handleGive(sender, args)
             else -> {
                 sender.sendMessage(messageManager.getMessage(sender as? Player, "command.unknown"))
             }
@@ -89,6 +106,28 @@ class ManhuntCommand(
         
         gameManager.forceStartGame()
         sender.sendMessage(messageManager.getMessage(sender as? Player, "admin.force-start"))
+    }
+    
+    private fun handleStop(sender: CommandSender) {
+        if (!sender.hasPermission("manhunt.admin")) {
+            sender.sendMessage(messageManager.getMessage(sender as? Player, "command.no-permission"))
+            return
+        }
+        
+        val currentState = gameManager.getGameState()
+        if (currentState == GameState.WAITING) {
+            sender.sendMessage(messageManager.getMessage(sender as? Player, "admin.game-not-running"))
+            return
+        }
+        
+        // ゲームを強制終了
+        gameManager.forceEndGame()
+        sender.sendMessage(messageManager.getMessage(sender as? Player, "admin.force-stop"))
+        
+        // 全プレイヤーに通知
+        gameManager.getPlugin().server.onlinePlayers.forEach { player ->
+            player.sendMessage(messageManager.getMessage(player, "game.force-stopped-by-admin", mapOf("admin" to sender.name)))
+        }
     }
     
     private fun handleCompass(sender: CommandSender) {
@@ -177,6 +216,72 @@ class ManhuntCommand(
         gameManager.setPlayerRole(targetPlayer, PlayerRole.HUNTER)
         sender.sendMessage(messageManager.getMessage("command-interface.sethunter-success", mapOf("player" to targetPlayer.name)))
         targetPlayer.sendMessage(messageManager.getMessage(targetPlayer, "command-interface.sethunter-notify"))
+    }
+    
+    private fun handleSetRunner(sender: CommandSender, args: Array<out String>) {
+        if (!sender.hasPermission("manhunt.admin")) {
+            sender.sendMessage(messageManager.getMessage("command-interface.admin-no-permission"))
+            return
+        }
+        
+        if (args.size < 2) {
+            sender.sendMessage(messageManager.getMessage("command-interface.setrunner-usage"))
+            return
+        }
+        
+        val playerName = args[1]
+        if (playerName.isBlank()) {
+            sender.sendMessage(messageManager.getMessage("admin.player-name-required"))
+            return
+        }
+        
+        val targetPlayer = Bukkit.getPlayer(playerName)
+        if (targetPlayer == null || !targetPlayer.isOnline) {
+            sender.sendMessage(messageManager.getMessage("admin.player-not-found", mapOf("player" to playerName)))
+            return
+        }
+        
+        if (gameManager.getGameState() != GameState.WAITING) {
+            sender.sendMessage(messageManager.getMessage("role.game-running"))
+            return
+        }
+        
+        gameManager.setPlayerRole(targetPlayer, PlayerRole.RUNNER)
+        sender.sendMessage(messageManager.getMessage("command-interface.setrunner-success", mapOf("player" to targetPlayer.name)))
+        targetPlayer.sendMessage(messageManager.getMessage(targetPlayer, "command-interface.setrunner-notify"))
+    }
+    
+    private fun handleSetSpectator(sender: CommandSender, args: Array<out String>) {
+        if (!sender.hasPermission("manhunt.admin")) {
+            sender.sendMessage(messageManager.getMessage("command-interface.admin-no-permission"))
+            return
+        }
+        
+        if (args.size < 2) {
+            sender.sendMessage(messageManager.getMessage("command-interface.setspectator-usage"))
+            return
+        }
+        
+        val playerName = args[1]
+        if (playerName.isBlank()) {
+            sender.sendMessage(messageManager.getMessage("admin.player-name-required"))
+            return
+        }
+        
+        val targetPlayer = Bukkit.getPlayer(playerName)
+        if (targetPlayer == null || !targetPlayer.isOnline) {
+            sender.sendMessage(messageManager.getMessage("admin.player-not-found", mapOf("player" to playerName)))
+            return
+        }
+        
+        if (gameManager.getGameState() != GameState.WAITING) {
+            sender.sendMessage(messageManager.getMessage("role.game-running"))
+            return
+        }
+        
+        gameManager.setPlayerRole(targetPlayer, PlayerRole.SPECTATOR)
+        sender.sendMessage(messageManager.getMessage("command-interface.setspectator-success", mapOf("player" to targetPlayer.name)))
+        targetPlayer.sendMessage(messageManager.getMessage(targetPlayer, "command-interface.setspectator-notify"))
     }
     
     private fun handleMinPlayers(sender: CommandSender, args: Array<out String>) {
@@ -305,6 +410,184 @@ class ManhuntCommand(
         roleSelectorMenu.openMenu(sender)
     }
     
+    private fun handleReset(sender: CommandSender) {
+        if (!sender.hasPermission("manhunt.admin")) {
+            sender.sendMessage(messageManager.getMessage("command-interface.admin-no-permission"))
+            return
+        }
+        
+        if (gameManager.getGameState() != GameState.ENDED) {
+            sender.sendMessage(messageManager.getMessage(sender as? Player, "command.reset-only-ended"))
+            return
+        }
+        
+        gameManager.forceReset()
+        sender.sendMessage(messageManager.getMessage(sender as? Player, "command.reset-success"))
+    }
+    
+    private fun handleValidateMessages(sender: CommandSender) {
+        if (!sender.hasPermission("manhunt.admin")) {
+            sender.sendMessage(messageManager.getMessage(sender as? Player, "command.no-permission"))
+            return
+        }
+        
+        sender.sendMessage("§6[Manhunt] §eStarting message validation...")
+        
+        // Run validation in async to avoid blocking main thread
+        Bukkit.getScheduler().runTaskAsynchronously(gameManager.getPlugin(), Runnable {
+            try {
+                val validator = com.hacklab.manhunt.utils.MessageValidator(
+                    messageManager,
+                    gameManager.getPlugin().dataFolder
+                )
+                
+                val result = validator.validateMessages()
+                
+                // Send results back to sender on main thread
+                Bukkit.getScheduler().runTask(gameManager.getPlugin(), Runnable {
+                    sender.sendMessage("§6[Manhunt] §aValidation complete!")
+                    
+                    if (result.missingInJa.isNotEmpty() || result.missingInEn.isNotEmpty()) {
+                        sender.sendMessage("§c❌ Found missing message keys!")
+                        
+                        if (result.missingInJa.isNotEmpty()) {
+                            sender.sendMessage("§e  Missing in ja.yml: ${result.missingInJa.size} keys")
+                            result.missingInJa.take(5).forEach { key ->
+                                sender.sendMessage("§7    - $key")
+                            }
+                            if (result.missingInJa.size > 5) {
+                                sender.sendMessage("§7    ... and ${result.missingInJa.size - 5} more")
+                            }
+                        }
+                        
+                        if (result.missingInEn.isNotEmpty()) {
+                            sender.sendMessage("§e  Missing in en.yml: ${result.missingInEn.size} keys")
+                            result.missingInEn.take(5).forEach { key ->
+                                sender.sendMessage("§7    - $key")
+                            }
+                            if (result.missingInEn.size > 5) {
+                                sender.sendMessage("§7    ... and ${result.missingInEn.size - 5} more")
+                            }
+                        }
+                        
+                        sender.sendMessage("§eCheck console for detailed report.")
+                    } else {
+                        sender.sendMessage("§a✅ All message keys are properly defined!")
+                    }
+                })
+            } catch (e: Exception) {
+                Bukkit.getScheduler().runTask(gameManager.getPlugin(), Runnable {
+                    sender.sendMessage("§c[Manhunt] Error during validation: ${e.message}")
+                    e.printStackTrace()
+                })
+            }
+        })
+    }
+    
+    private fun handleRespawnTime(sender: CommandSender, args: Array<out String>) {
+        if (!sender.hasPermission("manhunt.admin")) {
+            sender.sendMessage(messageManager.getMessage(sender as? Player, "command.no-permission"))
+            return
+        }
+        
+        if (args.size < 3) {
+            sender.sendMessage(messageManager.getMessage(sender as? Player, "admin.respawntime-usage"))
+            return
+        }
+        
+        val targetName = args[1]
+        val targetPlayer = Bukkit.getPlayer(targetName)
+        
+        if (targetPlayer == null || !targetPlayer.isOnline) {
+            sender.sendMessage(messageManager.getMessage(sender as? Player, "admin.player-not-found", mapOf("player" to targetName)))
+            return
+        }
+        
+        val seconds = args[2].toIntOrNull()
+        if (seconds == null || seconds < 0) {
+            sender.sendMessage(messageManager.getMessage(sender as? Player, "admin.invalid-time"))
+            return
+        }
+        
+        // GameManagerに個別のリスポン時間設定メソッドを追加
+        gameManager.setCustomRespawnTime(targetPlayer, seconds)
+        
+        sender.sendMessage(messageManager.getMessage(sender as? Player, "admin.respawntime-set", 
+            mapOf("player" to targetPlayer.name, "time" to seconds)))
+        
+        // 対象プレイヤーにも通知
+        targetPlayer.sendMessage(messageManager.getMessage(targetPlayer, "admin.respawntime-changed", 
+            mapOf("time" to seconds)))
+    }
+    
+    private fun handleGive(sender: CommandSender, args: Array<out String>) {
+        // 管理者権限チェック
+        if (!sender.hasPermission("manhunt.admin")) {
+            sender.sendMessage(messageManager.getMessage(sender, "command-interface.admin-no-permission"))
+            return
+        }
+        
+        // 引数チェック
+        if (args.size < 3) {
+            sender.sendMessage(messageManager.getMessage(sender, "admin.give-usage"))
+            return
+        }
+        
+        // プレイヤー取得
+        val targetName = args[1]
+        val targetPlayer = Bukkit.getPlayer(targetName)
+        if (targetPlayer == null) {
+            sender.sendMessage(messageManager.getMessage(sender, "admin.player-not-found", 
+                mapOf("player" to targetName)))
+            return
+        }
+        
+        // 金額パース
+        val amountStr = args[2]
+        val amount = try {
+            amountStr.toInt()
+        } catch (e: NumberFormatException) {
+            sender.sendMessage(messageManager.getMessage(sender, "admin.invalid-amount"))
+            return
+        }
+        
+        // 金額の妥当性チェック
+        if (amount <= 0) {
+            sender.sendMessage(messageManager.getMessage(sender, "admin.amount-must-be-positive"))
+            return
+        }
+        
+        val maxBalance = gameManager.getPlugin().getConfigManager().getCurrencyConfig().maxBalance
+        if (amount > maxBalance) {
+            sender.sendMessage(messageManager.getMessage(sender as? Player, "admin.amount-too-large", 
+                mapOf("max" to maxBalance)))
+            return
+        }
+        
+        // お金を付与
+        val economyManager = gameManager.getPlugin().getEconomyManager()
+        val unit = economyManager.getCurrencyUnit()
+        
+        // 管理者からの付与用の特別な理由を作成
+        economyManager.addMoney(targetPlayer, amount, com.hacklab.manhunt.economy.EarnReason.AdminGrant(sender.name))
+        
+        // 送信者に通知
+        sender.sendMessage(messageManager.getMessage(sender as? Player, "admin.give-success", 
+            mapOf(
+                "amount" to amount,
+                "unit" to unit,
+                "player" to targetPlayer.name,
+                "balance" to economyManager.getBalance(targetPlayer)
+            )))
+        
+        // 受信者に通知
+        targetPlayer.sendMessage(messageManager.getMessage(targetPlayer, "economy.currency.received-from-admin", 
+            mapOf(
+                "amount" to amount,
+                "unit" to unit,
+                "admin" to sender.name
+            )))
+    }
     
     private fun showHelp(sender: CommandSender) {
         sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-commands-header"))
@@ -330,10 +613,16 @@ class ManhuntCommand(
             sender.sendMessage("")
             sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-admin-commands"))
             sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-admin-start"))
+            sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-admin-stop"))
             sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-admin-sethunter"))
+            sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-admin-setrunner"))
+            sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-admin-setspectator"))
             sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-admin-minplayers"))
             sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-admin-reload"))
             sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-admin-ui"))
+            sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-admin-respawntime"))
+            sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-admin-reset"))
+            sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-admin-give"))
         }
     }
     
@@ -348,7 +637,7 @@ class ManhuntCommand(
                 1 -> {
                     val subcommands = mutableListOf("role", "roles", "compass", "status", "spectate", "help")
                     if (sender.hasPermission("manhunt.admin")) {
-                        subcommands.addAll(listOf("start", "sethunter", "minplayers", "ui", "reload"))
+                        subcommands.addAll(listOf("start", "stop", "end", "sethunter", "setrunner", "setspectator", "minplayers", "ui", "reload", "respawntime", "reset", "validate-messages", "diagnose", "give"))
                     }
                     val input = args.getOrNull(0)?.lowercase() ?: ""
                     subcommands.filter { it.startsWith(input) }
@@ -358,7 +647,7 @@ class ManhuntCommand(
                     val input = args.getOrNull(1)?.lowercase() ?: ""
                     when (subcommand) {
                         "role" -> listOf("runner", "hunter", "spectator").filter { it.startsWith(input) }
-                        "sethunter" -> {
+                        "sethunter", "setrunner", "setspectator" -> {
                             if (sender.hasPermission("manhunt.admin")) {
                                 Bukkit.getOnlinePlayers().mapNotNull { it?.name }.filter { it.lowercase().startsWith(input) }
                             } else {
@@ -379,6 +668,21 @@ class ManhuntCommand(
                                 emptyList()
                             }
                         }
+                        "respawntime" -> {
+                            if (sender.hasPermission("manhunt.admin")) {
+                                Bukkit.getOnlinePlayers().mapNotNull { it?.name }.filter { it.lowercase().startsWith(input) }
+                            } else {
+                                emptyList()
+                            }
+                        }
+                        "give" -> {
+                            if (sender.hasPermission("manhunt.admin")) {
+                                Bukkit.getOnlinePlayers().mapNotNull { it?.name }.filter { it.lowercase().startsWith(input) }
+                            } else {
+                                emptyList()
+                            }
+                        }
+                        "validate-messages" -> emptyList()
                         else -> emptyList()
                     }
                 }

@@ -1,0 +1,25 @@
+MISSING KEYS IN ENGLISH MESSAGES FILE (en.yml)
+==============================================
+
+The following keys exist in the Japanese file (ja.yml) but are missing in the English file (en.yml):
+
+1. help:
+   - roles (line 169 in ja.yml) - Missing in en.yml after line 167
+
+2. help-additional:
+   - roles (line 438 in ja.yml) - Should be added to en.yml
+   
+3. admin:
+   - respawntime-usage (line 226 in ja.yml) - Missing in en.yml
+   - invalid-time (line 227 in ja.yml) - Missing in en.yml
+   - respawntime-set (line 228 in ja.yml) - Missing in en.yml
+   - respawntime-changed (line 229 in ja.yml) - Missing in en.yml
+
+These keys appear to be related to:
+- A "roles" command help entry that shows the role selection menu
+- Admin commands for setting respawn time for players
+
+SUMMARY:
+- Total missing keys: 6
+- 2 help-related keys about roles command
+- 4 admin-related keys about respawn time management

@@ -70,6 +70,19 @@ class ShopListener(
             Material.COOKED_BEEF -> shopManager.openShop(player, ShopCategory.FOOD)
             Material.NETHER_STAR -> shopManager.openShop(player, ShopCategory.SPECIAL)
             Material.BARRIER -> player.closeInventory()
+            Material.LIME_DYE, Material.GRAY_DYE -> {
+                // ショップアイテム表示トグル
+                val newValue = shopManager.toggleShopItemPreference(player)
+                val messageManager = plugin.getMessageManager()
+                val status = if (newValue) 
+                    messageManager.getMessage(player, "shop-extended.buttons.toggle-item-enabled")
+                else 
+                    messageManager.getMessage(player, "shop-extended.buttons.toggle-item-disabled")
+                player.sendMessage(messageManager.getMessage(player, "shop-extended.buttons.toggle-item-changed", mapOf("status" to status)))
+                
+                // メニューを更新
+                shopManager.openShop(player)
+            }
             else -> {}
         }
     }

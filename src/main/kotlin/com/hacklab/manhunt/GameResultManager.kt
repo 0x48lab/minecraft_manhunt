@@ -285,7 +285,7 @@ class GameResultManager(
                     val survivalTime = "${survivalMinutes}:${String.format("%02d", survivalSeconds)}"
                     
                     val survivalStats = messageManager.getMessage("result.personal.runner.survival", mapOf(
-                        "time" to survivalTime,
+                        "survival" to survivalTime,
                         "deaths" to stats.deaths
                     ))
                     val explorationStats = messageManager.getMessage("result.personal.runner.exploration", mapOf(

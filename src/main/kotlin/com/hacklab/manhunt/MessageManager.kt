@@ -25,6 +25,13 @@ class MessageManager(private val plugin: Main) {
         loadMessageFiles()
         plugin.logger.info("MessageManager initialized with languages: ${messages.keys}")
         plugin.logger.info("Default language message count: ${messages[defaultLanguage]?.size ?: 0}")
+        
+        // 初期化時に自動診断（問題のあるキーのみログ出力）
+        val testKey = "ui.bossbar.reset-countdown"
+        if (!messages[defaultLanguage]?.containsKey(testKey)!!) {
+            plugin.logger.warning("CRITICAL: Missing essential message key '$testKey' in default language!")
+            diagnose()
+        }
     }
     
     private fun loadConfiguration() {
@@ -101,7 +108,13 @@ class MessageManager(private val plugin: Main) {
             val value = config.get(key)
             
             when {
-                value is String -> result[fullKey] = value
+                value is String -> {
+                    result[fullKey] = value
+                    // 特定のキーをデバッグ用にログ出力
+                    if (fullKey.contains("reset-countdown")) {
+                        plugin.logger.info("Loaded message key: $fullKey = $value")
+                    }
+                }
                 config.isConfigurationSection(key) -> {
                     val subSection = config.getConfigurationSection(key)
                     if (subSection != null) {
@@ -130,12 +143,22 @@ class MessageManager(private val plugin: Main) {
         
         // リソースからデフォルトファイルをコピー
         val resourcePath = "messages/$language.yml"
-        plugin.getResource(resourcePath)!!.use { inputStream ->
-            file.outputStream().use { outputStream ->
-                inputStream.copyTo(outputStream)
+        try {
+            val resource = plugin.getResource(resourcePath)
+            if (resource != null) {
+                resource.use { inputStream ->
+                    file.outputStream().use { outputStream ->
+                        inputStream.copyTo(outputStream)
+                    }
+                }
+                plugin.logger.info("Copied default message file from resources: $resourcePath")
+            } else {
+                plugin.logger.severe("Resource not found: $resourcePath")
             }
+        } catch (e: Exception) {
+            plugin.logger.severe("Failed to create default message file for $language: ${e.message}")
+            e.printStackTrace()
         }
-        plugin.logger.info("Copied default message file from resources: $resourcePath")
     }
     
     
@@ -251,5 +274,33 @@ class MessageManager(private val plugin: Main) {
     
     fun getSupportedLanguages(): Set<String> {
         return SUPPORTED_LANGUAGES.toSet()
+    }
+    
+    /**
+     * メッセージシステムの診断情報を出力
+     */
+    fun diagnose() {
+        plugin.logger.info("=== MessageManager Diagnostic Info ===")
+        plugin.logger.info("Default language: $defaultLanguage")
+        plugin.logger.info("Per-player enabled: $perPlayerEnabled")
+        plugin.logger.info("Loaded languages: ${messages.keys}")
+        
+        messages.forEach { (lang, msgs) ->
+            plugin.logger.info("Language $lang: ${msgs.size} messages loaded")
+            // reset-countdown関連のキーを探す
+            val resetKeys = msgs.keys.filter { it.contains("reset-countdown") }
+            plugin.logger.info("  Reset-countdown keys in $lang: $resetKeys")
+        }
+        
+        // 特定のキーの存在確認
+        val testKey = "ui.bossbar.reset-countdown"
+        messages.forEach { (lang, msgs) ->
+            if (msgs.containsKey(testKey)) {
+                plugin.logger.info("  ✓ $testKey found in $lang: ${msgs[testKey]}")
+            } else {
+                plugin.logger.warning("  ✗ $testKey NOT found in $lang")
+            }
+        }
+        plugin.logger.info("=== End Diagnostic Info ===")
     }
 }

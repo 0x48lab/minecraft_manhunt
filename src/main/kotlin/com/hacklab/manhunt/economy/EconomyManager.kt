@@ -20,7 +20,7 @@ class EconomyManager(private val plugin: Main) {
         EarnReason.setMessageManagerGetter { plugin.getMessageManager() }
     }
     
-    private fun getCurrencyUnit(): String {
+    fun getCurrencyUnit(): String {
         return plugin.getConfigManager().getCurrencyConfig().currencyUnit
     }
     
@@ -60,11 +60,14 @@ class EconomyManager(private val plugin: Main) {
         val history = earnHistory.getOrPut(player.uniqueId) { mutableListOf() }
         history.add(EarnRecord(reason, amount, System.currentTimeMillis()))
         
-        // 通知（時間ボーナス系は表示を抑制）
+        // 通知（時間ボーナス系とダメージ報酬は表示を抑制）
         if (amount > 0) {
             val shouldShowMessage = when (reason) {
                 is EarnReason.Hunter.TimeBonus -> false
+                is EarnReason.Hunter.DamageDealt -> false  // ダメージ報酬も抑制
                 is EarnReason.Runner.SurvivalBonus -> false
+                is EarnReason.Movement.Sprint -> false  // スプリント報酬も抑制（ログが多すぎるため）
+                is EarnReason.AdminGrant -> false  // 管理者付与も抑制（別途通知）
                 else -> true
             }
             
@@ -81,15 +84,24 @@ class EconomyManager(private val plugin: Main) {
                         "unit" to unit,
                         "reason" to reason.getDescription(player)
                     ))
+                    is EarnReason.Movement -> messageManager.getMessage(player, "economy.currency.movement-earned", mapOf(
+                        "amount" to amount,
+                        "unit" to unit,
+                        "reason" to reason.getDescription(player)
+                    ))
+                    is EarnReason.AdminGrant -> "" // 空文字（表示されない）
                 }
                 player.sendMessage(message)
             }
         }
         
-        // ログも時間ボーナス系は抑制
+        // ログも時間ボーナス系とダメージ報酬は抑制
         val shouldLog = when (reason) {
             is EarnReason.Hunter.TimeBonus -> false
+            is EarnReason.Hunter.DamageDealt -> false  // ダメージ報酬も抑制
             is EarnReason.Runner.SurvivalBonus -> false
+            is EarnReason.Movement.Sprint -> false  // スプリント報酬も抑制
+            is EarnReason.AdminGrant -> true  // 管理者付与はログに記録
             else -> true
         }
         
@@ -232,6 +244,20 @@ sealed class EarnReason {
             override fun getDescription(player: Player?) = 
                 getMessage(player, "earn-reasons.runner.escape-bonus")
         }
+    }
+    
+    // 移動報酬
+    sealed class Movement : EarnReason() {
+        data class Sprint(val distance: Int) : Movement() {
+            override fun getDescription(player: Player?) = 
+                getMessage(player, "earn-reasons.movement.sprint", mapOf("distance" to distance))
+        }
+    }
+    
+    // 管理者からの付与
+    data class AdminGrant(val adminName: String) : EarnReason() {
+        override fun getDescription(player: Player?) = 
+            getMessage(player, "earn-reasons.admin-grant", mapOf("admin" to adminName))
     }
 }
 

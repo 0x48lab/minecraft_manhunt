@@ -25,6 +25,7 @@ class ShopManager(
     private val openShops = mutableMapOf<UUID, ShopCategory?>()
     private val shopConfigManager = ShopConfigManager(plugin)
     private var categories = mapOf<ShopCategory, ShopConfigManager.CategoryConfig>()
+    private val shopItemPreferences = mutableMapOf<UUID, Boolean>() // true = show shop item in inventory
     
     init {
         loadShopItems()
@@ -125,8 +126,9 @@ class ShopManager(
             }
         }
         
-        // 閉じるボタン
-        inventory.setItem(22, createCloseButton())
+        // 操作ボタン
+        inventory.setItem(18, createShopItemToggleButton(player))  // 左下にトグルボタン
+        inventory.setItem(22, createCloseButton())  // 下中央に閉じるボタン
         
         return inventory
     }
@@ -388,6 +390,106 @@ class ShopManager(
         meta.lore = listOf(messageManager.getMessage(player, "shop-extended.buttons.balance-amount", mapOf("balance" to economyManager.getBalance(player), "unit" to unit)))
         item.itemMeta = meta
         return item
+    }
+    
+    /**
+     * ショップアイテム表示設定ボタンを作成
+     */
+    private fun createShopItemToggleButton(player: Player): ItemStack {
+        val showShopItem = getShowShopItemPreference(player)
+        val item = ItemStack(if (showShopItem) Material.LIME_DYE else Material.GRAY_DYE)
+        val meta = item.itemMeta!!
+        
+        meta.setDisplayName(messageManager.getMessage(player, "shop-extended.buttons.toggle-item-title"))
+        meta.lore = listOf(
+            messageManager.getMessage(player, "shop-extended.buttons.toggle-item-current", 
+                mapOf("status" to if (showShopItem) 
+                    messageManager.getMessage(player, "shop-extended.buttons.toggle-item-enabled") 
+                else 
+                    messageManager.getMessage(player, "shop-extended.buttons.toggle-item-disabled"))),
+            "",
+            messageManager.getMessage(player, "shop-extended.buttons.toggle-item-click")
+        )
+        
+        item.itemMeta = meta
+        return item
+    }
+    
+    /**
+     * プレイヤーのショップアイテム表示設定を取得
+     */
+    fun getShowShopItemPreference(player: Player): Boolean {
+        return shopItemPreferences.getOrDefault(player.uniqueId, true)
+    }
+    
+    /**
+     * プレイヤーのショップアイテム表示設定を変更
+     */
+    fun toggleShopItemPreference(player: Player): Boolean {
+        val newValue = !getShowShopItemPreference(player)
+        shopItemPreferences[player.uniqueId] = newValue
+        
+        // 設定を変更したらすぐに反映
+        if (newValue) {
+            // ショップアイテムを付与
+            if (plugin.getGameManager().getGameState() == com.hacklab.manhunt.GameState.RUNNING) {
+                val role = plugin.getGameManager().getPlayerRole(player)
+                if (role != null && role != PlayerRole.SPECTATOR) {
+                    giveShopItemToPlayer(player)
+                }
+            }
+        } else {
+            // ショップアイテムを削除
+            removeShopItemFromPlayer(player)
+        }
+        
+        return newValue
+    }
+    
+    /**
+     * プレイヤーにショップアイテムを付与
+     */
+    private fun giveShopItemToPlayer(player: Player) {
+        // 既に持っているかチェック
+        if (player.inventory.contents.any { it != null && isShopItem(it) }) {
+            return
+        }
+        
+        val item = ItemStack(Material.EMERALD)
+        val meta = item.itemMeta!!
+        meta.setDisplayName(messageManager.getMessage(player, "item.shop.name"))
+        meta.lore = listOf(
+            messageManager.getMessage(player, "item.shop.lore1"),
+            messageManager.getMessage(player, "item.shop.lore2")
+        )
+        // アイテムを光らせる
+        meta.addEnchant(org.bukkit.enchantments.Enchantment.UNBREAKING, 1, true)
+        meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS)
+        item.itemMeta = meta
+        
+        // スロット7に配置（コンパスはスロット8）
+        player.inventory.setItem(7, item)
+    }
+    
+    /**
+     * プレイヤーからショップアイテムを削除
+     */
+    private fun removeShopItemFromPlayer(player: Player) {
+        player.inventory.contents.forEachIndexed { index, itemStack ->
+            if (itemStack != null && isShopItem(itemStack)) {
+                player.inventory.setItem(index, null)
+            }
+        }
+    }
+    
+    /**
+     * アイテムがショップアイテムかチェック
+     */
+    private fun isShopItem(item: ItemStack): Boolean {
+        if (item.type != Material.EMERALD) return false
+        val meta = item.itemMeta ?: return false
+        val displayName = meta.displayName ?: return false
+        return displayName.contains("ショップ") || displayName.contains("Shop") || displayName.contains("商店") || displayName.contains("Store")
     }
 }
 

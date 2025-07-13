@@ -1,6 +1,7 @@
 package com.hacklab.manhunt
 
 import com.hacklab.manhunt.economy.CurrencyConfig
+import com.hacklab.manhunt.economy.MovementConfig
 import org.bukkit.configuration.file.FileConfiguration
 
 class ConfigManager(private val plugin: Main) {
@@ -8,6 +9,7 @@ class ConfigManager(private val plugin: Main) {
     
     // ゲーム設定
     fun getMinPlayers(): Int = config.getInt("game.min-players", 2)
+    fun isAutoStartEnabled(): Boolean = config.getBoolean("game.auto-start", false)
     
     fun getProximityLevel1(): Int = config.getInt("game.proximity-warning.level-1", 1)
     fun getProximityLevel2(): Int = config.getInt("game.proximity-warning.level-2", 2)
@@ -37,6 +39,48 @@ class ConfigManager(private val plugin: Main) {
     // 名前タグ設定
     fun isHideNameTagsDuringGame(): Boolean = config.getBoolean("game.name-tag.hide-during-game", true)
     fun getNameTagVisibilityMode(): String = config.getString("game.name-tag.visibility-mode", "all") ?: "all"
+    
+    // 初期装備設定
+    fun getStartingItems(role: PlayerRole): List<String> {
+        val roleName = when (role) {
+            PlayerRole.RUNNER -> "runner"
+            PlayerRole.HUNTER -> "hunter"
+            PlayerRole.SPECTATOR -> return emptyList()
+        }
+        return config.getStringList("game.starting-items.$roleName")
+    }
+    
+    // ショップアイテム設定
+    fun isShopItemEnabled(): Boolean = config.getBoolean("shop.item-enabled", true)
+    
+    // スポーン設定
+    fun getSpawnMinRadius(): Double = config.getDouble("game.spawn.min-radius", 100.0)
+    fun getSpawnMaxRadius(): Double = config.getDouble("game.spawn.max-radius", 2000.0)
+    fun getSpawnEnemyMinDistance(): Double = config.getDouble("game.spawn.enemy-min-distance", 500.0)
+    
+    data class TeamSpreadConfig(
+        val enabled: Boolean = true,
+        val lowThreshold: Double = 1.0,
+        val mediumThreshold: Double = 1.5,
+        val highThreshold: Double = 2.0,
+        val lowDistance: Double = 0.0,
+        val mediumDistance: Double = 1000.0,
+        val highDistance: Double = 2000.0
+    )
+    
+    fun getSpawnTeamSpreadConfig(): TeamSpreadConfig {
+        val spreadSection = config.getConfigurationSection("game.spawn.team-spread") ?: return TeamSpreadConfig()
+        
+        return TeamSpreadConfig(
+            enabled = spreadSection.getBoolean("enabled", true),
+            lowThreshold = spreadSection.getDouble("low-threshold", 1.0),
+            mediumThreshold = spreadSection.getDouble("medium-threshold", 1.5),
+            highThreshold = spreadSection.getDouble("high-threshold", 2.0),
+            lowDistance = spreadSection.getDouble("low-distance", 0.0),
+            mediumDistance = spreadSection.getDouble("medium-distance", 1000.0),
+            highDistance = spreadSection.getDouble("high-distance", 2000.0)
+        )
+    }
     
     
     // 設定値の検証と修正
@@ -96,6 +140,40 @@ class ConfigManager(private val plugin: Main) {
             needsSave = true
         }
         
+        // スポーン設定の検証
+        val spawnMinRadius = getSpawnMinRadius()
+        val spawnMaxRadius = getSpawnMaxRadius()
+        val spawnEnemyMinDistance = getSpawnEnemyMinDistance()
+        
+        if (spawnMinRadius < 0 || spawnMinRadius > spawnMaxRadius) {
+            config.set("game.spawn.min-radius", 100.0)
+            plugin.logger.warning("スポーン最小半径が無効だったため、100メートルに修正しました。")
+            needsSave = true
+        }
+        
+        if (spawnMaxRadius < spawnMinRadius || spawnMaxRadius > 5000) {
+            config.set("game.spawn.max-radius", 2000.0)
+            plugin.logger.warning("スポーン最大半径が無効だったため、2000メートルに修正しました。")
+            needsSave = true
+        }
+        
+        if (spawnEnemyMinDistance < 0 || spawnEnemyMinDistance > spawnMaxRadius) {
+            config.set("game.spawn.enemy-min-distance", 500.0)
+            plugin.logger.warning("敵同士の最小距離が無効だったため、500メートルに修正しました。")
+            needsSave = true
+        }
+        
+        // チーム分散設定の検証
+        val teamSpread = getSpawnTeamSpreadConfig()
+        if (teamSpread.lowThreshold < 0 || teamSpread.mediumThreshold < teamSpread.lowThreshold || 
+            teamSpread.highThreshold < teamSpread.mediumThreshold) {
+            config.set("game.spawn.team-spread.low-threshold", 1.0)
+            config.set("game.spawn.team-spread.medium-threshold", 1.5)
+            config.set("game.spawn.team-spread.high-threshold", 2.0)
+            plugin.logger.warning("チーム分散の閾値が無効だったため、デフォルト値に修正しました。")
+            needsSave = true
+        }
+        
         if (needsSave) {
             plugin.saveConfig()
         }
@@ -134,6 +212,17 @@ class ConfigManager(private val plugin: Main) {
             startingBalance = economySection.getInt("starting-balance", 0),
             maxBalance = economySection.getInt("max-balance", 999999),
             currencyUnit = economySection.getString("currency-unit", "G") ?: "G"
+        )
+    }
+    
+    // 移動報酬設定を取得
+    fun getMovementConfig(): MovementConfig {
+        val movementSection = config.getConfigurationSection("movement") ?: return MovementConfig()
+        
+        return MovementConfig(
+            sprintRewardPerBlock = movementSection.getDouble("sprint-reward-per-block", 0.2),
+            sprintMaxRewardPerMinute = movementSection.getInt("sprint-max-reward-per-minute", 50),
+            sprintRewardCooldown = movementSection.getInt("sprint-reward-cooldown", 1)
         )
     }
 }

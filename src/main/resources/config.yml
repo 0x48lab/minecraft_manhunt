@@ -12,6 +12,9 @@ game:
   # ゲーム開始に必要な最小プレイヤー数
   min-players: 2
   
+  # 自動スタート設定（最小プレイヤー数が満たされたら自動的にゲーム開始）
+  auto-start: false
+  
   # 近接警告の距離設定（チャンク単位）
   proximity-warning:
     level-1: 1  # 1チャンク以内で赤色警告
@@ -42,6 +45,36 @@ game:
     hide-during-game: true
     # 非表示モード (all: 全員非表示, team: チーム内のみ表示, none: 通常表示)
     visibility-mode: "all"
+  
+  # 初期装備設定
+  starting-items:
+    runner:
+      - "COOKED_BEEF:3"
+      - "OAK_LOG:3"
+    hunter:
+      - "COOKED_BEEF:3"
+  
+  # スポーン配置設定
+  spawn:
+    # スポーン範囲（ワールドスポーンからの距離）
+    min-radius: 100        # 最小距離（メートル）
+    max-radius: 2000       # 最大距離（メートル）※プレイヤー総数により自動調整
+    # 動的半径: 2人=500m, 20人=2000m, 20人以上はさらに拡大
+    
+    # 敵同士の最小距離
+    enemy-min-distance: 500  # 敵チーム間の最小距離（メートル）
+    
+    # チーム人数比による分散設定
+    team-spread:
+      enabled: true           # 人数比による分散を有効化
+      low-threshold: 1.0      # この比率以下は少数派（分散なし）
+      medium-threshold: 1.5   # この比率未満は中程度の分散
+      high-threshold: 2.0     # この比率以上は最大分散
+      
+      # 各閾値での分散距離
+      low-distance: 0         # 少数派の分散距離（0=分散なし）
+      medium-distance: 1000   # 中程度の分散距離（メートル）
+      high-distance: 2000     # 最大分散距離（メートル）
 
 # UI表示設定
 ui:
@@ -110,3 +143,17 @@ economy:
     escape-reward: 20
     # 逃走成功とみなす距離（メートル）
     escape-distance: 100
+
+# 移動報酬システム
+movement:
+  # スプリント移動報酬（1ブロックあたり）
+  sprint-reward-per-block: 0.2
+  # 1分間の最大スプリント報酬
+  sprint-max-reward-per-minute: 50
+  # スプリント報酬のクールダウン（秒）
+  sprint-reward-cooldown: 1
+
+# ショップシステム設定
+shop:
+  # ショップアイテムをインベントリに表示
+  item-enabled: true

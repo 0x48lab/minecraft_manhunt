@@ -241,6 +241,26 @@ items:
       - "RUNNER"
     max-purchases: 1
 
+  firework_rocket_8:
+    material: "FIREWORK_ROCKET"
+    amount: 8
+    price: 400
+    category: "SPECIAL"
+    allowed-roles:
+      - "HUNTER"
+      - "RUNNER"
+    max-purchases: -1
+
+  firework_rocket_16:
+    material: "FIREWORK_ROCKET"
+    amount: 16
+    price: 750
+    category: "SPECIAL"
+    allowed-roles:
+      - "HUNTER"
+      - "RUNNER"
+    max-purchases: -1
+
   ender_pearl_4:
     material: "ENDER_PEARL"
     amount: 4
@@ -291,6 +311,42 @@ items:
     potion-effects:
       - type: "INVISIBILITY"
         duration: 1200
+        amplifier: 0
+
+  water_breathing_potion:
+    material: "POTION"
+    price: 1000
+    category: "CONSUMABLES"
+    allowed-roles:
+      - "HUNTER"
+      - "RUNNER"
+    potion-effects:
+      - type: "WATER_BREATHING"
+        duration: 4800  # 4分
+        amplifier: 0
+
+  night_vision_potion:
+    material: "POTION"
+    price: 600
+    category: "CONSUMABLES"
+    allowed-roles:
+      - "HUNTER"
+      - "RUNNER"
+    potion-effects:
+      - type: "NIGHT_VISION"
+        duration: 4800  # 4分
+        amplifier: 0
+
+  fire_resistance_potion:
+    material: "POTION"
+    price: 1500
+    category: "CONSUMABLES"
+    allowed-roles:
+      - "HUNTER"
+      - "RUNNER"
+    potion-effects:
+      - type: "FIRE_RESISTANCE"
+        duration: 4800  # 4分
         amplifier: 0
 
   # ツール
@@ -353,6 +409,25 @@ items:
     allowed-roles:
       - "HUNTER"
       - "RUNNER"
+
+  boat:
+    material: "OAK_BOAT"
+    price: 200
+    category: "TOOLS"
+    allowed-roles:
+      - "HUNTER"
+      - "RUNNER"
+
+  depth_strider_boots:
+    material: "IRON_BOOTS"
+    price: 1200
+    category: "TOOLS"
+    allowed-roles:
+      - "HUNTER"
+      - "RUNNER"
+    enchantments:
+      - type: "DEPTH_STRIDER"
+        level: 3
 
   bow:
     material: "BOW"

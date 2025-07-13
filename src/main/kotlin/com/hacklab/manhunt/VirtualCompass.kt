@@ -142,7 +142,7 @@ class VirtualCompass(
     
     private fun getAllValidRunners(hunter: Player): List<Player> {
         val runners = gameManager.getAllRunners()
-            .filter { it.isOnline && !it.isDead && it.world == hunter.world }
+            .filter { it.isOnline && !gameManager.isRunnerDead(it) && it.world == hunter.world }
         
         // デバッグ: ランナーの数をログ出力
         plugin.logger.info("VirtualCompass: Found ${runners.size} valid runners for hunter ${hunter.name}")

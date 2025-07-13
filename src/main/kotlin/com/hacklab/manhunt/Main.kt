@@ -20,6 +20,9 @@ class Main : JavaPlugin() {
     private lateinit var roleSelectorMenu: RoleSelectorMenu
     private lateinit var teamChatCommand: TeamChatCommand
     private lateinit var positionShareCommand: PositionShareCommand
+    private lateinit var buddySystem: BuddySystem
+    private lateinit var buddyCommand: BuddyCommand
+    private lateinit var spawnManager: SpawnManager
     
     // Economy & Shop
     private lateinit var economyManager: EconomyManager
@@ -30,6 +33,11 @@ class Main : JavaPlugin() {
     private lateinit var shopListener: ShopListener
 
     override fun onEnable() {
+        // Ensure data folder exists
+        if (!dataFolder.exists()) {
+            dataFolder.mkdirs()
+        }
+        
         // Save default config
         saveDefaultConfig()
         
@@ -44,6 +52,8 @@ class Main : JavaPlugin() {
         // Initialize managers
         gameManager = GameManager(this, configManager, messageManager)
         gameManager.initialize() // 統計とリザルトシステムを初期化
+        spawnManager = SpawnManager(this, gameManager, configManager)
+        gameManager.setSpawnManager(spawnManager) // SpawnManagerをGameManagerに設定
         compassTracker = CompassTracker(this, gameManager, configManager, messageManager)
         uiManager = UIManager(this, gameManager, configManager)
         
@@ -60,6 +70,8 @@ class Main : JavaPlugin() {
         eventListener = EventListener(gameManager, uiManager, messageManager, roleSelectorMenu)
         teamChatCommand = TeamChatCommand(gameManager, messageManager)
         positionShareCommand = PositionShareCommand(gameManager, messageManager)
+        buddySystem = BuddySystem(this, gameManager, messageManager)
+        buddyCommand = BuddyCommand(this, gameManager, buddySystem, messageManager)
         
         // Register commands
         val manhuntCommand = ManhuntCommand(gameManager, compassTracker, spectatorMenu, messageManager, roleSelectorMenu)
@@ -76,6 +88,10 @@ class Main : JavaPlugin() {
         // Register shop command
         getCommand("shop")?.setExecutor(shopCommand)
         getCommand("shop")?.tabCompleter = shopCommand
+        
+        // Register buddy command
+        getCommand("buddy")?.setExecutor(buddyCommand)
+        getCommand("buddy")?.tabCompleter = buddyCommand
         
         // Register events
         server.pluginManager.registerEvents(eventListener, this)
@@ -98,6 +114,7 @@ class Main : JavaPlugin() {
     fun getEconomyManager(): EconomyManager = economyManager
     fun getCurrencyTracker(): CurrencyTracker = currencyTracker
     fun getShopManager(): ShopManager = shopManager
+    fun getBuddySystem(): BuddySystem = buddySystem
 
     override fun onDisable() {
         compassTracker.stopTracking()

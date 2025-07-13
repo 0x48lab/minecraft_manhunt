@@ -17,7 +17,16 @@
       "Bash(python3:*)",
       "Bash(mv:*)",
       "Bash(git push:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(awk:*)",
+      "Bash(sed:*)",
+      "Bash(mkdir:*)",
+      "Bash(cp:*)",
+      "Bash(jar tf:*)",
+      "Bash(kotlinc:*)",
+      "Bash(java:*)",
+      "Bash(kotlin:*)",
+      "Bash(touch:*)"
     ],
     "deny": []
   }

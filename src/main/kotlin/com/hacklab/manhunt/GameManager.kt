@@ -11,6 +11,11 @@ import java.util.*
 import kotlin.random.Random
 import kotlin.math.cos
 import kotlin.math.sin
+import org.bukkit.Material
+import org.bukkit.inventory.ItemStack
+import org.bukkit.inventory.ItemFlag
+import org.bukkit.enchantments.Enchantment
+import org.bukkit.Sound
 
 class GameManager(private val plugin: Main, val configManager: ConfigManager, private val messageManager: MessageManager) {
     private var gameState = GameState.WAITING
@@ -18,12 +23,21 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
     private val fixedHunters = mutableSetOf<UUID>()
     private var minPlayers = configManager.getMinPlayers()
     private var proximityTask: BukkitRunnable? = null
+    private val currentProximityWarnings = mutableMapOf<UUID, String?>()
+    private var resetCountdownTask: BukkitRunnable? = null
     
     // 統計とリザルト管理
     private val gameStats = GameStats()
     private lateinit var gameResultManager: GameResultManager
     
+    // スポーン管理
+    private var spawnManager: SpawnManager? = null
+    
     fun getPlugin(): Main = plugin
+    
+    fun setSpawnManager(manager: SpawnManager) {
+        spawnManager = manager
+    }
     
     // 統計とリザルト管理の初期化
     fun initialize() {
@@ -114,6 +128,10 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
     private val deadRunners = mutableMapOf<UUID, Long>() // プレイヤーID -> 死亡時刻
     private val respawnTasks = mutableMapOf<UUID, BukkitRunnable>() // プレイヤーID -> リスポンタスク
     private val countdownTasks = mutableMapOf<UUID, BukkitRunnable>() // プレイヤーID -> カウントダウンタスク
+    private val customRespawnTimes = mutableMapOf<UUID, Int>() // プレイヤーID -> カスタムリスポン時間
+    
+    // ゲーム開始時刻
+    private var gameStartTime: Long = 0
     
     // 近接警告のクールダウン管理
     private val proximityWarningCooldowns = mutableMapOf<UUID, Long>() // プレイヤーID -> 最後の警告時刻
@@ -262,6 +280,9 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
             }
         }
         
+        // UIManagerに変更を通知してスコアボードを更新
+        plugin.getUIManager().updateScoreboardForAllPlayers()
+        
         if (role == PlayerRole.HUNTER) {
             fixedHunters.add(player.uniqueId)
         } else {
@@ -277,6 +298,11 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
         plugin.logger.info("Hunters: ${hunters.map { it.name }}")
         plugin.logger.info("Runners: ${runners.map { it.name }}")
         plugin.logger.info("Spectators: ${spectators.map { it.name }}")
+        
+        // スタート条件をチェック（待機中のみ）
+        if (gameState == GameState.WAITING) {
+            checkStartConditions()
+        }
         
         // UIの即座更新
         try {
@@ -338,8 +364,15 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
             plugin.logger.info("Runners: ${runners.map { it.name }}")
             
             if (activePlayerCount >= minPlayers && hunters.isNotEmpty() && runners.isNotEmpty()) {
-                plugin.logger.info("Start conditions met! Starting game.")
-                startGame()
+                plugin.logger.info("Start conditions met!")
+                
+                // 自動スタートが有効な場合のみゲーム開始
+                if (configManager.isAutoStartEnabled()) {
+                    plugin.logger.info("Auto-start is enabled. Starting game.")
+                    startGame()
+                } else {
+                    plugin.logger.info("Auto-start is disabled. Game will not start automatically.")
+                }
             } else {
                 if (activePlayerCount < minPlayers) {
                     plugin.logger.info("Start conditions not met: Insufficient active players (${activePlayerCount}/${minPlayers})")
@@ -355,6 +388,13 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
     fun forceStartGame() {
         if (gameState == GameState.WAITING) {
             startGame()
+        }
+    }
+    
+    fun forceEndGame() {
+        if (gameState == GameState.RUNNING || gameState == GameState.STARTING) {
+            plugin.logger.info("Game force-ended by admin")
+            endGame("admin-force-stop") // 管理者による強制終了
         }
     }
     
@@ -522,35 +562,43 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
                 }
             }
             
-            nearestHunter?.let { hunter ->
-                val hunterWorld = hunter.world
-                if (hunterWorld != null && hunterWorld == runnerWorld) {
-                    try {
-                        val distance = hunter.location.distance(runner.location)
-                        val chunks = (distance / 16).toInt()
-                        
-                        // クールダウンチェック
-                        val currentTime = System.currentTimeMillis()
-                        val lastWarningTime = proximityWarningCooldowns[runner.uniqueId] ?: 0L
-                        val cooldownMillis = configManager.getProximityCooldown() * 1000L
-                        
-                        if (currentTime - lastWarningTime >= cooldownMillis) {
-                            val warningMessage = when {
-                                chunks <= configManager.getProximityLevel1() -> messageManager.getMessage("proximity.level-1")
-                                chunks <= configManager.getProximityLevel2() -> messageManager.getMessage("proximity.level-2")
-                                chunks <= configManager.getProximityLevel3() -> messageManager.getMessage("proximity.level-3")
-                                else -> null
-                            }
-                            
-                            warningMessage?.let { message ->
-                                runner.sendMessage(message)
-                                proximityWarningCooldowns[runner.uniqueId] = currentTime
-                            }
-                        }
-                    } catch (e: Exception) {
-                        // 距離計算に失敗した場合は警告をスキップ
+            if (nearestHunter == null) {
+                // ハンターが近くにいない場合は警告をクリア
+                currentProximityWarnings[runner.uniqueId] = null
+                continue
+            }
+            
+            val hunterWorld = nearestHunter.world
+            if (hunterWorld != null && hunterWorld == runnerWorld) {
+                try {
+                    val distance = nearestHunter.location.distance(runner.location)
+                    val chunks = (distance / 16).toInt()
+                    
+                    val warningMessage = when {
+                        chunks <= configManager.getProximityLevel1() -> messageManager.getMessage(runner, "proximity.level-1")
+                        chunks <= configManager.getProximityLevel2() -> messageManager.getMessage(runner, "proximity.level-2")
+                        chunks <= configManager.getProximityLevel3() -> messageManager.getMessage(runner, "proximity.level-3")
+                        else -> null
                     }
+                    
+                    // 警告メッセージを保存（常に更新）
+                    currentProximityWarnings[runner.uniqueId] = warningMessage
+                    
+                } catch (e: Exception) {
+                    // 距離計算に失敗した場合は警告をクリア
+                    currentProximityWarnings[runner.uniqueId] = null
                 }
+            } else {
+                // 異なるワールドの場合は警告をクリア
+                currentProximityWarnings[runner.uniqueId] = null
+            }
+        }
+        
+        // 死亡したランナーの警告をクリア
+        currentProximityWarnings.keys.toList().forEach { uuid ->
+            val player = Bukkit.getPlayer(uuid)
+            if (player == null || !player.isOnline || getPlayerRole(player) != PlayerRole.RUNNER || isRunnerDead(player)) {
+                currentProximityWarnings.remove(uuid)
             }
         }
     }
@@ -558,15 +606,15 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
     fun checkWinConditions() {
         if (gameState != GameState.RUNNING) return
         
-        val aliveRunners = getAllRunners().filter { it.isOnline && !it.isDead }
-        val deadRunnersCount = deadRunners.size
-        val totalRunners = aliveRunners.size + deadRunnersCount
+        val allRunners = getAllRunners().filter { it.isOnline }
+        val aliveRunners = allRunners.filter { !isRunnerDead(it) }
+        val deadRunnersCount = allRunners.count { isRunnerDead(it) }
         
         val aliveHunters = getAllHunters().filter { it.isOnline && !it.isDead }
         
         when {
             // 全ランナーが死亡またはゲームから退出した場合（即座に終了）
-            totalRunners == 0 || aliveRunners.isEmpty() -> {
+            allRunners.isEmpty() || (aliveRunners.isEmpty() && deadRunnersCount > 0) -> {
                 endGame(messageManager.getMessage("victory.hunter-elimination"))
             }
             // 全ハンターが死亡またはゲームから退出した場合
@@ -579,7 +627,7 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
     private fun checkWinConditionsAfterLeave(leftPlayerRole: PlayerRole?) {
         if (gameState != GameState.RUNNING) return
         
-        val aliveRunners = getAllRunners().filter { it.isOnline && !it.isDead }
+        val aliveRunners = getAllRunners().filter { it.isOnline && !isRunnerDead(it) }
         val aliveHunters = getAllHunters().filter { it.isOnline && !it.isDead }
         
         when (leftPlayerRole) {
@@ -614,6 +662,13 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
         
         if (winCondition != null && winningTeam != null) {
             gameStats.endGame(winningTeam, winCondition)
+        }
+        
+        // バディーシステムのクリーンアップ
+        try {
+            plugin.getBuddySystem().onGameEnd()
+        } catch (e: Exception) {
+            plugin.logger.warning("バディーシステムのクリーンアップでエラー: ${e.message}")
         }
         
         // UIにゲーム終了を通知
@@ -654,14 +709,13 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
         }
         
         // Reset after 10 seconds
-        try {
-            Bukkit.getScheduler().runTaskLater(plugin, Runnable {
-                resetGame()
-            }, 200L)
-        } catch (e: Exception) {
-            plugin.logger.severe("Error scheduling game reset: ${e.message}")
-            resetGame() // Immediate reset as fallback
+        // すべてのプレイヤーをスペクテイターモードに設定
+        Bukkit.getOnlinePlayers().forEach { player ->
+            player.gameMode = GameMode.SPECTATOR
         }
+        
+        // 5分後にリセット（カウントダウン付き）
+        startResetCountdown()
     }
     
     /**
@@ -691,14 +745,28 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
     private fun resetGame() {
         gameState = GameState.WAITING
         
-        // 全プレイヤーのゲームモードを元に戻す
+        // 全プレイヤーをアドベンチャーモードに設定し、お疲れ様メッセージを表示
         try {
             for (player in Bukkit.getOnlinePlayers()) {
-                val originalMode = originalGameModes[player.uniqueId] ?: GameMode.SURVIVAL
-                player.gameMode = originalMode
+                player.gameMode = GameMode.ADVENTURE
+                
+                // お疲れ様メッセージをタイトルで表示
+                val title = messageManager.getMessage(player, "game.end-title")
+                val subtitle = messageManager.getMessage(player, "game.end-subtitle")
+                player.sendTitle(title, subtitle, 10, 60, 20)
+                
+                // ボスバーをクリア
+                plugin.getUIManager().removeBossBar(player)
+                plugin.getUIManager().removeResetCountdownBossBar(player)
+                
+                // インベントリをクリアしてロール変更アイテムを付与
+                player.inventory.clear()
+                Bukkit.getScheduler().runTaskLater(plugin, Runnable {
+                    giveRoleChangeItem(player)
+                }, 20L)
             }
         } catch (e: Exception) {
-            plugin.logger.warning("Error restoring player game modes: ${e.message}")
+            plugin.logger.warning("Error setting up post-game state: ${e.message}")
         }
         
         // タスクを安全に停止
@@ -731,6 +799,7 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
         fixedHunters.clear()
         disconnectedPlayers.clear()
         originalGameModes.clear()
+        currentProximityWarnings.clear()
         
         // リスポンタスクをクリア
         respawnTasks.values.forEach { it.cancel() }
@@ -738,6 +807,7 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
         countdownTasks.values.forEach { it.cancel() }
         countdownTasks.clear()
         deadRunners.clear()
+        customRespawnTimes.clear()
         
         // 近接警告のクールダウンをクリア
         proximityWarningCooldowns.clear()
@@ -745,6 +815,14 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
         // ゲーム開始カウントダウンタスクをクリア
         countdownTask?.cancel()
         countdownTask = null
+        
+        // 経済・ショップシステムをリセット
+        try {
+            plugin.getEconomyManager().resetAllBalances()
+            plugin.getShopManager().resetAllPurchases()
+        } catch (e: Exception) {
+            plugin.logger.warning("Error resetting economy during game reset: ${e.message}")
+        }
         
         Bukkit.broadcastMessage(messageManager.getMessage("game.reset"))
     }
@@ -755,7 +833,138 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
     
     fun getMinPlayers(): Int = minPlayers
     
+    private fun removeRoleChangeItems() {
+        Bukkit.getOnlinePlayers().forEach { player ->
+            player.inventory.contents.forEachIndexed { index, itemStack ->
+                if (itemStack != null && isRoleChangeItem(itemStack)) {
+                    player.inventory.setItem(index, null)
+                }
+            }
+        }
+    }
+    
     fun getDeadRunnersCount(): Int = deadRunners.size
+    
+    fun isRunnerDead(player: Player): Boolean {
+        return deadRunners.containsKey(player.uniqueId)
+    }
+    
+    fun getDeadRunners(): List<Player> {
+        return deadRunners.keys.mapNotNull { Bukkit.getPlayer(it) }.filter { it.isOnline }
+    }
+    
+    fun getProximityWarningForRunner(runner: Player): String? {
+        return currentProximityWarnings[runner.uniqueId]
+    }
+    
+    fun getRespawnTimeForPlayer(player: Player): Int {
+        val deathTime = deadRunners[player.uniqueId] ?: return 0
+        val respawnTime = customRespawnTimes[player.uniqueId] ?: configManager.getRunnerRespawnTime()
+        val elapsedTime = (System.currentTimeMillis() - deathTime) / 1000
+        val remainingTime = respawnTime - elapsedTime.toInt()
+        return if (remainingTime > 0) remainingTime else 0
+    }
+    
+    fun setCustomRespawnTime(player: Player, seconds: Int) {
+        if (seconds <= 0) {
+            customRespawnTimes.remove(player.uniqueId)
+        } else {
+            customRespawnTimes[player.uniqueId] = seconds
+        }
+        
+        // 既に死亡中の場合は、リスポンタスクを更新
+        if (deadRunners.containsKey(player.uniqueId) && gameState == GameState.RUNNING) {
+            // 既存のタスクをキャンセル
+            respawnTasks[player.uniqueId]?.cancel()
+            countdownTasks[player.uniqueId]?.cancel()
+            
+            // 新しいリスポン時間で再スケジュール
+            val currentTime = System.currentTimeMillis()
+            val deathTime = deadRunners[player.uniqueId]!!
+            val elapsedTime = ((currentTime - deathTime) / 1000).toInt()
+            val newRemainingTime = seconds - elapsedTime
+            
+            if (newRemainingTime > 0) {
+                // 新しいタスクをスケジュール
+                scheduleRunnerRespawn(player, newRemainingTime)
+            } else {
+                // 即座にリスポン
+                deadRunners.remove(player.uniqueId)
+                respawnTasks.remove(player.uniqueId)
+                countdownTasks.remove(player.uniqueId)
+                
+                player.spigot().respawn()
+                player.gameMode = GameMode.SURVIVAL
+                player.sendMessage(messageManager.getMessage(player, "respawn-system.runner-respawned"))
+                
+                plugin.getUIManager().removeBossBar(player)
+            }
+        }
+    }
+    
+    private fun scheduleRunnerRespawn(player: Player, respawnTime: Int) {
+        // カウントダウン表示タスクを開始
+        startRespawnCountdown(player, respawnTime)
+        
+        // リスポンタスクをスケジュール
+        val respawnTask = object : BukkitRunnable() {
+            override fun run() {
+                try {
+                    if (player.isOnline && gameState == GameState.RUNNING) {
+                        // タスクとデータをクリア
+                        deadRunners.remove(player.uniqueId)
+                        respawnTasks.remove(player.uniqueId)
+                        countdownTasks[player.uniqueId]?.cancel()
+                        countdownTasks.remove(player.uniqueId)
+                        
+                        player.spigot().respawn()
+                        
+                        // サバイバルモードに戻す
+                        player.gameMode = GameMode.SURVIVAL
+                        
+                        player.sendMessage(messageManager.getMessage(player, "respawn-system.runner-respawned"))
+                        Bukkit.broadcastMessage(messageManager.getMessage("respawn-system.runner-respawned-broadcast", mapOf("player" to player.name)))
+                        
+                        // UIManager経由でタイトルクリアとボスバー削除
+                        try {
+                            plugin.getUIManager().showTitle(player, "§a✓ リスポン完了", "§fエンダードラゴンを倒そう！", 10, 30, 10)
+                            plugin.getUIManager().removeBossBar(player)
+                        } catch (e: Exception) {
+                            plugin.logger.warning("UI表示でエラー: ${e.message}")
+                        }
+                        
+                        plugin.logger.info("Runner ${player.name} respawned after ${respawnTime} seconds")
+                        
+                        // リスポン後に勝利条件をチェック
+                        checkWinConditions()
+                    } else {
+                        // プレイヤーがオフラインまたはゲーム終了の場合
+                        deadRunners.remove(player.uniqueId)
+                        respawnTasks.remove(player.uniqueId)
+                        countdownTasks[player.uniqueId]?.cancel()
+                        countdownTasks.remove(player.uniqueId)
+                    }
+                } catch (e: Exception) {
+                    plugin.logger.warning("Error in runner respawn process for ${player.name}: ${e.message}")
+                    deadRunners.remove(player.uniqueId)
+                    respawnTasks.remove(player.uniqueId)
+                    countdownTasks[player.uniqueId]?.cancel()
+                    countdownTasks.remove(player.uniqueId)
+                }
+            }
+        }
+        
+        respawnTasks[player.uniqueId] = respawnTask
+        respawnTask.runTaskLater(plugin, (respawnTime * 20).toLong())
+    }
+    
+    fun getGameElapsedTime(): Int {
+        return if (gameState == GameState.RUNNING && gameStartTime > 0) {
+            ((System.currentTimeMillis() - gameStartTime) / 1000).toInt()
+        } else {
+            0
+        }
+    }
     
     // ======== ゲーム開始時の転送システム ========
     
@@ -771,30 +980,50 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
         }
         
         try {
-            // 既にスポーンした位置を記録
-            val spawnedLocations = mutableListOf<Location>()
-            
-            // 各プレイヤーを500-1000ブロックの範囲でバラバラにスポーン
-            val allPlayers = hunters + runners
-            
-            allPlayers.forEach { player ->
-                try {
-                    // 500-1000ブロックの範囲で他のプレイヤーから離れた場所を生成
-                    val spawnLocation = generateRandomSpawnLocation(world, spawnedLocations, 500.0, 1000.0)
+            // SpawnManagerを使用してスポーン位置を生成
+            val spawnLocations = if (spawnManager != null) {
+                plugin.logger.info("Using SpawnManager for player spawn placement")
+                spawnManager!!.generateSpawnLocations(world)
+            } else {
+                plugin.logger.warning("SpawnManager not available, using legacy spawn system")
+                // レガシーシステムを使用
+                val locations = mutableMapOf<Player, Location>()
+                val spawnedLocations = mutableListOf<Location>()
+                
+                (hunters + runners).forEach { player ->
+                    val role = getPlayerRole(player)
+                    val spawnLocation = if (role == PlayerRole.RUNNER) {
+                        generateRandomSpawnLocation(world, spawnedLocations, 500.0, 1000.0, avoidOcean = true)
+                    } else {
+                        generateRandomSpawnLocation(world, spawnedLocations, 500.0, 1000.0, avoidOcean = false)
+                    }
                     spawnedLocations.add(spawnLocation)
+                    locations[player] = spawnLocation
+                }
+                locations
+            }
+            
+            // 各プレイヤーをスポーン位置に転送
+            (hunters + runners).forEach { player ->
+                try {
+                    val spawnLocation = spawnLocations[player] ?: world.spawnLocation
+                    val role = getPlayerRole(player)
                     
                     player.teleport(spawnLocation)
                     player.gameMode = GameMode.SURVIVAL
                     
-                    // 役割に応じたメッセージを送信
-                    val role = getPlayerRole(player)
+                    // 役割に応じたメッセージを送信と初期装備配布
                     when (role) {
                         PlayerRole.HUNTER -> {
                             player.sendMessage(messageManager.getMessage(player, "game-start-role.hunter"))
+                            giveStartingItems(player, PlayerRole.HUNTER)
+                            giveShopItemToPlayer(player)
                             plugin.logger.info("Hunter ${player.name} teleported to ${spawnLocation.blockX}, ${spawnLocation.blockY}, ${spawnLocation.blockZ}")
                         }
                         PlayerRole.RUNNER -> {
                             player.sendMessage(messageManager.getMessage(player, "game-start-role.runner"))
+                            giveStartingItems(player, PlayerRole.RUNNER)
+                            giveShopItemToPlayer(player)
                             plugin.logger.info("Runner ${player.name} teleported to ${spawnLocation.blockX}, ${spawnLocation.blockY}, ${spawnLocation.blockZ}")
                         }
                         else -> {}
@@ -840,7 +1069,8 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
         world: World, 
         existingLocations: List<Location> = emptyList(),
         minDistance: Double = 500.0,
-        maxDistance: Double = 1000.0
+        maxDistance: Double = 1000.0,
+        avoidOcean: Boolean = false
     ): Location {
         val maxAttempts = 100
         var attempts = 0
@@ -873,6 +1103,14 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
                 }
                 
                 if (!tooClose) {
+                    // 海を避ける場合のチェック
+                    if (avoidOcean) {
+                        val biome = world.getBiome(x.toInt(), safeY, z.toInt())
+                        if (biome.name.contains("OCEAN") || biome.name.contains("RIVER")) {
+                            continue // 海または川の場合はスキップ
+                        }
+                    }
+                    
                     plugin.logger.info("Safe teleport location generated: ${x.toInt()}, $safeY, ${z.toInt()} (distance: ${distance.toInt()}m, attempts: $attempts)")
                     return location
                 }
@@ -996,7 +1234,7 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
         val currentTime = System.currentTimeMillis()
         deadRunners[player.uniqueId] = currentTime
         
-        val respawnTime = configManager.getRunnerRespawnTime()
+        val respawnTime = customRespawnTimes[player.uniqueId] ?: configManager.getRunnerRespawnTime()
         
         // 既存のタスクをキャンセル
         respawnTasks[player.uniqueId]?.cancel()
@@ -1040,9 +1278,10 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
                         player.sendMessage(messageManager.getMessage(player, "respawn-system.runner-respawned"))
                         Bukkit.broadcastMessage(messageManager.getMessage("respawn-system.runner-respawned-broadcast", mapOf("player" to player.name)))
                         
-                        // UIManager経由でタイトルクリア
+                        // UIManager経由でタイトルクリアとボスバー削除
                         try {
                             plugin.getUIManager().showTitle(player, "§a✓ リスポン完了", "§fエンダードラゴンを倒そう！", 10, 30, 10)
+                            plugin.getUIManager().removeBossBar(player)
                         } catch (e: Exception) {
                             plugin.logger.warning("UI表示でエラー: ${e.message}")
                         }
@@ -1105,6 +1344,9 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
                         
                         try {
                             plugin.getUIManager().showTitle(player, title, subtitle, 0, 25, 0)
+                            // ボスバーも更新
+                            val totalTime = configManager.getRunnerRespawnTime()
+                            plugin.getUIManager().showRespawnBossBar(player, remainingTime, totalTime)
                         } catch (e: Exception) {
                             // フォールバック: チャットメッセージ
                             player.sendMessage(messageManager.getMessage(player, "respawn-system.countdown-chat", mapOf("time" to remainingTime)))
@@ -1203,10 +1445,27 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
         // プレイヤーのインベントリをクリア（ゲーム開始前のアイテムを削除）
         clearAllPlayerInventories()
         
+        // 時間を朝に設定
+        plugin.logger.info("Setting time to day for all worlds...")
+        Bukkit.getWorlds().forEach { world ->
+            val oldTime = world.fullTime
+            // setFullTimeを使用してより確実に時間を設定
+            world.fullTime = 0 // 朝の時間（マインクラフトでは0が朝6時）
+            world.time = 0
+            
+            // gameruleでdoDaylightCycleを確認
+            val daylightCycle = world.getGameRuleValue(org.bukkit.GameRule.DO_DAYLIGHT_CYCLE)
+            plugin.logger.info("World ${world.name}: time changed from $oldTime to ${world.fullTime}, doDaylightCycle=$daylightCycle")
+            
+            // コマンドでも時間を設定（より確実）
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "time set day ${world.name}")
+        }
+        
         // ハンターとランナーをランダムな場所に転送し、サバイバルモードに設定
         teleportPlayersToStartPositions()
         
         gameState = GameState.RUNNING
+        gameStartTime = System.currentTimeMillis()
         
         // ゲーム統計を初期化して開始
         gameStats.startGame()
@@ -1221,6 +1480,13 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
             } catch (e: Exception) {
                 plugin.logger.warning("Error adding player statistics: ${e.message}")
             }
+        }
+        
+        // バディーシステムの初期化
+        try {
+            plugin.getBuddySystem().onGameStart()
+        } catch (e: Exception) {
+            plugin.logger.warning("バディーシステムの初期化でエラー: ${e.message}")
         }
         
         // UIにゲーム実行状態を通知
@@ -1254,6 +1520,9 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
         plugin.getEconomyManager().resetAllBalances()
         plugin.getShopManager().resetAllPurchases()
         
+        // ロール変更アイテムを削除
+        removeRoleChangeItems()
+        
         // ハンターに仮想コンパスの使い方を自動通知
         getAllHunters().forEach { hunter ->
             if (hunter.isOnline) {
@@ -1282,4 +1551,197 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
         }
     }
     
+    // ======== 初期装備配布システム ========
+    
+    private fun giveStartingItems(player: Player, role: PlayerRole) {
+        val items = configManager.getStartingItems(role)
+        
+        items.forEach { itemString ->
+            try {
+                val parts = itemString.split(":")
+                if (parts.size == 2) {
+                    val material = Material.valueOf(parts[0])
+                    val amount = parts[1].toInt()
+                    
+                    val itemStack = ItemStack(material, amount)
+                    player.inventory.addItem(itemStack)
+                }
+            } catch (e: Exception) {
+                plugin.logger.warning("初期装備の解析エラー: $itemString - ${e.message}")
+            }
+        }
+    }
+    
+    private fun giveShopItemToPlayer(player: Player) {
+        // 設定で無効化されている場合は配布しない
+        if (!configManager.isShopItemEnabled()) {
+            return
+        }
+        
+        // プレイヤーの個人設定を確認
+        if (!plugin.getShopManager().getShowShopItemPreference(player)) {
+            return
+        }
+        
+        val item = ItemStack(Material.EMERALD)
+        val meta = item.itemMeta!!
+        meta.setDisplayName(messageManager.getMessage(player, "item.shop.name"))
+        meta.lore = listOf(
+            messageManager.getMessage(player, "item.shop.lore1"),
+            messageManager.getMessage(player, "item.shop.lore2")
+        )
+        // アイテムを光らせる
+        meta.addEnchant(org.bukkit.enchantments.Enchantment.UNBREAKING, 1, true)
+        meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS)
+        item.itemMeta = meta
+        
+        // スロット7に配置（コンパスはスロット8）
+        player.inventory.setItem(7, item)
+    }
+    
+    // ======== ロール変更アイテム管理 ========
+    
+    private fun giveRoleChangeItem(player: Player) {
+        // 既に持っているかチェック
+        if (player.inventory.contents.any { it != null && isRoleChangeItem(it) }) {
+            return
+        }
+        
+        val item = ItemStack(Material.WRITABLE_BOOK)
+        val meta = item.itemMeta!!
+        meta.setDisplayName(messageManager.getMessage(player, "item.role-change.name"))
+        meta.lore = listOf(
+            messageManager.getMessage(player, "item.role-change.lore1"),
+            messageManager.getMessage(player, "item.role-change.lore2")
+        )
+        // アイテムを光らせる
+        meta.addEnchant(Enchantment.UNBREAKING, 1, true)
+        meta.addItemFlags(ItemFlag.HIDE_ENCHANTS)
+        item.itemMeta = meta
+        
+        // スロット0に配置
+        player.inventory.setItem(0, item)
+    }
+    
+    private fun isRoleChangeItem(item: ItemStack): Boolean {
+        if (item.type != Material.WRITABLE_BOOK) return false
+        val meta = item.itemMeta ?: return false
+        // 名前に役割変更のキーワードが含まれているかチェック
+        val displayName = meta.displayName ?: return false
+        return displayName.contains("役割") || displayName.contains("Role") || displayName.contains("ロール") || displayName.contains("Change")
+    }
+    
+    
+    // ======== 名前タグ可視性制御システム ========
+    
+    // ======== リセットカウントダウンシステム ========
+    
+    private fun startResetCountdown() {
+        // 既存のタスクをキャンセル
+        resetCountdownTask?.cancel()
+        
+        val totalSeconds = 300 // 5分 = 300秒
+        var remainingSeconds = totalSeconds
+        
+        resetCountdownTask = object : BukkitRunnable() {
+            override fun run() {
+                if (remainingSeconds <= 0) {
+                    resetGame()
+                    cancel()
+                    return
+                }
+                
+                // 全プレイヤーにボスバーを表示
+                val minutes = remainingSeconds / 60
+                val seconds = remainingSeconds % 60
+                val timeString = String.format("%d:%02d", minutes, seconds)
+                
+                Bukkit.getOnlinePlayers().forEach { player ->
+                    val title = messageManager.getMessage(player, "ui.bossbar.reset-countdown", 
+                        mapOf("time" to timeString))
+                    val progress = remainingSeconds.toDouble() / totalSeconds.toDouble()
+                    
+                    plugin.getUIManager().showResetCountdownBossBar(player, title, progress)
+                }
+                
+                // 残り時間が少ない場合は警告
+                when (remainingSeconds) {
+                    60 -> Bukkit.broadcastMessage(messageManager.getMessage("game.reset-warning-1min"))
+                    30 -> Bukkit.broadcastMessage(messageManager.getMessage("game.reset-warning-30sec"))
+                    10, 5, 4, 3, 2, 1 -> {
+                        Bukkit.broadcastMessage(messageManager.getMessage("game.reset-countdown", 
+                            mapOf("seconds" to remainingSeconds)))
+                        // サウンド再生
+                        Bukkit.getOnlinePlayers().forEach { player ->
+                            player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.0f)
+                        }
+                    }
+                }
+                
+                remainingSeconds--
+            }
+        }
+        
+        resetCountdownTask?.runTaskTimer(plugin, 0L, 20L) // 1秒ごとに実行
+    }
+    
+    /**
+     * 管理者コマンドによる強制リセット
+     */
+    fun forceReset() {
+        // カウントダウンタスクをキャンセル
+        resetCountdownTask?.cancel()
+        resetCountdownTask = null
+        
+        // ボスバーをクリア
+        Bukkit.getOnlinePlayers().forEach { player ->
+            plugin.getUIManager().removeResetCountdownBossBar(player)
+        }
+        
+        // 即座にリセット
+        resetGame()
+        
+        Bukkit.broadcastMessage(messageManager.getMessage("game.force-reset"))
+    }
+    
+    fun setRunnerNameTagVisibility(runner: Player, visible: Boolean) {
+        // UIManagerのスコアボードシステムを使用して制御
+        val scoreboard = runner.scoreboard
+        
+        // 一時的なチームを作成または取得
+        val teamName = "runner_visibility_${runner.name}"
+        var team = scoreboard.getTeam(teamName)
+        
+        if (team == null) {
+            team = scoreboard.registerNewTeam(teamName)
+        }
+        
+        // プレイヤーをチームに追加
+        team.addEntry(runner.name)
+        
+        // 可視性を設定
+        if (visible) {
+            // スプリント中：全員に表示
+            team.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.ALWAYS)
+        } else {
+            // 通常時：味方（他のランナー）のみに表示
+            team.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.FOR_OWN_TEAM)
+        }
+        
+        // 全プレイヤーのスコアボードを更新
+        Bukkit.getOnlinePlayers().forEach { viewer ->
+            if (viewer != runner) {
+                val viewerScoreboard = viewer.scoreboard
+                var viewerTeam = viewerScoreboard.getTeam(teamName)
+                
+                if (viewerTeam == null) {
+                    viewerTeam = viewerScoreboard.registerNewTeam(teamName)
+                }
+                
+                viewerTeam.addEntry(runner.name)
+                viewerTeam.setOption(Team.Option.NAME_TAG_VISIBILITY, 
+                    if (visible) Team.OptionStatus.ALWAYS else Team.OptionStatus.FOR_OWN_TEAM)
+            }
+        }
+    }
 }

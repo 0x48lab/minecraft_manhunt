@@ -32,6 +32,7 @@ class UIManager(
     
     // BossBar管理
     private val playerBossBars = mutableMapOf<Player, BossBar>()
+    private val resetCountdownBossBars = mutableMapOf<Player, BossBar>()
     
     // ActionBar表示用の状態
     private var currentActionBarMessage = ""
@@ -76,7 +77,7 @@ class UIManager(
         }.runTaskTimer(plugin, 0L, configManager.getScoreboardUpdateInterval())
     }
     
-    private fun updateScoreboardForAllPlayers() {
+    fun updateScoreboardForAllPlayers() {
         val onlinePlayers = Bukkit.getOnlinePlayers()
         if (onlinePlayers.isEmpty()) return
         
@@ -89,23 +90,28 @@ class UIManager(
         
         var line = 15
         
-        // ゲーム状態表示
+        // 空行のみ
         addScoreboardLine("§r", line--) // 空行
-        addScoreboardLine(messageManager.getMessage("ui.scoreboard.state", mapOf("state" to getGameStateDisplay(null, gameState))), line--)
-        addScoreboardLine("§r ", line--) // 空行
         
         // ゲーム状態に応じた詳細情報
         if (gameState == GameState.RUNNING) {
-            // ゲーム中：生存数・死亡数を表示
+            // ゲーム中：生存数・死亡数をアイコンのみで表示
             val aliveHunters = hunters.filter { !it.isDead }
-            val aliveRunners = runners.filter { !it.isDead }
+            val aliveRunners = runners.filter { !gameManager.isRunnerDead(it) }
             val deadHunters = hunters.filter { it.isDead }
-            val deadRunners = runners.filter { it.isDead }
+            val deadRunners = runners.filter { gameManager.isRunnerDead(it) }
             
-            addScoreboardLine(messageManager.getMessage("ui.scoreboard.hunters-alive", mapOf("count" to aliveHunters.size)), line--)
-            addScoreboardLine(messageManager.getMessage("ui.scoreboard.hunters-dead", mapOf("count" to deadHunters.size)), line--)
-            addScoreboardLine(messageManager.getMessage("ui.scoreboard.runners-alive", mapOf("count" to aliveRunners.size)), line--)
-            addScoreboardLine(messageManager.getMessage("ui.scoreboard.runners-dead", mapOf("count" to deadRunners.size)), line--)
+            addScoreboardLine("§c🗡 §f${aliveHunters.size}  §c💀 §f${deadHunters.size}", line--)
+            addScoreboardLine("§a🏃 §f${aliveRunners.size}  §a💀 §f${deadRunners.size}", line--)
+            
+            // リスポン待ち中のランナーがいる場合、追加表示
+            if (deadRunners.isNotEmpty()) {
+                val respawningCount = gameManager.getDeadRunners().size
+                if (respawningCount > 0) {
+                    addScoreboardLine(messageManager.getMessage("ui.scoreboard.runners-respawning", mapOf("count" to respawningCount)), line--)
+                }
+            }
+            
             addScoreboardLine("§r   ", line--) // 空行
         } else {
             // ゲーム開始前：プレイヤー数表示
@@ -115,7 +121,7 @@ class UIManager(
             addScoreboardLine("§r  ", line--) // 空行
         }
         
-        // 待機中の場合
+        // 待機中の場合のみ必要人数を表示
         if (gameState == GameState.WAITING) {
             val minPlayers = gameManager.getMinPlayers()
             val totalPlayers = hunters.size + runners.size
@@ -152,24 +158,56 @@ class UIManager(
         
         var line = 15
         
-        // ゲーム状態表示
+        // 空行のみ
         addPlayerScoreboardLine(playerObjective, "§r", line--) // 空行
-        addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.state", mapOf("state" to getGameStateDisplay(player, gameState))), line--)
-        addPlayerScoreboardLine(playerObjective, "§r ", line--) // 空行
+        
+        // 自分のロールを表示
+        if (role != null) {
+            val roleDisplay = when (role) {
+                PlayerRole.HUNTER -> "§c🗡 " + messageManager.getMessage(player, "role.hunter")
+                PlayerRole.RUNNER -> "§a🏃 " + messageManager.getMessage(player, "role.runner") 
+                PlayerRole.SPECTATOR -> "§7👁 " + messageManager.getMessage(player, "role.spectator")
+            }
+            addPlayerScoreboardLine(playerObjective, roleDisplay, line--)
+            addPlayerScoreboardLine(playerObjective, "§r ", line--) // 空行
+        }
         
         // ゲーム状態に応じた詳細情報
         if (gameState == GameState.RUNNING) {
-            // ゲーム中：生存数・死亡数を表示
+            // ゲーム中：生存数・死亡数をアイコンのみで表示
             val aliveHunters = hunters.filter { !it.isDead }
-            val aliveRunners = runners.filter { !it.isDead }
+            val aliveRunners = runners.filter { !gameManager.isRunnerDead(it) }
             val deadHunters = hunters.filter { it.isDead }
-            val deadRunners = runners.filter { it.isDead }
+            val deadRunners = runners.filter { gameManager.isRunnerDead(it) }
             
-            addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.hunters-alive", mapOf("count" to aliveHunters.size)), line--)
-            addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.hunters-dead", mapOf("count" to deadHunters.size)), line--)
-            addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.runners-alive", mapOf("count" to aliveRunners.size)), line--)
-            addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.runners-dead", mapOf("count" to deadRunners.size)), line--)
+            addPlayerScoreboardLine(playerObjective, "§c🗡 §f${aliveHunters.size}  §c💀 §f${deadHunters.size}", line--)
+            
+            // ランナーの表示行
+            addPlayerScoreboardLine(playerObjective, "§a🏃 §f${aliveRunners.size}  §a💀 §f${deadRunners.size}", line--)
+            
+            // リスポン待ち中のランナーがいる場合、追加表示
+            if (deadRunners.isNotEmpty()) {
+                val respawningCount = gameManager.getDeadRunners().size
+                if (respawningCount > 0) {
+                    addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.runners-respawning", mapOf("count" to respawningCount)), line--)
+                }
+            }
+            
+            // プレイヤーが死亡中のランナーの場合、自分の復活時間を表示
+            if (role == PlayerRole.RUNNER && gameManager.isRunnerDead(player)) {
+                val respawnTime = gameManager.getRespawnTimeForPlayer(player)
+                if (respawnTime > 0) {
+                    addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.respawn-time", mapOf("time" to respawnTime)), line--)
+                }
+            }
+            
             addPlayerScoreboardLine(playerObjective, "§r   ", line--) // 空行
+            
+            // 経過時間を表示
+            val elapsedTime = gameManager.getGameElapsedTime()
+            val minutes = elapsedTime / 60
+            val seconds = elapsedTime % 60
+            addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.elapsed-time", mapOf("minutes" to minutes, "seconds" to String.format("%02d", seconds))), line--)
             
             // 所持金表示（ゲーム中のみ）
             if (role != null && role != PlayerRole.SPECTATOR) {
@@ -187,7 +225,7 @@ class UIManager(
         }
         
         
-        // 待機中の場合は追加情報
+        // 待機中の場合のみ必要人数を表示
         if (gameState == GameState.WAITING) {
             val minPlayers = gameManager.getMinPlayers()
             val totalPlayers = hunters.size + runners.size
@@ -195,10 +233,27 @@ class UIManager(
             addPlayerScoreboardLine(playerObjective, "§r    ", line--) // 空行
         }
         
-        // コマンド情報
-        addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.separator"), line--)
-        addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.help-command"), line--)
-        addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.help-text"), line--)
+        // バディー情報表示
+        if (gameState == GameState.RUNNING && role != null && role != PlayerRole.SPECTATOR) {
+            val buddyInfo = plugin.getBuddySystem().getBuddyRelativeCoordinates(player)
+            val buddy = plugin.getBuddySystem().getBuddy(player)
+            
+            if (buddy != null && buddyInfo != null) {
+                addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.separator"), line--)
+                addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.buddy-title", mapOf("buddy" to buddy.name)), line--)
+                addPlayerScoreboardLine(playerObjective, buddyInfo, line--)
+            } else {
+                // バディーがいない場合はコマンド情報を表示
+                addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.separator"), line--)
+                addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.help-command"), line--)
+                addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.help-text"), line--)
+            }
+        } else {
+            // ゲーム開始前またはスペクテーターの場合はコマンド情報を表示
+            addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.separator"), line--)
+            addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.help-command"), line--)
+            addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.help-text"), line--)
+        }
         
         // プレイヤーリスト（Tabキー）表示を設定
         setupPlayerListDisplay(player, playerScoreboard)
@@ -297,46 +352,46 @@ class UIManager(
                 val targetRole = gameManager.getPlayerRole(target)
                 
                 if (target == viewer) {
-                    // 自分自身を黄色で表示
+                    // 自分自身は役割に応じた色で表示
                     val selfTeam = scoreboard.getTeam("self_${target.name}") ?: scoreboard.registerNewTeam("self_${target.name}")
-                    selfTeam.color = org.bukkit.ChatColor.YELLOW
-                    selfTeam.prefix = "⭐"
-                    selfTeam.suffix = messageManager.getMessage(viewer, "ui.scoreboard.self-suffix")
+                    selfTeam.color = when (viewerRole) {
+                        PlayerRole.HUNTER -> org.bukkit.ChatColor.RED
+                        PlayerRole.RUNNER -> org.bukkit.ChatColor.BLUE
+                        else -> org.bukkit.ChatColor.GRAY
+                    }
+                    selfTeam.prefix = ""
+                    selfTeam.suffix = ""
                     selfTeam.addEntry(target.name)
                 } else if (isAlly(viewerRole, targetRole)) {
                     // 味方同士のみ表示（同じ役割かつ観戦者以外）
-                    val coordsText = getRelativeCoordinates(viewer, target)
                     
-                    // チーム設定で名前の色を変更（味方は青色）
-                    val teamName = "ally_${target.name}"
+                    // バディーかどうかチェック
+                    val buddy = plugin.getBuddySystem().getBuddy(viewer)
+                    val isBuddy = buddy == target
+                    
+                    // チーム設定で名前の色を変更
+                    val teamName = if (isBuddy) "buddy_${target.name}" else "ally_${target.name}"
                     var team = scoreboard.getTeam(teamName)
                     if (team == null) {
                         team = scoreboard.registerNewTeam(teamName)
-                        team.color = org.bukkit.ChatColor.BLUE
+                        team.color = if (isBuddy) {
+                            org.bukkit.ChatColor.GOLD  // バディーはオレンジ（金色）
+                        } else {
+                            when (targetRole) {
+                                PlayerRole.HUNTER -> org.bukkit.ChatColor.RED
+                                PlayerRole.RUNNER -> org.bukkit.ChatColor.BLUE
+                                else -> org.bukkit.ChatColor.GRAY
+                            }
+                        }
                     }
-                    team.prefix = "💙"
-                    team.suffix = " §7($coordsText)"
+                    team.prefix = ""
+                    team.suffix = ""
                     team.addEntry(target.name)
                 }
             }
         }
     }
     
-    private fun getRelativeCoordinates(viewer: Player, target: Player): String {
-        return try {
-            val deltaX = target.location.blockX - viewer.location.blockX
-            val deltaY = target.location.blockY - viewer.location.blockY
-            val deltaZ = target.location.blockZ - viewer.location.blockZ
-            
-            val xSign = if (deltaX >= 0) "+" else ""
-            val ySign = if (deltaY >= 0) "+" else ""
-            val zSign = if (deltaZ >= 0) "+" else ""
-            
-            "X:$xSign$deltaX Y:$ySign$deltaY Z:$zSign$deltaZ"
-        } catch (e: Exception) {
-            messageManager.getMessage(viewer, "ui.coordinate-error")
-        }
-    }
     
     
     private fun getTeamName(viewer: Player, target: Player, viewerRole: PlayerRole?, targetRole: PlayerRole?): String {
@@ -371,13 +426,13 @@ class UIManager(
     }
     
     private fun addPlayerScoreboardLine(objective: Objective, text: String, score: Int) {
-        val entry = if (text.length > 16) text.substring(0, 16) else text
-        objective.getScore(entry).score = score
+        // Minecraftのスコアボードは1行40文字まで対応（1.13以降）
+        objective.getScore(text).score = score
     }
     
     private fun addScoreboardLine(text: String, score: Int) {
-        val entry = if (text.length > 16) text.substring(0, 16) else text
-        objective?.getScore(entry)?.score = score
+        // Minecraftのスコアボードは1行40文字まで対応（1.13以降）
+        objective?.getScore(text)?.score = score
     }
     
     private fun clearScoreboardEntries() {
@@ -411,16 +466,39 @@ class UIManager(
         
         Bukkit.getOnlinePlayers().forEach { player ->
             val role = gameManager.getPlayerRole(player)
-            val message = when {
+            
+            // ゲーム中のプレイヤー状態を表示
+            val statusMessage = when {
                 gameState == GameState.WAITING -> {
                     if (role == null) {
                         messageManager.getMessage(player, "ui.actionbar.join-game")
                     } else {
-                        messageManager.getMessage(player, "ui.actionbar.waiting", mapOf("role" to getRoleDisplay(player, role)))
+                        val roleDisplay = when (role) {
+                            PlayerRole.HUNTER -> messageManager.getMessage(player, "ui.actionbar.role.hunter")
+                            PlayerRole.RUNNER -> messageManager.getMessage(player, "ui.actionbar.role.runner")
+                            PlayerRole.SPECTATOR -> messageManager.getMessage(player, "ui.actionbar.role.spectator")
+                        }
+                        messageManager.getMessage(player, "ui.actionbar.waiting", mapOf("role" to roleDisplay))
                     }
                 }
                 gameState == GameState.RUNNING && role != null -> {
-                    when (role) {
+                    // プレイヤーの現在の状態を表示
+                    val stateDisplay = if (player.isDead && role == PlayerRole.RUNNER) {
+                        val respawnTime = gameManager.getRespawnTimeForPlayer(player)
+                        if (respawnTime > 0) {
+                            messageManager.getMessage(player, "ui.actionbar.respawning", mapOf("time" to respawnTime))
+                        } else {
+                            messageManager.getMessage(player, "ui.actionbar.dead")
+                        }
+                    } else {
+                        when (role) {
+                            PlayerRole.HUNTER -> messageManager.getMessage(player, "ui.actionbar.role.hunter")
+                            PlayerRole.RUNNER -> messageManager.getMessage(player, "ui.actionbar.role.runner") 
+                            PlayerRole.SPECTATOR -> messageManager.getMessage(player, "ui.actionbar.role.spectator")
+                        }
+                    }
+                    
+                    val targetInfo = when (role) {
                         PlayerRole.HUNTER -> {
                             val nearestRunner = findNearestRunner(player)
                             if (nearestRunner != null) {
@@ -431,21 +509,34 @@ class UIManager(
                                 } catch (e: Exception) {
                                     -1
                                 }
-                                messageManager.getMessage(player, "ui.actionbar.hunter-with-target", mapOf("target" to nearestRunner.name, "distance" to distance))
+                                " | " + messageManager.getMessage(player, "ui.actionbar.hunter-with-target", mapOf("target" to nearestRunner.name, "distance" to distance))
                             } else {
-                                messageManager.getMessage(player, "ui.actionbar.hunter-no-target")
+                                " | " + messageManager.getMessage(player, "ui.actionbar.hunter-no-target")
                             }
                         }
                         PlayerRole.RUNNER -> {
-                            messageManager.getMessage(player, "ui.actionbar.runner")
+                            // 近接警告をチェック
+                            val proximityWarning = if (!gameManager.isRunnerDead(player)) {
+                                gameManager.getProximityWarningForRunner(player)
+                            } else {
+                                null
+                            }
+                            
+                            if (proximityWarning != null) {
+                                " | $proximityWarning"
+                            } else {
+                                " | " + messageManager.getMessage(player, "ui.actionbar.runner-objective")
+                            }
                         }
-                        PlayerRole.SPECTATOR -> messageManager.getMessage(player, "ui.actionbar.spectator")
+                        PlayerRole.SPECTATOR -> ""
                     }
+                    
+                    stateDisplay + targetInfo
                 }
                 else -> messageManager.getMessage(player, "ui.actionbar.default")
             }
             
-            sendActionBar(player, message)
+            sendActionBar(player, statusMessage)
         }
     }
     
@@ -460,12 +551,15 @@ class UIManager(
     
     // ======== BossBar システム ========
     
-    fun showGameProgressBossBar(player: Player, title: String, progress: Double, color: BarColor = BarColor.BLUE) {
+    fun showRespawnBossBar(player: Player, remainingTime: Int, totalTime: Int) {
         if (!configManager.isBossBarEnabled()) return
         
         removeBossBar(player)
         
-        val bossBar = Bukkit.createBossBar(title, color, BarStyle.SOLID)
+        val title = messageManager.getMessage(player, "ui.bossbar.respawn-title", mapOf("time" to remainingTime))
+        val progress = remainingTime.toDouble() / totalTime.toDouble()
+        
+        val bossBar = Bukkit.createBossBar(title, BarColor.RED, BarStyle.SOLID)
         bossBar.progress = progress.coerceIn(0.0, 1.0)
         bossBar.addPlayer(player)
         bossBar.isVisible = true
@@ -490,6 +584,39 @@ class UIManager(
     private fun clearAllBossBars() {
         playerBossBars.values.forEach { it.removeAll() }
         playerBossBars.clear()
+        resetCountdownBossBars.values.forEach { it.removeAll() }
+        resetCountdownBossBars.clear()
+    }
+    
+    // ======== リセットカウントダウンBossBar ========
+    
+    fun showResetCountdownBossBar(player: Player, title: String, progress: Double) {
+        if (!configManager.isBossBarEnabled()) return
+        
+        // 既存のBossBarがあれば更新、なければ新規作成
+        val bossBar = resetCountdownBossBars.getOrPut(player) {
+            val newBossBar = Bukkit.createBossBar(title, BarColor.BLUE, BarStyle.SOLID)
+            newBossBar.addPlayer(player)
+            newBossBar.isVisible = true
+            newBossBar
+        }
+        
+        bossBar.setTitle(title)
+        bossBar.progress = progress.coerceIn(0.0, 1.0)
+        
+        // 残り時間によって色を変更
+        when {
+            progress > 0.5 -> bossBar.color = BarColor.BLUE
+            progress > 0.2 -> bossBar.color = BarColor.YELLOW
+            else -> bossBar.color = BarColor.RED
+        }
+    }
+    
+    fun removeResetCountdownBossBar(player: Player) {
+        resetCountdownBossBars[player]?.let { bossBar ->
+            bossBar.removeAll()
+            resetCountdownBossBars.remove(player)
+        }
     }
     
     // ======== Title/Subtitle システム ========
@@ -522,9 +649,12 @@ class UIManager(
             }
             
             showTitle(player, title, subtitle)
-            if (newState == GameState.RUNNING) {
-                showGameProgressBossBar(player, messageManager.getMessage(player, "ui.bossbar.progress"), 1.0, color)
-            }
+            // ボスバーは復活時間表示専用になったため、ゲーム開始時は表示しない
+        }
+        
+        // ゲーム終了時は全てのBossBarをクリア
+        if (newState == GameState.ENDED) {
+            clearAllBossBars()
         }
         
         // ゲーム状態が変わったらスコアボードを即座に更新（名前タグの表示設定も反映される）
@@ -578,10 +708,7 @@ class UIManager(
         // 新規参加プレイヤーにスコアボード適用
         player.scoreboard = scoreboard ?: Bukkit.getScoreboardManager()?.mainScoreboard ?: return
         
-        // ゲーム中の場合、状況を表示
-        if (gameManager.getGameState() == GameState.RUNNING) {
-            showGameProgressBossBar(player, messageManager.getMessage(player, "ui.bossbar.progress"), 1.0, BarColor.GREEN)
-        }
+        // ボスバーは復活時間表示専用になったため、通常時は表示しない
     }
     
     fun onPlayerQuit(player: Player) {

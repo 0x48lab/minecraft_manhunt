@@ -12,6 +12,15 @@ import org.bukkit.event.inventory.InventoryCloseEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
+import org.bukkit.event.player.PlayerDropItemEvent
+import org.bukkit.event.entity.PlayerDeathEvent
+import org.bukkit.event.player.PlayerRespawnEvent
+import org.bukkit.inventory.ItemStack
+import org.bukkit.Material
+import org.bukkit.inventory.ItemFlag
+import org.bukkit.enchantments.Enchantment
+import org.bukkit.event.player.PlayerToggleSprintEvent
+import org.bukkit.event.player.PlayerMoveEvent
 
 class EventListener(
     private val gameManager: GameManager,
@@ -19,6 +28,9 @@ class EventListener(
     private val messageManager: MessageManager,
     private val roleSelectorMenu: RoleSelectorMenu
 ) : Listener {
+    
+    private val plugin: Main
+        get() = gameManager.getPlugin()
     
     @EventHandler
     fun onPlayerJoin(event: PlayerJoinEvent) {
@@ -47,9 +59,14 @@ class EventListener(
             GameState.WAITING -> {
                 // 待機中は観戦者として参加（後で役割変更可能）
                 gameManager.addPlayer(player, PlayerRole.SPECTATOR)
-                player.gameMode = GameMode.SPECTATOR
+                player.gameMode = GameMode.ADVENTURE
                 player.sendMessage(messageManager.getMessage(player, "join.welcome"))
-                player.sendMessage(messageManager.getMessage(player, "join.role-select"))
+                
+                // インベントリを初期化
+                player.inventory.clear()
+                
+                // ロール変更アイテムを付与
+                giveRoleChangeItem(player)
                 
                 // 参加案内をタイトルで表示
                 uiManager.showTitle(player, messageManager.getMessage(player, "ui.title.manhunt-welcome"), messageManager.getMessage(player, "ui.title.role-selection"))
@@ -71,6 +88,13 @@ class EventListener(
         
         // UIManagerにプレイヤー退出を通知
         uiManager.onPlayerQuit(player)
+        
+        // バディーシステムにプレイヤー退出を通知
+        try {
+            plugin.getBuddySystem().onPlayerLeave(player)
+        } catch (e: Exception) {
+            plugin.logger.warning("バディーシステムのプレイヤー退出処理でエラー: ${e.message}")
+        }
         
         
         if (gameState == GameState.RUNNING && playerRole != null) {
@@ -101,5 +125,247 @@ class EventListener(
     fun onInventoryClose(event: InventoryCloseEvent) {
         val player = event.player as? Player ?: return
         roleSelectorMenu.onInventoryClose(player)
+    }
+    
+    @EventHandler
+    fun onPlayerInteract(event: PlayerInteractEvent) {
+        val player = event.player
+        val item = event.item ?: return
+        
+        // 右クリックまたは左クリック
+        if (event.action == Action.RIGHT_CLICK_AIR || event.action == Action.RIGHT_CLICK_BLOCK ||
+            event.action == Action.LEFT_CLICK_AIR || event.action == Action.LEFT_CLICK_BLOCK) {
+            
+            // ロール変更アイテムかチェック
+            if (isRoleChangeItem(item) && gameManager.getGameState() == GameState.WAITING) {
+                event.isCancelled = true
+                plugin.logger.info("${player.name} clicked role change item, opening menu")
+                roleSelectorMenu.openMenu(player)
+            }
+            
+            // ショップアイテムかチェック
+            if (isShopItem(item) && gameManager.getGameState() == GameState.RUNNING) {
+                event.isCancelled = true
+                val shopCommand = gameManager.getPlugin().getCommand("shop")?.getExecutor() as? com.hacklab.manhunt.shop.ShopCommand
+                shopCommand?.onCommand(player, gameManager.getPlugin().getCommand("shop")!!, "shop", arrayOf())
+            }
+        }
+    }
+    
+    @EventHandler
+    fun onPlayerDropItem(event: PlayerDropItemEvent) {
+        val item = event.itemDrop.itemStack
+        
+        // ロール変更アイテムのドロップを防止
+        if (isRoleChangeItem(item)) {
+            event.isCancelled = true
+            event.player.sendMessage(messageManager.getMessage(event.player, "item.cannot-drop-role-change"))
+        }
+        
+        // ショップアイテムのドロップを防止
+        if (isShopItem(item)) {
+            event.isCancelled = true
+            event.player.sendMessage(messageManager.getMessage(event.player, "item.cannot-drop-shop"))
+        }
+    }
+    
+    @EventHandler
+    fun onPlayerDeath(event: PlayerDeathEvent) {
+        val player = event.entity
+        
+        // ロール変更アイテムを死亡時のドロップから除外
+        event.drops.removeIf { isRoleChangeItem(it) }
+        // ショップアイテムを死亡時のドロップから除外
+        event.drops.removeIf { isShopItem(it) }
+    }
+    
+    @EventHandler
+    fun onPlayerRespawn(event: PlayerRespawnEvent) {
+        val player = event.player
+        
+        // ゲーム待機中ならロール変更アイテムを再付与
+        if (gameManager.getGameState() == GameState.WAITING) {
+            Bukkit.getScheduler().runTaskLater(gameManager.getPlugin(), Runnable {
+                player.gameMode = GameMode.ADVENTURE
+                giveRoleChangeItem(player)
+            }, 1L)
+        }
+        
+        // ゲーム中ならショップアイテムを再付与
+        if (gameManager.getGameState() == GameState.RUNNING) {
+            val role = gameManager.getPlayerRole(player)
+            if (role == PlayerRole.HUNTER || role == PlayerRole.RUNNER) {
+                Bukkit.getScheduler().runTaskLater(gameManager.getPlugin(), Runnable {
+                    giveShopItem(player)
+                }, 1L)
+            }
+        }
+    }
+    
+    fun giveRoleChangeItem(player: Player) {
+        // 既に持っているかチェック
+        if (player.inventory.contents.any { it != null && isRoleChangeItem(it) }) {
+            return
+        }
+        
+        val item = ItemStack(Material.WRITABLE_BOOK)
+        val meta = item.itemMeta!!
+        meta.setDisplayName(messageManager.getMessage(player, "item.role-change.name"))
+        meta.lore = listOf(
+            messageManager.getMessage(player, "item.role-change.lore1"),
+            messageManager.getMessage(player, "item.role-change.lore2")
+        )
+        // アイテムを光らせる
+        meta.addEnchant(Enchantment.UNBREAKING, 1, true)
+        meta.addItemFlags(ItemFlag.HIDE_ENCHANTS)
+        item.itemMeta = meta
+        
+        // スロット0に配置
+        player.inventory.setItem(0, item)
+    }
+    
+    private fun isRoleChangeItem(item: ItemStack): Boolean {
+        if (item.type != Material.WRITABLE_BOOK) return false
+        val meta = item.itemMeta ?: return false
+        val displayName = meta.displayName ?: return false
+        
+        // デバッグログ
+        plugin.logger.info("Checking item: type=${item.type}, name='$displayName'")
+        
+        // より確実な判定方法
+        // カスタムデータ用のLoreをチェック（より確実）
+        val lore = meta.lore
+        if (lore != null && lore.isNotEmpty()) {
+            // 最初のLoreがロール変更用のメッセージかチェック
+            val firstLore = lore[0]
+            plugin.logger.info("First lore: '$firstLore'")
+            if (firstLore.contains("役割選択メニュー") || firstLore.contains("role selection menu")) {
+                plugin.logger.info("Matched by lore - this is a role change item")
+                return true
+            }
+        }
+        
+        // 表示名での判定もフォールバック
+        val isMatch = displayName.contains("ロール変更") || displayName.contains("Change Role") ||
+               displayName.contains("役割") || displayName.contains("Role")
+        
+        if (isMatch) {
+            plugin.logger.info("Matched by display name - this is a role change item")
+        }
+        
+        return isMatch
+    }
+    
+    private fun giveShopItem(player: Player) {
+        // 設定で無効化されている場合は配布しない
+        if (!gameManager.getPlugin().getConfigManager().isShopItemEnabled()) {
+            return
+        }
+        
+        // プレイヤーの個人設定を確認
+        if (!gameManager.getPlugin().getShopManager().getShowShopItemPreference(player)) {
+            return
+        }
+        
+        // 既に持っているかチェック
+        if (player.inventory.contents.any { it != null && isShopItem(it) }) {
+            return
+        }
+        
+        val item = ItemStack(Material.EMERALD)
+        val meta = item.itemMeta!!
+        meta.setDisplayName(messageManager.getMessage(player, "item.shop.name"))
+        meta.lore = listOf(
+            messageManager.getMessage(player, "item.shop.lore1"),
+            messageManager.getMessage(player, "item.shop.lore2")
+        )
+        // アイテムを光らせる
+        meta.addEnchant(Enchantment.UNBREAKING, 1, true)
+        meta.addItemFlags(ItemFlag.HIDE_ENCHANTS)
+        item.itemMeta = meta
+        
+        // スロット7に配置（コンパスはスロット8）
+        player.inventory.setItem(7, item)
+    }
+    
+    private fun isShopItem(item: ItemStack): Boolean {
+        if (item.type != Material.EMERALD) return false
+        val meta = item.itemMeta ?: return false
+        // 名前にショップのキーワードが含まれているかチェック
+        val displayName = meta.displayName ?: return false
+        return displayName.contains("ショップ") || displayName.contains("Shop") || displayName.contains("商店") || displayName.contains("Store")
+    }
+    
+    @EventHandler
+    fun onPlayerToggleSprint(event: PlayerToggleSprintEvent) {
+        val player = event.player
+        val role = gameManager.getPlayerRole(player)
+        
+        // ゲーム中のランナーのみ処理
+        if (gameManager.getGameState() != GameState.RUNNING || role != PlayerRole.RUNNER) {
+            return
+        }
+        
+        // 死亡中のランナーは対象外
+        if (player.isDead) {
+            return
+        }
+        
+        // スプリント状態に応じて名前タグの可視性を変更
+        if (event.isSprinting) {
+            // スプリント開始：全員に名前を表示
+            gameManager.setRunnerNameTagVisibility(player, true)
+        } else {
+            // スプリント終了：名前を非表示
+            gameManager.setRunnerNameTagVisibility(player, false)
+        }
+    }
+    
+    // 最後の位置を記録するためのマップ
+    private val lastPositions = mutableMapOf<String, org.bukkit.Location>()
+    
+    @EventHandler
+    fun onPlayerMove(event: PlayerMoveEvent) {
+        val player = event.player
+        val from = event.from
+        val to = event.to ?: return
+        
+        // ゲーム中でなければ処理しない
+        if (gameManager.getGameState() != GameState.RUNNING) {
+            return
+        }
+        
+        // 死亡中のプレイヤーは対象外
+        if (player.isDead) {
+            return
+        }
+        
+        // プレイヤーの役割をチェック
+        val role = gameManager.getPlayerRole(player)
+        if (role == null || role == PlayerRole.SPECTATOR) {
+            return
+        }
+        
+        // スプリント中でなければ処理しない
+        if (!player.isSprinting) {
+            return
+        }
+        
+        // 水平移動距離を計算（Y軸は含めない）
+        val distance = Math.sqrt(
+            Math.pow(to.x - from.x, 2.0) + Math.pow(to.z - from.z, 2.0)
+        )
+        
+        // 移動距離が十分でなければ処理しない（0.1ブロック未満は無視）
+        if (distance < 0.1) {
+            return
+        }
+        
+        // 通貨追跡システムに移動を通知
+        try {
+            gameManager.getPlugin().getCurrencyTracker().onSprintMovement(player, distance)
+        } catch (e: Exception) {
+            plugin.logger.warning("Error tracking sprint movement for ${player.name}: ${e.message}")
+        }
     }
 }

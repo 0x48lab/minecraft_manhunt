@@ -37,6 +37,11 @@ class RoleSelectorMenu(
         val inventory = createRoleSelectionInventory(player, currentRole)
         openMenus.add(player)
         player.openInventory(inventory)
+        
+        // デバッグログ
+        val plugin = gameManager.getPlugin()
+        val title = messageManager.getMessage(player, MENU_TITLE_KEY)
+        plugin.logger.info("Opened role selector menu for ${player.name} with title: '$title'")
     }
 
     private fun createRoleSelectionInventory(player: Player, currentRole: PlayerRole): Inventory {
@@ -150,7 +155,13 @@ class RoleSelectorMenu(
 
         // メニュータイトルをチェック
         val view = event.view
-        if (!view.title.contains(messageManager.getMessage(player, MENU_TITLE_KEY))) return
+        val expectedTitle = messageManager.getMessage(player, MENU_TITLE_KEY)
+        
+        // デバッグログ
+        val plugin = gameManager.getPlugin()
+        plugin.logger.info("InventoryClick: viewed title='${view.title}', expected='$expectedTitle'")
+        
+        if (view.title != expectedTitle) return
 
         event.isCancelled = true
 
@@ -193,9 +204,8 @@ class RoleSelectorMenu(
             // 音響効果
             player.playSound(player.location, org.bukkit.Sound.UI_BUTTON_CLICK, 1.0f, 1.0f)
             
-            // メニューを更新
-            val newInventory = createRoleSelectionInventory(player, newRole)
-            player.openInventory(newInventory)
+            // メニューを閉じる
+            player.closeInventory()
         } catch (e: Exception) {
             player.sendMessage(messageManager.getMessage(player, "role-selector.change-failed"))
         }

@@ -22,6 +22,10 @@ commands:
     description: Open the in-game shop or check balance
     usage: /shop [balance|help]
     aliases: [store]
+  buddy:
+    description: Buddy system commands for teammates
+    usage: /buddy <invite|accept|decline|remove|status|help>
+    aliases: [partner]
 
 permissions:
   manhunt.admin:
