@@ -229,6 +229,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🔗 Links
 
+- [Official Guide](https://yourusername.github.io/minecraft_manhunt_latest/)
 - [Modrinth Page](https://modrinth.com/plugin/man-hunt-latest)
 - [GitHub Repository](https://github.com/yourusername/minecraft_manhunt_latest)
 - [Issue Tracker](https://github.com/yourusername/minecraft_manhunt_latest/issues)

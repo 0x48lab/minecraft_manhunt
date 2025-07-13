@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minecraft Manhunt Latest</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700&family=Rajdhani:wght@700&display=swap" rel="stylesheet">
+    <script src="lang.js"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <span class="logo">🏃</span>
+                <span class="brand-text">Manhunt Latest</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#home" class="nav-link" data-i18n="nav.home">ホーム</a></li>
+                <li><a href="#rules" class="nav-link" data-i18n="nav.rules">ルール</a></li>
+                <li><a href="#features" class="nav-link" data-i18n="nav.features">機能</a></li>
+                <li><a href="#commands" class="nav-link" data-i18n="nav.commands">コマンド</a></li>
+                <li><a href="#economy" class="nav-link" data-i18n="nav.economy">経済</a></li>
+                <li><a href="#shop" class="nav-link" data-i18n="nav.shop">ショップ</a></li>
+                <li><a href="#tips" class="nav-link" data-i18n="nav.tips">攻略</a></li>
+                <li><a href="#download" class="nav-link" data-i18n="nav.download">ダウンロード</a></li>
+            </ul>
+            <div class="language-switcher">
+                <button class="lang-btn active" data-lang="ja" onclick="setLanguage('ja')">日本語</button>
+                <button class="lang-btn" data-lang="en" onclick="setLanguage('en')">English</button>
+            </div>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title" data-i18n="hero.title">Minecraft Manhunt Latest</h1>
+            <p class="hero-subtitle" data-i18n="hero.subtitle">究極の追跡ゲーム体験</p>
+            <div class="hero-buttons">
+                <a href="https://modrinth.com/plugin/man-hunt-latest" class="btn btn-primary">
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M13 7H11V11H7V13H11V17H13V13H17V11H13V7Z" fill="currentColor"/>
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20Z" fill="currentColor"/>
+                    </svg>
+                    <span data-i18n="hero.download">ダウンロード</span>
+                </a>
+                <a href="#rules" class="btn btn-secondary" data-i18n="hero.howtoplay">遊び方を見る</a>
+            </div>
+        </div>
+        <div class="hero-animation">
+            <div class="floating-card card-hunter">🗡️ <span data-i18n="hero.hunter">ハンター</span></div>
+            <div class="floating-card card-runner">🏃 <span data-i18n="hero.runner">ランナー</span></div>
+            <div class="floating-card card-compass">🧭 <span data-i18n="hero.compass">コンパス</span></div>
+        </div>
+    </section>
+
+    <section id="rules" class="section">
+        <div class="container">
+            <h2 class="section-title" data-i18n="rules.title">ゲームルール</h2>
+            
+            <div class="rules-grid">
+                <div class="rule-card">
+                    <div class="rule-icon">🎯</div>
+                    <h3 data-i18n="rules.basic.title">基本ルール</h3>
+                    <p data-i18n="rules.basic.desc">ランナーはエンダードラゴンを倒すことが目標。ハンターはランナーを全員倒すことが目標です。</p>
+                </div>
+                
+                <div class="rule-card">
+                    <div class="rule-icon">👥</div>
+                    <h3 data-i18n="rules.team.title">チーム編成</h3>
+                    <p data-i18n="rules.team.desc">最小2人から開始可能。ハンターとランナーが最低1人ずつ必要です。</p>
+                </div>
+                
+                <div class="rule-card">
+                    <div class="rule-icon">🏁</div>
+                    <h3 data-i18n="rules.victory.title">勝利条件</h3>
+                    <ul>
+                        <li><strong data-i18n="rules.victory.runner">ランナー勝利:</strong> <span data-i18n="rules.victory.runner.desc">エンダードラゴンを倒す</span></li>
+                        <li><strong data-i18n="rules.victory.hunter">ハンター勝利:</strong> <span data-i18n="rules.victory.hunter.desc">ランナーを全員倒す</span></li>
+                    </ul>
+                </div>
+                
+                <div class="rule-card">
+                    <div class="rule-icon">💀</div>
+                    <h3 data-i18n="rules.respawn.title">リスポーン</h3>
+                    <ul>
+                        <li><strong data-i18n="rules.respawn.hunter">ハンター:</strong> <span data-i18n="rules.respawn.hunter.desc">即座にリスポン</span></li>
+                        <li><strong data-i18n="rules.respawn.runner">ランナー:</strong> <span data-i18n="rules.respawn.runner.desc">300秒後にリスポン（設定可能）</span></li>
+                    </ul>
+                </div>
+                
+                <div class="rule-card">
+                    <div class="rule-icon">🌍</div>
+                    <h3 data-i18n="rules.spawn.title">スポーン配置</h3>
+                    <p data-i18n="rules.spawn.desc">ゲーム開始時、プレイヤーは動的な範囲内にランダム配置されます。</p>
+                    <ul>
+                        <li data-i18n="rules.spawn.dynamic">2人: 500m範囲、20人: 2000m範囲</li>
+                        <li data-i18n="rules.spawn.scaling">20人以上はさらに拡大</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="gameplay-flow">
+                <h3 data-i18n="rules.flow.title">ゲームの流れ</h3>
+                <div class="flow-timeline">
+                    <div class="flow-step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4 data-i18n="rules.flow.1.title">準備フェーズ</h4>
+                            <p data-i18n="rules.flow.1.desc">参加者が役割を選択。最小人数が揃うとゲーム開始。</p>
+                        </div>
+                    </div>
+                    <div class="flow-step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4 data-i18n="rules.flow.2.title">開始</h4>
+                            <p data-i18n="rules.flow.2.desc">プレイヤーがランダムな位置にスポーン。ハンターにコンパスが配布される。</p>
+                        </div>
+                    </div>
+                    <div class="flow-step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4 data-i18n="rules.flow.3.title">追跡</h4>
+                            <p data-i18n="rules.flow.3.desc">ハンターはコンパスを使ってランナーを追跡。ランナーは装備を整えながら逃走。</p>
+                        </div>
+                    </div>
+                    <div class="flow-step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h4 data-i18n="rules.flow.4.title">決着</h4>
+                            <p data-i18n="rules.flow.4.desc">どちらかの勝利条件が満たされるとゲーム終了。MVPが発表される。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="features" class="section section-alt">
+        <div class="container">
+            <h2 class="section-title" data-i18n="features.title">主要機能</h2>
+            
+            <div class="features-showcase">
+                <div class="feature-category">
+                    <h3 class="category-title" data-i18n="features.tracking.title">🧭 追跡システム</h3>
+                    <div class="feature-grid">
+                        <div class="feature-item">
+                            <h4 data-i18n="features.tracking.compass.title">仮想コンパス</h4>
+                            <p data-i18n="features.tracking.compass.desc">物理コンパスまたは空手で右クリックして使用。ターゲットの方向と距離を表示。</p>
+                        </div>
+                        <div class="feature-item">
+                            <h4 data-i18n="features.tracking.target.title">ターゲット切り替え</h4>
+                            <p data-i18n="features.tracking.target.desc">複数のランナーを順番に追跡可能。異次元間でも機能。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feature-category">
+                    <h3 class="category-title" data-i18n="features.warning.title">⚠️ 警告システム</h3>
+                    <div class="feature-grid">
+                        <div class="feature-item">
+                            <h4 data-i18n="features.warning.proximity.title">近接警告</h4>
+                            <p data-i18n="features.warning.proximity.desc">ランナーにハンターの接近を3段階で警告（1/2/3チャンク）。</p>
+                        </div>
+                        <div class="feature-item">
+                            <h4 data-i18n="features.warning.scoreboard.title">スコアボード表示</h4>
+                            <p data-i18n="features.warning.scoreboard.desc">リアルタイムで危険度を確認可能。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feature-category">
+                    <h3 class="category-title" data-i18n="features.economy.title">💰 経済システム</h3>
+                    <div class="feature-grid">
+                        <div class="feature-item">
+                            <h4 data-i18n="features.economy.earn.title">通貨獲得</h4>
+                            <p data-i18n="features.economy.earn.desc">アクションに応じてコインを獲得。ハンターはダメージ・キル報酬、ランナーは生存・進歩報酬。</p>
+                        </div>
+                        <div class="feature-item">
+                            <h4 data-i18n="features.economy.shop.title">ショップ</h4>
+                            <p data-i18n="features.economy.shop.desc">6カテゴリー40種類以上のアイテムを購入可能。役割別の制限あり。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feature-category">
+                    <h3 class="category-title" data-i18n="features.team.title">🤝 チーム機能</h3>
+                    <div class="feature-grid">
+                        <div class="feature-item">
+                            <h4 data-i18n="features.team.buddy.title">バディシステム</h4>
+                            <p data-i18n="features.team.buddy.desc">チームメイトとペアを組んで相対座標を共有。</p>
+                        </div>
+                        <div class="feature-item">
+                            <h4 data-i18n="features.team.chat.title">チームチャット</h4>
+                            <p data-i18n="features.team.chat.desc">/rコマンドで味方だけにメッセージ送信。</p>
+                        </div>
+                        <div class="feature-item">
+                            <h4 data-i18n="features.visibility.title">名前表示システム</h4>
+                            <p data-i18n="features.visibility.desc">スプリント中（スニーク解除時）は名前が表示され、敵が3チャンク以内にいると移動でG獲得。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="commands" class="section">
+        <div class="container">
+            <h2 class="section-title" data-i18n="commands.title">コマンド一覧</h2>
+            
+            <div class="commands-wrapper">
+                <div class="command-category">
+                    <h3 data-i18n="commands.basic">基本コマンド</h3>
+                    <div class="command-list">
+                        <div class="command-item">
+                            <code>/manhunt role &lt;runner|hunter|spectator&gt;</code>
+                            <p data-i18n="commands.role.desc">役割を変更（待機中のみ）</p>
+                        </div>
+                        <div class="command-item">
+                            <code>/manhunt roles</code>
+                            <p data-i18n="commands.roles.desc">役割選択GUIを開く</p>
+                        </div>
+                        <div class="command-item">
+                            <code>/manhunt status</code>
+                            <p data-i18n="commands.status.desc">ゲーム状況を確認</p>
+                        </div>
+                        <div class="command-item">
+                            <code>/manhunt compass</code>
+                            <p data-i18n="commands.compass.desc">追跡コンパスを取得（ハンターのみ）</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="command-category">
+                    <h3 data-i18n="commands.communication">コミュニケーション</h3>
+                    <div class="command-list">
+                        <div class="command-item">
+                            <code>/r &lt;メッセージ&gt;</code>
+                            <p data-i18n="commands.teamchat.desc">チームチャット</p>
+                        </div>
+                        <div class="command-item">
+                            <code>/pos</code>
+                            <p data-i18n="commands.pos.desc">座標をチームに共有</p>
+                        </div>
+                        <div class="command-item">
+                            <code>/buddy invite &lt;プレイヤー&gt;</code>
+                            <p data-i18n="commands.buddy.desc">バディー申請を送る</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="command-category">
+                    <h3 data-i18n="commands.shop">ショップ</h3>
+                    <div class="command-list">
+                        <div class="command-item">
+                            <code>/shop</code>
+                            <p data-i18n="commands.shop.desc">ショップメニューを開く</p>
+                        </div>
+                        <div class="command-item">
+                            <code>/shop balance</code>
+                            <p data-i18n="commands.balance.desc">所持金を確認</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="economy" class="section section-alt">
+        <div class="container">
+            <h2 class="section-title" data-i18n="economy.title">経済システム</h2>
+            
+            <div class="economy-header">
+                <h3 data-i18n="economy.earning.title">通貨獲得ルール</h3>
+                <p class="economy-subtitle" data-i18n="economy.earning.subtitle">ゲーム内通貨「G（ゴールド）」の獲得方法</p>
+            </div>
+            
+            <div class="earning-methods">
+                <div class="earning-card hunter-card">
+                    <h4 class="earning-role" data-i18n="economy.hunter.title">🗡️ ハンターの獲得方法</h4>
+                    <div class="earning-list">
+                        <div class="earning-item">
+                            <span class="earning-name" data-i18n="economy.hunter.damage">ダメージ報酬</span>
+                            <span class="earning-value" data-i18n="economy.hunter.damage.desc">1ダメージ = 5G</span>
+                        </div>
+                        <div class="earning-item">
+                            <span class="earning-name" data-i18n="economy.hunter.kill">キル報酬</span>
+                            <span class="earning-value" data-i18n="economy.hunter.kill.desc">1キル = 150G</span>
+                        </div>
+                        <div class="earning-item">
+                            <span class="earning-name" data-i18n="economy.hunter.time">時間ボーナス</span>
+                            <span class="earning-value" data-i18n="economy.hunter.time.desc">30秒ごとに1.5G</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="earning-card runner-card">
+                    <h4 class="earning-role" data-i18n="economy.runner.title">🏃 ランナーの獲得方法</h4>
+                    <div class="earning-list">
+                        <div class="earning-item">
+                            <span class="earning-name" data-i18n="economy.runner.survival">生存ボーナス</span>
+                            <span class="earning-value" data-i18n="economy.runner.survival.desc">30秒ごとに1.5G</span>
+                        </div>
+                        <div class="earning-item">
+                            <span class="earning-name" data-i18n="economy.runner.nether">ネザー到達</span>
+                            <span class="earning-value" data-i18n="economy.runner.nether.desc">初回到達で200G</span>
+                        </div>
+                        <div class="earning-item">
+                            <span class="earning-name" data-i18n="economy.runner.fortress">要塞発見</span>
+                            <span class="earning-value" data-i18n="economy.runner.fortress.desc">初回発見で300G</span>
+                        </div>
+                        <div class="earning-item">
+                            <span class="earning-name" data-i18n="economy.runner.end">エンド到達</span>
+                            <span class="earning-value" data-i18n="economy.runner.end.desc">初回到達で500G</span>
+                        </div>
+                        <div class="earning-item">
+                            <span class="earning-name" data-i18n="economy.runner.diamond">ダイヤモンド収集</span>
+                            <span class="earning-value" data-i18n="economy.runner.diamond.desc">1個につき25G</span>
+                        </div>
+                        <div class="earning-item">
+                            <span class="earning-name" data-i18n="economy.runner.escape">逃走成功</span>
+                            <span class="earning-value" data-i18n="economy.runner.escape.desc">100m以上離れて20G</span>
+                        </div>
+                        <div class="earning-item">
+                            <span class="earning-name" data-i18n="economy.runner.movement">接近移動ボーナス</span>
+                            <span class="earning-value" data-i18n="economy.runner.movement.desc">スプリント中かつ3チャンク以内で移動時にG獲得</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="economy-note">
+                <h4 data-i18n="economy.special.title">特殊システム</h4>
+                <p data-i18n="economy.special.visibility">スプリント中（スニーク解除時）はプレイヤー名が表示されます。この状態で敵が3チャンク以内にいると、移動することでGを獲得できます。</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="shop" class="section">
+        <div class="container">
+            <h2 class="section-title" data-i18n="shop.title">ショップラインナップ</h2>
+            <p class="shop-subtitle" data-i18n="shop.subtitle">/shop コマンドで購入可能なアイテム一覧</p>
+            
+            <div class="shop-categories">
+                <!-- 武器 -->
+                <div class="shop-category">
+                    <h3 class="category-title" data-i18n="shop.weapons">⚔️ 武器</h3>
+                    <div class="shop-items">
+                        <div class="shop-item">
+                            <div class="item-name" data-i18n="shop.item.iron_sword">鉄の剣</div>
+                            <div class="item-price">800G</div>
+                            <div class="item-restriction" data-i18n="shop.role.all">全員</div>
+                        </div>
+                        <div class="shop-item">
+                            <div class="item-name" data-i18n="shop.item.golden_sword">金の剣</div>
+                            <div class="item-price">300G</div>
+                            <div class="item-restriction" data-i18n="shop.role.all">全員</div>
+                        </div>
+                        <div class="shop-item">
+                            <div class="item-name" data-i18n="shop.item.diamond_sword">ダイヤモンドの剣</div>
+                            <div class="item-price">2000G</div>
+                            <div class="item-restriction" data-i18n="shop.role.all">全員</div>
+                        </div>
+                        <div class="shop-item">
+                            <div class="item-name" data-i18n="shop.item.netherite_sword">Netherite Sword</div>
+                            <div class="item-price">5000G</div>
+                            <div class="item-restriction" data-i18n="shop.role.all">All</div>
+                        </div>
+                        <div class="shop-item">
+                            <div class="item-name" data-i18n="shop.item.iron_axe">鉄の斧</div>
+                            <div class="item-price">900G</div>
+                            <div class="item-restriction" data-i18n="shop.role.all">全員</div>
+                        </div>
+                        <div class="shop-item">
+                            <div class="item-name" data-i18n="shop.item.diamond_axe">Diamond Axe</div>
+                            <div class="item-price">2200G</div>
+                            <div class="item-restriction" data-i18n="shop.role.all">All</div>
+                        </div>
+                        <div class="shop-item">
+                            <div class="item-name" data-i18n="shop.item.netherite_axe">Netherite Axe</div>
+                            <div class="item-price">5500G</div>
+                            <div class="item-restriction" data-i18n="shop.role.all">All</div>
+                        </div>
+                        <div class="shop-item">
+                            <div class="item-name" data-i18n="shop.item.trident">トライデント</div>
+                            <div class="item-price">3000G</div>
+                            <div class="item-restriction" data-i18n="shop.role.all">全員</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 防具 -->
+                <div class="shop-category">
+                    <h3 class="category-title" data-i18n="shop.armor">🛡️ 防具</h3>
+                    <div class="shop-items">
+                        <div class="shop-item">
+                            <div class="item-name" data-i18n="shop.item.iron_armor">鉄の防具セット</div>
+                            <div class="item-price">2800G</div>
+                            <div class="item-restriction" data-i18n="shop.role.all">全員</div>
+                        </div>
+                        <div class="shop-item">
+                            <div class="item-name" data-i18n="shop.item.golden_armor">Golden Armor Set</div>
+                            <div class="item-price">1100G</div>
+                            <div class="item-restriction" data-i18n="shop.role.all">All</div>
+                        </div>
+                        <div class="shop-item">
+                            <div class="item-name" data-i18n="shop.item.diamond_armor">ダイヤモンドの防具セット</div>
+                            <div class="item-price">7200G</div>
+                            <div class="item-restriction" data-i18n="shop.role.all">全員</div>
+                        </div>
+                        <div class="shop-item">
+                            <div class="item-name" data-i18n="shop.item.netherite_helmet">Netherite Helmet</div>
+                            <div class="item-price">4000G</div>
+                            <div class="item-restriction" data-i18n="shop.role.all">All</div>
+                        </div>
+                        <div class="shop-item">
+                            <div class="item-name" data-i18n="shop.item.netherite_chestplate">Netherite Chestplate</div>
+                            <div class="item-price">8000G</div>
+                            <div class="item-restriction" data-i18n="shop.role.all">All</div>
+                        </div>
+                        <div class="shop-item">
+                            <div class="item-name" data-i18n="shop.item.netherite_leggings">Netherite Leggings</div>
+                            <div class="item-price">6500G</div>
+                            <div class="item-restriction" data-i18n="shop.role.all">All</div>
+                        </div>
+                        <div class="shop-item">
+                            <div class="item-name" data-i18n="shop.item.netherite_boots">Netherite Boots</div>
+                            <div class="item-price">3000G</div>
+                            <div class="item-restriction" data-i18n="shop.role.all">All</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- ツール -->
+                <div class="shop-category">
+                    <h3 class="category-title" data-i18n="shop.tools">🔧 ツール</h3>
+                    <div class="shop-items">
+                        <div class="shop-item">
+                            <div class="item-name" data-i18n="shop.item.iron_pickaxe">鉄のツルハシ</div>
+                            <div class="item-price">600G</div>
+                            <div class="item-restriction" data-i18n="shop.role.runner_only">ランナーのみ</div>
+                        </div>
+                        <div class="shop-item">
+                            <div class="item-name" data-i18n="shop.item.diamond_pickaxe">ダイヤモンドのツルハシ（効率強化II）</div>
+                            <div class="item-price">1500G</div>
+                            <div class="item-restriction" data-i18n="shop.role.runner_only">ランナーのみ</div>
+                        </div>
+                        <div class="shop-item">
+                            <div class="item-name" data-i18n="shop.item.netherite_pickaxe">Netherite Pickaxe (Efficiency III)</div>
+                            <div class="item-price">4000G</div>
+                            <div class="item-restriction" data-i18n="shop.role.runner_only">Runner only</div>
+                        </div>
+                        <div class="shop-item">
+                            <div class="item-name" data-i18n="shop.item.diamond_shovel">Diamond Shovel (Efficiency II)</div>
+                            <div class="item-price">800G</div>
+                            <div class="item-restriction" data-i18n="shop.role.runner_only">Runner only</div>
+                        </div>
+                        <div class="shop-item">
+                            <div class="item-name" data-i18n="shop.item.water_bucket">水入りバケツ</div>
+                            <div class="item-price">500G</div>
+                            <div class="item-restriction" data-i18n="shop.role.runner_only">ランナーのみ</div>
+                        </div>
+                        <div class="shop-item">
+                            <div class="item-name" data-i18n="shop.item.lava_bucket">溶岩入りバケツ</div>
+                            <div class="item-price">1200G</div>
+                            <div class="item-restriction" data-i18n="shop.role.all">全員</div>
+                        </div>
+                        <div class="shop-item">
+                            <div class="item-name" data-i18n="shop.item.flint_and_steel">火打石と打ち金</div>
+                            <div class="item-price">300G</div>
+                            <div class="item-restriction" data-i18n="shop.role.all">全員</div>
+                        </div>
+                        <div class="shop-item">
+                            <div class="item-name" data-i18n="shop.item.boat">Boat</div>
+                            <div class="item-price">200G</div>
+                            <div class="item-restriction" data-i18n="shop.role.all">All</div>
+                        </div>
+                        <div class="shop-item">
+                            <div class="item-name" data-i18n="shop.item.depth_strider_boots">Depth Strider III Boots</div>
+                            <div class="item-price">1200G</div>
+                            <div class="item-restriction" data-i18n="shop.role.all">All</div>
+                        </div>
+                        <div class="shop-item">
+                            <div class="item-name" data-i18n="shop.item.bow">弓</div>
+                            <div class="item-price">600G</div>
+                            <div class="item-restriction" data-i18n="shop.role.all">全員</div>
+                        </div>
+                        <div class="shop-item">
+                            <div class="item-name" data-i18n="shop.item.arrow">矢 x32</div>
+                            <div class="item-price">200G</div>
+                            <div class="item-restriction" data-i18n="shop.role.all">全員</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 消耗品 -->
+                <div class="shop-category">
+                    <h3 class="category-title" data-i18n="shop.consumables">🧪 消耗品</h3>
+                    <div class="shop-items">
+                        <div class="shop-item">
+                            <div class="item-name" data-i18n="shop.item.golden_apple">金のリンゴ</div>
+                            <div class="item-price">1500G</div>
+                            <div class="item-restriction" data-i18n="shop.role.all">全員</div>
+                        </div>
+                        <div class="shop-item">
+                            <div class="item-name" data-i18n="shop.item.speed_potion">スピードポーション（3分）</div>
+                            <div class="item-price">800G</div>
+                            <div class="item-restriction" data-i18n="shop.role.all">全員</div>
+                        </div>
+                        <div class="shop-item">
+                            <div class="item-name" data-i18n="shop.item.strength_potion">力のポーション（3分）</div>
+                            <div class="item-price">1200G</div>
+                            <div class="item-restriction" data-i18n="shop.role.hunter_only">ハンターのみ</div>
+                        </div>
+                        <div class="shop-item special-cooldown">
+                            <div class="item-name" data-i18n="shop.item.invisibility_potion">透明化ポーション（1分）</div>
+                            <div class="item-price">2000G</div>
+                            <div class="item-restriction" data-i18n="shop.role.runner_only">ランナーのみ</div>
+                            <div class="item-cooldown" data-i18n="shop.cooldown.5min">Cooldown: 5 minutes</div>
+                        </div>
+                        <div class="shop-item">
+                            <div class="item-name" data-i18n="shop.item.water_breathing_potion">Water Breathing Potion (4 min)</div>
+                            <div class="item-price">1000G</div>
+                            <div class="item-restriction" data-i18n="shop.role.all">All</div>
+                        </div>
+                        <div class="shop-item">
+                            <div class="item-name" data-i18n="shop.item.night_vision_potion">Night Vision Potion (4 min)</div>
+                            <div class="item-price">600G</div>
+                            <div class="item-restriction" data-i18n="shop.role.all">All</div>
+                        </div>
+                        <div class="shop-item">
+                            <div class="item-name" data-i18n="shop.item.fire_resistance_potion">耐火ポーション（4分）</div>
+                            <div class="item-price">1500G</div>
+                            <div class="item-restriction" data-i18n="shop.role.all">全員</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 食料 -->
+                <div class="shop-category">
+                    <h3 class="category-title" data-i18n="shop.food">🍖 食料</h3>
+                    <div class="shop-items">
+                        <div class="shop-item">
+                            <div class="item-name" data-i18n="shop.item.cooked_beef">ステーキ x16</div>
+                            <div class="item-price">200G</div>
+                            <div class="item-restriction" data-i18n="shop.role.all">全員</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 特殊アイテム -->
+                <div class="shop-category">
+                    <h3 class="category-title" data-i18n="shop.special">✨ 特殊</h3>
+                    <div class="shop-items">
+                        <div class="shop-item special-limit">
+                            <div class="item-name" data-i18n="shop.item.elytra">エリトラ</div>
+                            <div class="item-price">10000G</div>
+                            <div class="item-restriction" data-i18n="shop.role.all">全員</div>
+                            <div class="item-limit" data-i18n="shop.limit.once">Purchase limit: 1</div>
+                        </div>
+                        <div class="shop-item">
+                            <div class="item-name" data-i18n="shop.item.firework_rocket_8">Firework Rocket x8</div>
+                            <div class="item-price">400G</div>
+                            <div class="item-restriction" data-i18n="shop.role.all">All</div>
+                        </div>
+                        <div class="shop-item">
+                            <div class="item-name" data-i18n="shop.item.firework_rocket_16">Firework Rocket x16</div>
+                            <div class="item-price">750G</div>
+                            <div class="item-restriction" data-i18n="shop.role.all">All</div>
+                        </div>
+                        <div class="shop-item">
+                            <div class="item-name" data-i18n="shop.item.ender_pearl">エンダーパール x4</div>
+                            <div class="item-price">1000G</div>
+                            <div class="item-restriction" data-i18n="shop.role.runner_only">ランナーのみ</div>
+                        </div>
+                        <div class="shop-item">
+                            <div class="item-name" data-i18n="shop.item.emerald">エメラルド</div>
+                            <div class="item-price">150G</div>
+                            <div class="item-restriction" data-i18n="shop.role.all">全員</div>
+                        </div>
+                        <div class="shop-item">
+                            <div class="item-name" data-i18n="shop.item.emerald_4">Emerald x4</div>
+                            <div class="item-price">550G</div>
+                            <div class="item-restriction" data-i18n="shop.role.all">All</div>
+                        </div>
+                        <div class="shop-item">
+                            <div class="item-name" data-i18n="shop.item.emerald_8">Emerald x8</div>
+                            <div class="item-price">1000G</div>
+                            <div class="item-restriction" data-i18n="shop.role.all">All</div>
+                        </div>
+                        <div class="shop-item special-limit">
+                            <div class="item-name" data-i18n="shop.item.compass_upgrade">Compass Upgrade</div>
+                            <div class="item-price">3000G</div>
+                            <div class="item-restriction" data-i18n="shop.role.hunter_only">Hunter only</div>
+                            <div class="item-limit" data-i18n="shop.limit.once">Purchase limit: 1</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <section id="tips" class="section section-alt">
+        <div class="container">
+            <h2 class="section-title" data-i18n="tips.title">攻略のコツ</h2>
+            
+            <div class="tips-tabs">
+                <div class="tab-buttons">
+                    <button class="tab-btn active" data-tab="runner" data-i18n="tips.runner">🏃 ランナー編</button>
+                    <button class="tab-btn" data-tab="hunter" data-i18n="tips.hunter">🗡️ ハンター編</button>
+                    <button class="tab-btn" data-tab="general" data-i18n="tips.general">📋 共通</button>
+                </div>
+                
+                <div class="tab-content active" id="runner-tab">
+                    <div class="tips-grid">
+                        <div class="tip-card">
+                            <h4 data-i18n="tips.runner.1.title">初動が重要</h4>
+                            <p data-i18n="tips.runner.1.desc">ゲーム開始直後は食料と基本ツールの確保を優先。木材3個と牛肉3個が初期配布されます。</p>
+                        </div>
+                        <div class="tip-card">
+                            <h4 data-i18n="tips.runner.2.title">ネザー突入のタイミング</h4>
+                            <p data-i18n="tips.runner.2.desc">ネザー到達で200G獲得。早めに突入して装備を整えるのも戦略の一つ。</p>
+                        </div>
+                        <div class="tip-card">
+                            <h4 data-i18n="tips.runner.3.title">ダイヤモンド収集</h4>
+                            <p data-i18n="tips.runner.3.desc">1個につき25G獲得。効率的に集めてショップで強力な装備を購入しよう。</p>
+                        </div>
+                        <div class="tip-card">
+                            <h4 data-i18n="tips.runner.4.title">近接警告の活用</h4>
+                            <p data-i18n="tips.runner.4.desc">警告レベルに応じて行動を変える。赤色警告なら即座に逃走、黄色なら警戒しながら作業継続。</p>
+                        </div>
+                        <div class="tip-card">
+                            <h4 data-i18n="tips.runner.5.title">バディーシステム</h4>
+                            <p data-i18n="tips.runner.5.desc">信頼できる仲間とバディーを組んで位置情報を共有。分散行動時も連携可能。</p>
+                        </div>
+                        <div class="tip-card">
+                            <h4 data-i18n="tips.runner.6.title">要塞の探索</h4>
+                            <p data-i18n="tips.runner.6.desc">要塞発見で300G獲得。エンダーアイを効率的に使って早期発見を目指そう。</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="hunter-tab">
+                    <div class="tips-grid">
+                        <div class="tip-card">
+                            <h4 data-i18n="tips.hunter.1.title">コンパスの活用</h4>
+                            <p data-i18n="tips.hunter.1.desc">右クリックでターゲット切り替え。最も近いランナーを優先的に追跡しよう。</p>
+                        </div>
+                        <div class="tip-card">
+                            <h4 data-i18n="tips.hunter.2.title">ダメージ報酬</h4>
+                            <p data-i18n="tips.hunter.2.desc">1ダメージにつき5G獲得。弓での遠距離攻撃も有効な資金源。</p>
+                        </div>
+                        <div class="tip-card">
+                            <h4 data-i18n="tips.hunter.3.title">チーム連携</h4>
+                            <p data-i18n="tips.hunter.3.desc">複数ハンターで挟み撃ち。/rコマンドで位置情報を共有しながら追い込もう。</p>
+                        </div>
+                        <div class="tip-card">
+                            <h4 data-i18n="tips.hunter.4.title">即座リスポンの利点</h4>
+                            <p data-i18n="tips.hunter.4.desc">死亡してもすぐに復活。アグレッシブな戦法で圧力をかけ続けよう。</p>
+                        </div>
+                        <div class="tip-card">
+                            <h4 data-i18n="tips.hunter.5.title">ネザー封鎖</h4>
+                            <p data-i18n="tips.hunter.5.desc">ポータル周辺を監視してランナーの進行を妨害。トラップ設置も効果的。</p>
+                        </div>
+                        <div class="tip-card">
+                            <h4 data-i18n="tips.hunter.6.title">時間ボーナス活用</h4>
+                            <p data-i18n="tips.hunter.6.desc">30秒ごとに1.5G獲得。長期戦でも資金が増え続けるので装備更新を忘れずに。</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="general-tab">
+                    <div class="tips-grid">
+                        <div class="tip-card">
+                            <h4 data-i18n="tips.general.1.title">ショップの活用</h4>
+                            <p data-i18n="tips.general.1.desc">状況に応じて適切なアイテムを購入。エンダーパールやポーションは緊急時の切り札。</p>
+                        </div>
+                        <div class="tip-card">
+                            <h4 data-i18n="tips.general.2.title">スポーン配置</h4>
+                            <p data-i18n="tips.general.2.desc">プレイヤー数に応じて配置範囲が変動。大人数では最大半径が拡大される。</p>
+                        </div>
+                        <div class="tip-card">
+                            <h4 data-i18n="tips.general.3.title">MVP報酬</h4>
+                            <p data-i18n="tips.general.3.desc">ゲーム終了時に最も活躍したプレイヤーが選出。積極的なプレイが評価される。</p>
+                        </div>
+                        <div class="tip-card">
+                            <h4 data-i18n="tips.general.4.title">言語設定</h4>
+                            <p data-i18n="tips.general.4.desc">日本語と英語に対応。個人設定で好みの言語を選択可能。</p>
+                        </div>
+                        <div class="tip-card">
+                            <h4 data-i18n="tips.general.5.title">観戦モード</h4>
+                            <p data-i18n="tips.general.5.desc">死亡中や観戦者はゲーム全体を俯瞰可能。情報収集に活用しよう。</p>
+                        </div>
+                        <div class="tip-card">
+                            <h4 data-i18n="tips.general.6.title">設定カスタマイズ</h4>
+                            <p data-i18n="tips.general.6.desc">config.ymlで細かい調整が可能。サーバーに合わせて最適化しよう。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="download" class="section">
+        <div class="container">
+            <h2 class="section-title" data-i18n="download.title">ダウンロード</h2>
+            
+            <div class="download-section">
+                <div class="download-card">
+                    <h3 data-i18n="download.requirements">必要環境</h3>
+                    <ul class="requirements-list">
+                        <li data-i18n="download.requirements.1">Minecraft 1.21.4</li>
+                        <li data-i18n="download.requirements.2">Spigot / Paper サーバー</li>
+                        <li data-i18n="download.requirements.3">Java 21以上</li>
+                        <li data-i18n="download.requirements.4">最小プレイヤー数: 2人</li>
+                    </ul>
+                </div>
+                
+                <div class="download-card">
+                    <h3 data-i18n="download.install">インストール方法</h3>
+                    <ol class="install-steps">
+                        <li data-i18n="download.install.1">Modrinthから最新版をダウンロード</li>
+                        <li data-i18n="download.install.2">JARファイルをpluginsフォルダに配置</li>
+                        <li data-i18n="download.install.3">サーバーを再起動</li>
+                        <li data-i18n="download.install.4">config.ymlで設定をカスタマイズ</li>
+                    </ol>
+                </div>
+                
+                <div class="download-buttons">
+                    <a href="https://modrinth.com/plugin/man-hunt-latest" class="download-btn modrinth">
+                        <img src="https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/available/modrinth_vector.svg" alt="Modrinth">
+                    </a>
+                    <a href="https://github.com/yourusername/minecraft_manhunt_latest" class="download-btn github">
+                        <img src="https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/available/github_vector.svg" alt="GitHub">
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Manhunt Latest</h4>
+                    <p data-i18n-html="footer.description">究極の追跡ゲーム体験を提供する<br>Minecraftプラグイン</p>
+                </div>
+                <div class="footer-section">
+                    <h4 data-i18n="footer.links">リンク</h4>
+                    <ul>
+                        <li><a href="https://modrinth.com/plugin/man-hunt-latest">Modrinth</a></li>
+                        <li><a href="https://github.com/yourusername/minecraft_manhunt_latest">GitHub</a></li>
+                        <li><a href="https://github.com/yourusername/minecraft_manhunt_latest/issues">Issue Tracker</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4 data-i18n="footer.support">サポート</h4>
+                    <ul>
+                        <li><a href="https://github.com/yourusername/minecraft_manhunt_latest/wiki">Wiki</a></li>
+                        <li><a href="https://discord.gg/yourserver">Discord</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p data-i18n="footer.copyright">&copy; 2024 Minecraft Manhunt Latest. Licensed under MIT.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

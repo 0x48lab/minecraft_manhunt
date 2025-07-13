@@ -212,6 +212,7 @@ economy:
 
 ## 🔗 リンク
 
+- [公式ガイド](https://yourusername.github.io/minecraft_manhunt_latest/)
 - [Modrinthページ](https://modrinth.com/plugin/man-hunt-latest)
 - [GitHubリポジトリ](https://github.com/yourusername/minecraft_manhunt_latest)
 - [Issue Tracker](https://github.com/yourusername/minecraft_manhunt_latest/issues)
