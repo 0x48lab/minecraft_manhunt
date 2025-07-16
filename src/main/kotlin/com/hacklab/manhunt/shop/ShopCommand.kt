@@ -52,7 +52,7 @@ class ShopCommand(
                         val balance = economyManager.getBalance(sender)
                         val unit = plugin.getConfigManager().getCurrencyConfig().currencyUnit
                         sender.sendMessage(messageManager.getMessage(sender, "shop.balance-header"))
-                        sender.sendMessage(messageManager.getMessage(sender, "shop.balance-display", mapOf("balance" to balance, "unit" to unit)))
+                        sender.sendMessage(messageManager.getMessage(sender, "shop.balance-display", "balance" to balance, "unit" to unit))
                         sender.sendMessage(messageManager.getMessage(sender, "shop.balance-footer"))
                     }
                     "help" -> {

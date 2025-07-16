@@ -74,7 +74,7 @@ class ManhuntCommand(
         }
         
         if (args.size < 2) {
-            sender.sendMessage(messageManager.getMessage(sender, "command.usage", mapOf("usage" to "/manhunt role <runner|hunter|spectator>")))
+            sender.sendMessage(messageManager.getMessage(sender, "command.usage", "usage" to "/manhunt role <runner|hunter|spectator>"))
             return
         }
         
@@ -90,7 +90,7 @@ class ManhuntCommand(
         
         gameManager.setPlayerRole(sender, role)
         val roleText = messageManager.getMessage(sender, "role.${role.name.lowercase()}")
-        sender.sendMessage(messageManager.getMessage(sender, "role.changed", mapOf("role" to roleText)))
+        sender.sendMessage(messageManager.getMessage(sender, "role.changed", "role" to roleText))
     }
     
     private fun handleStart(sender: CommandSender) {
@@ -126,7 +126,7 @@ class ManhuntCommand(
         
         // 全プレイヤーに通知
         gameManager.getPlugin().server.onlinePlayers.forEach { player ->
-            player.sendMessage(messageManager.getMessage(player, "game.force-stopped-by-admin", mapOf("admin" to sender.name)))
+            player.sendMessage(messageManager.getMessage(player, "game.force-stopped-by-admin", "admin" to sender.name))
         }
     }
     
@@ -157,23 +157,23 @@ class ManhuntCommand(
         val spectators = gameManager.getAllSpectators()
         
         sender.sendMessage(messageManager.getMessage("command-interface.status-game-header"))
-        sender.sendMessage(messageManager.getMessage("command-interface.status-game-state", mapOf("state" to state)))
-        sender.sendMessage(messageManager.getMessage("command-interface.status-min-players", mapOf("count" to gameManager.getMinPlayers())))
-        sender.sendMessage(messageManager.getMessage("command-interface.status-runners-list", mapOf("count" to runners.size, "players" to if (runners.isNotEmpty()) runners.map { it.name } else "")))
-        sender.sendMessage(messageManager.getMessage("command-interface.status-hunters-list", mapOf("count" to hunters.size, "players" to if (hunters.isNotEmpty()) hunters.map { it.name } else "")))
-        sender.sendMessage(messageManager.getMessage("command-interface.status-spectators-list", mapOf("count" to spectators.size, "players" to if (spectators.isNotEmpty()) spectators.map { it.name } else "")))
+        sender.sendMessage(messageManager.getMessage("command-interface.status-game-state", "state" to state))
+        sender.sendMessage(messageManager.getMessage("command-interface.status-min-players", "count" to gameManager.getMinPlayers()))
+        sender.sendMessage(messageManager.getMessage("command-interface.status-runners-list", "count" to runners.size, "players" to if (runners.isNotEmpty()) runners.map { it.name } else ""))
+        sender.sendMessage(messageManager.getMessage("command-interface.status-hunters-list", "count" to hunters.size, "players" to if (hunters.isNotEmpty()) hunters.map { it.name } else ""))
+        sender.sendMessage(messageManager.getMessage("command-interface.status-spectators-list", "count" to spectators.size, "players" to if (spectators.isNotEmpty()) spectators.map { it.name } else ""))
         
         // 開始条件のチェック状況
         val totalPlayers = hunters.size + runners.size + spectators.size
-        sender.sendMessage(messageManager.getMessage("command-interface.status-total-players", mapOf("count" to totalPlayers)))
+        sender.sendMessage(messageManager.getMessage("command-interface.status-total-players", "count" to totalPlayers))
         
         if (gameManager.getGameState() == GameState.WAITING) {
             val canStart = totalPlayers >= gameManager.getMinPlayers() && hunters.isNotEmpty() && runners.isNotEmpty()
-            sender.sendMessage(messageManager.getMessage("command-interface.status-can-start", mapOf("status" to if (canStart) "§a✓" else "§c✗")))
+            sender.sendMessage(messageManager.getMessage("command-interface.status-can-start", "status" to if (canStart) "§a✓" else "§c✗"))
             
             if (!canStart) {
                 if (totalPlayers < gameManager.getMinPlayers()) {
-                    sender.sendMessage(messageManager.getMessage("status-detail.insufficient-players", mapOf("current" to totalPlayers, "required" to gameManager.getMinPlayers())))
+                    sender.sendMessage(messageManager.getMessage("status-detail.insufficient-players", "current" to totalPlayers, "required" to gameManager.getMinPlayers()))
                 }
                 if (hunters.isEmpty()) {
                     sender.sendMessage(messageManager.getMessage("status-detail.insufficient-hunters"))
@@ -204,7 +204,7 @@ class ManhuntCommand(
         
         val targetPlayer = Bukkit.getPlayer(playerName)
         if (targetPlayer == null || !targetPlayer.isOnline) {
-            sender.sendMessage(messageManager.getMessage("admin.player-not-found", mapOf("player" to playerName)))
+            sender.sendMessage(messageManager.getMessage("admin.player-not-found", "player" to playerName))
             return
         }
         
@@ -214,7 +214,7 @@ class ManhuntCommand(
         }
         
         gameManager.setPlayerRole(targetPlayer, PlayerRole.HUNTER)
-        sender.sendMessage(messageManager.getMessage("command-interface.sethunter-success", mapOf("player" to targetPlayer.name)))
+        sender.sendMessage(messageManager.getMessage("command-interface.sethunter-success", "player" to targetPlayer.name))
         targetPlayer.sendMessage(messageManager.getMessage(targetPlayer, "command-interface.sethunter-notify"))
     }
     
@@ -237,7 +237,7 @@ class ManhuntCommand(
         
         val targetPlayer = Bukkit.getPlayer(playerName)
         if (targetPlayer == null || !targetPlayer.isOnline) {
-            sender.sendMessage(messageManager.getMessage("admin.player-not-found", mapOf("player" to playerName)))
+            sender.sendMessage(messageManager.getMessage("admin.player-not-found", "player" to playerName))
             return
         }
         
@@ -247,7 +247,7 @@ class ManhuntCommand(
         }
         
         gameManager.setPlayerRole(targetPlayer, PlayerRole.RUNNER)
-        sender.sendMessage(messageManager.getMessage("command-interface.setrunner-success", mapOf("player" to targetPlayer.name)))
+        sender.sendMessage(messageManager.getMessage("command-interface.setrunner-success", "player" to targetPlayer.name))
         targetPlayer.sendMessage(messageManager.getMessage(targetPlayer, "command-interface.setrunner-notify"))
     }
     
@@ -270,7 +270,7 @@ class ManhuntCommand(
         
         val targetPlayer = Bukkit.getPlayer(playerName)
         if (targetPlayer == null || !targetPlayer.isOnline) {
-            sender.sendMessage(messageManager.getMessage("admin.player-not-found", mapOf("player" to playerName)))
+            sender.sendMessage(messageManager.getMessage("admin.player-not-found", "player" to playerName))
             return
         }
         
@@ -280,7 +280,7 @@ class ManhuntCommand(
         }
         
         gameManager.setPlayerRole(targetPlayer, PlayerRole.SPECTATOR)
-        sender.sendMessage(messageManager.getMessage("command-interface.setspectator-success", mapOf("player" to targetPlayer.name)))
+        sender.sendMessage(messageManager.getMessage("command-interface.setspectator-success", "player" to targetPlayer.name))
         targetPlayer.sendMessage(messageManager.getMessage(targetPlayer, "command-interface.setspectator-notify"))
     }
     
@@ -291,7 +291,7 @@ class ManhuntCommand(
         }
         
         if (args.size < 2) {
-            sender.sendMessage(messageManager.getMessage("command-interface.minplayers-current", mapOf("count" to gameManager.getMinPlayers())))
+            sender.sendMessage(messageManager.getMessage("command-interface.minplayers-current", "count" to gameManager.getMinPlayers()))
             sender.sendMessage(messageManager.getMessage("command-interface.minplayers-change"))
             return
         }
@@ -304,7 +304,7 @@ class ManhuntCommand(
         
         val count = countStr.toIntOrNull()
         if (count == null) {
-            sender.sendMessage(messageManager.getMessage("admin.invalid-number", mapOf("input" to countStr)))
+            sender.sendMessage(messageManager.getMessage("admin.invalid-number", "input" to countStr))
             return
         }
         
@@ -319,7 +319,7 @@ class ManhuntCommand(
         }
         
         gameManager.setMinPlayers(count)
-        sender.sendMessage(messageManager.getMessage("command-interface.minplayers-set", mapOf("count" to count)))
+        sender.sendMessage(messageManager.getMessage("command-interface.minplayers-set", "count" to count))
     }
     
     private fun handleReload(sender: CommandSender, args: Array<out String>) {
@@ -355,7 +355,7 @@ class ManhuntCommand(
             }
             sender.sendMessage(messageManager.getMessage("reload.note"))
         } catch (e: Exception) {
-            sender.sendMessage(messageManager.getMessage("reload.failed", mapOf("error" to (e.message ?: "Unknown error"))))
+            sender.sendMessage(messageManager.getMessage("reload.failed", "error" to (e.message ?: "Unknown error")))
         }
     }
     
@@ -377,10 +377,10 @@ class ManhuntCommand(
                 val actionbarStatus = if (configManager.isActionBarEnabled()) messageManager.getMessage("ui-settings.enabled") else messageManager.getMessage("ui-settings.disabled")
                 val bossbarStatus = if (configManager.isBossBarEnabled()) messageManager.getMessage("ui-settings.enabled") else messageManager.getMessage("ui-settings.disabled")
                 val titleStatus = if (configManager.isTitleEnabled()) messageManager.getMessage("ui-settings.enabled") else messageManager.getMessage("ui-settings.disabled")
-                sender.sendMessage(messageManager.getMessage("ui-settings.scoreboard", mapOf("status" to scoreboardStatus)))
-                sender.sendMessage(messageManager.getMessage("ui-settings.actionbar", mapOf("status" to actionbarStatus)))
-                sender.sendMessage(messageManager.getMessage("ui-settings.bossbar", mapOf("status" to bossbarStatus)))
-                sender.sendMessage(messageManager.getMessage("ui-settings.title", mapOf("status" to titleStatus)))
+                sender.sendMessage(messageManager.getMessage("ui-settings.scoreboard", "status" to scoreboardStatus))
+                sender.sendMessage(messageManager.getMessage("ui-settings.actionbar", "status" to actionbarStatus))
+                sender.sendMessage(messageManager.getMessage("ui-settings.bossbar", "status" to bossbarStatus))
+                sender.sendMessage(messageManager.getMessage("ui-settings.title", "status" to titleStatus))
             }
             "toggle" -> {
                 sender.sendMessage(messageManager.getMessage("ui-settings.config-note"))
@@ -499,7 +499,7 @@ class ManhuntCommand(
         val targetPlayer = Bukkit.getPlayer(targetName)
         
         if (targetPlayer == null || !targetPlayer.isOnline) {
-            sender.sendMessage(messageManager.getMessage(sender as? Player, "admin.player-not-found", mapOf("player" to targetName)))
+            sender.sendMessage(messageManager.getMessage(sender as? Player, "admin.player-not-found", "player" to targetName))
             return
         }
         
@@ -513,11 +513,11 @@ class ManhuntCommand(
         gameManager.setCustomRespawnTime(targetPlayer, seconds)
         
         sender.sendMessage(messageManager.getMessage(sender as? Player, "admin.respawntime-set", 
-            mapOf("player" to targetPlayer.name, "time" to seconds)))
+            "player" to targetPlayer.name, "time" to seconds))
         
         // 対象プレイヤーにも通知
         targetPlayer.sendMessage(messageManager.getMessage(targetPlayer, "admin.respawntime-changed", 
-            mapOf("time" to seconds)))
+            "time" to seconds))
     }
     
     private fun handleGive(sender: CommandSender, args: Array<out String>) {
@@ -538,7 +538,7 @@ class ManhuntCommand(
         val targetPlayer = Bukkit.getPlayer(targetName)
         if (targetPlayer == null) {
             sender.sendMessage(messageManager.getMessage(sender, "admin.player-not-found", 
-                mapOf("player" to targetName)))
+                "player" to targetName))
             return
         }
         
@@ -560,7 +560,7 @@ class ManhuntCommand(
         val maxBalance = gameManager.getPlugin().getConfigManager().getCurrencyConfig().maxBalance
         if (amount > maxBalance) {
             sender.sendMessage(messageManager.getMessage(sender as? Player, "admin.amount-too-large", 
-                mapOf("max" to maxBalance)))
+                "max" to maxBalance))
             return
         }
         
@@ -573,20 +573,18 @@ class ManhuntCommand(
         
         // 送信者に通知
         sender.sendMessage(messageManager.getMessage(sender as? Player, "admin.give-success", 
-            mapOf(
-                "amount" to amount,
-                "unit" to unit,
-                "player" to targetPlayer.name,
-                "balance" to economyManager.getBalance(targetPlayer)
-            )))
+            "amount" to amount,
+            "unit" to unit,
+            "player" to targetPlayer.name,
+            "balance" to economyManager.getBalance(targetPlayer)
+        ))
         
         // 受信者に通知
         targetPlayer.sendMessage(messageManager.getMessage(targetPlayer, "economy.currency.received-from-admin", 
-            mapOf(
-                "amount" to amount,
-                "unit" to unit,
-                "admin" to sender.name
-            )))
+            "amount" to amount,
+            "unit" to unit,
+            "admin" to sender.name
+        ))
     }
     
     private fun showHelp(sender: CommandSender) {

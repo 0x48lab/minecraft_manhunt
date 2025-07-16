@@ -121,7 +121,7 @@ class GameResultManager(
         val runnerStats = gameStats.getTeamStats(PlayerRole.RUNNER)
         
         Bukkit.broadcastMessage(messageManager.getMessage("result.stats.header"))
-        Bukkit.broadcastMessage(messageManager.getMessage("result.stats.game-duration", mapOf("duration" to gameDuration)))
+        Bukkit.broadcastMessage(messageManager.getMessage("result.stats.game-duration", "duration" to gameDuration))
         Bukkit.broadcastMessage("")
         
         // ハンター統計
@@ -132,15 +132,15 @@ class GameResultManager(
                     0 -> messageManager.getMessage("result.stats.rank.first")
                     1 -> messageManager.getMessage("result.stats.rank.second")
                     2 -> messageManager.getMessage("result.stats.rank.third")
-                    else -> messageManager.getMessage("result.stats.rank.other", mapOf("rank" to (index + 1)))
+                    else -> messageManager.getMessage("result.stats.rank.other", "rank" to (index + 1))
                 }
-                val message = messageManager.getMessage("result.stats.hunter-format", mapOf(
+                val message = messageManager.getMessage("result.stats.hunter-format",
                     "rank" to rank,
                     "name" to stats.playerName,
                     "kills" to stats.kills,
                     "damage" to stats.damageDealt.toInt(),
                     "currency" to stats.earnedCurrency
-                ))
+                )
                 Bukkit.broadcastMessage(message)
             }
             Bukkit.broadcastMessage("")
@@ -154,18 +154,18 @@ class GameResultManager(
                     0 -> messageManager.getMessage("result.stats.rank.first")
                     1 -> messageManager.getMessage("result.stats.rank.second")
                     2 -> messageManager.getMessage("result.stats.rank.third")
-                    else -> messageManager.getMessage("result.stats.rank.other", mapOf("rank" to (index + 1)))
+                    else -> messageManager.getMessage("result.stats.rank.other", "rank" to (index + 1))
                 }
                 val survivalMinutes = (stats.survivalTime / 60000).toInt()
                 val survivalSeconds = ((stats.survivalTime % 60000) / 1000).toInt()
                 val survivalTime = "${survivalMinutes}:${String.format("%02d", survivalSeconds)}"
-                val message = messageManager.getMessage("result.stats.runner-format", mapOf(
+                val message = messageManager.getMessage("result.stats.runner-format",
                     "rank" to rank,
                     "name" to stats.playerName,
                     "survival" to survivalTime,
                     "dimensions" to stats.dimensionsVisited.size,
                     "currency" to stats.earnedCurrency
-                ))
+                )
                 Bukkit.broadcastMessage(message)
             }
         }
@@ -189,30 +189,30 @@ class GameResultManager(
         val roleColor = messageManager.getMessage("result.roles.${mvp.role.name.lowercase()}.color")
         val roleIcon = messageManager.getMessage("result.roles.${mvp.role.name.lowercase()}.icon")
         
-        val announcement = messageManager.getMessage("result.mvp.announcement", mapOf(
+        val announcement = messageManager.getMessage("result.mvp.announcement",
             "color" to roleColor,
             "icon" to roleIcon,
             "name" to mvp.playerName
-        ))
+        )
         Bukkit.broadcastMessage(announcement)
         
         // MVP理由の表示
         when (mvp.role) {
             PlayerRole.HUNTER -> {
-                val performance = messageManager.getMessage("result.mvp.hunter-performance", mapOf(
+                val performance = messageManager.getMessage("result.mvp.hunter-performance",
                     "kills" to mvp.kills,
                     "damage" to mvp.damageDealt.toInt()
-                ))
+                )
                 Bukkit.broadcastMessage(performance)
             }
             PlayerRole.RUNNER -> {
                 val survivalMinutes = (mvp.survivalTime / 60000).toInt()
                 val survivalSeconds = ((mvp.survivalTime % 60000) / 1000).toInt()
                 val survivalTime = "${survivalMinutes}:${String.format("%02d", survivalSeconds)}"
-                val performance = messageManager.getMessage("result.mvp.runner-performance", mapOf(
+                val performance = messageManager.getMessage("result.mvp.runner-performance",
                     "survival" to survivalTime,
                     "dimensions" to mvp.dimensionsVisited.size
-                ))
+                )
                 Bukkit.broadcastMessage(performance)
             }
             else -> {}
@@ -249,31 +249,31 @@ class GameResultManager(
             val roleColor = messageManager.getMessage("result.roles.${stats.role.name.lowercase()}.color")
             val roleIcon = messageManager.getMessage("result.roles.${stats.role.name.lowercase()}.icon")
             
-            val playerHeader = messageManager.getMessage("result.personal.player-format", mapOf(
+            val playerHeader = messageManager.getMessage("result.personal.player-format",
                 "color" to roleColor,
                 "icon" to roleIcon,
                 "name" to stats.playerName
-            ))
+            )
             Bukkit.broadcastMessage(playerHeader)
             
             when (stats.role) {
                 PlayerRole.HUNTER -> {
                     val kd = if (stats.deaths > 0) String.format("%.2f", stats.kills.toDouble() / stats.deaths) else messageManager.getMessage("result.personal.kd-infinity")
                     
-                    val killDeathStats = messageManager.getMessage("result.personal.hunter.kill-death", mapOf(
+                    val killDeathStats = messageManager.getMessage("result.personal.hunter.kill-death",
                         "kills" to stats.kills,
                         "deaths" to stats.deaths,
                         "kd" to kd
-                    ))
-                    val damageStats = messageManager.getMessage("result.personal.hunter.damage", mapOf(
+                    )
+                    val damageStats = messageManager.getMessage("result.personal.hunter.damage",
                         "dealt" to stats.damageDealt.toInt(),
                         "taken" to stats.damageTaken.toInt()
-                    ))
-                    val currencyStats = messageManager.getMessage("result.personal.hunter.currency", mapOf(
+                    )
+                    val currencyStats = messageManager.getMessage("result.personal.hunter.currency",
                         "earned" to stats.earnedCurrency,
                         "spent" to stats.spentCurrency,
                         "items" to stats.itemsPurchased
-                    ))
+                    )
                     
                     Bukkit.broadcastMessage(killDeathStats)
                     Bukkit.broadcastMessage(damageStats)
@@ -284,20 +284,20 @@ class GameResultManager(
                     val survivalSeconds = ((stats.survivalTime % 60000) / 1000).toInt()
                     val survivalTime = "${survivalMinutes}:${String.format("%02d", survivalSeconds)}"
                     
-                    val survivalStats = messageManager.getMessage("result.personal.runner.survival", mapOf(
+                    val survivalStats = messageManager.getMessage("result.personal.runner.survival",
                         "survival" to survivalTime,
                         "deaths" to stats.deaths
-                    ))
-                    val explorationStats = messageManager.getMessage("result.personal.runner.exploration", mapOf(
+                    )
+                    val explorationStats = messageManager.getMessage("result.personal.runner.exploration",
                         "dimensions" to stats.dimensionsVisited.size,
                         "diamonds" to stats.diamondsCollected,
                         "escapes" to stats.escapeSuccesses
-                    ))
-                    val currencyStats = messageManager.getMessage("result.personal.runner.currency", mapOf(
+                    )
+                    val currencyStats = messageManager.getMessage("result.personal.runner.currency",
                         "earned" to stats.earnedCurrency,
                         "spent" to stats.spentCurrency,
                         "items" to stats.itemsPurchased
-                    ))
+                    )
                     
                     Bukkit.broadcastMessage(survivalStats)
                     Bukkit.broadcastMessage(explorationStats)

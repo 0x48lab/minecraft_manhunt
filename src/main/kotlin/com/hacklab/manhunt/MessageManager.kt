@@ -163,7 +163,7 @@ class MessageManager(private val plugin: Main) {
     
     
     
-    fun getMessage(player: Player?, key: String, vararg args: Any): String {
+    fun getMessage(player: Player?, key: String, vararg placeholders: Pair<String, Any>): String {
         val language = getPlayerLanguage(player)
         val message = messages[language]?.get(key) 
             ?: messages[defaultLanguage]?.get(key)
@@ -174,14 +174,14 @@ class MessageManager(private val plugin: Main) {
                 "§c[Missing message: $key]"
             }
         
-        return formatMessage(message, *args)
+        return formatMessage(message, *placeholders)
     }
     
-    fun getMessage(sender: CommandSender?, key: String, vararg args: Any): String {
-        return getMessage(sender as? Player, key, *args)
+    fun getMessage(sender: CommandSender?, key: String, vararg placeholders: Pair<String, Any>): String {
+        return getMessage(sender as? Player, key, *placeholders)
     }
     
-    fun getMessage(key: String, vararg args: Any): String {
+    fun getMessage(key: String, vararg placeholders: Pair<String, Any>): String {
         val message = messages[defaultLanguage]?.get(key)
             ?: run {
                 plugin.logger.warning("Missing message key: $key for default language: $defaultLanguage")
@@ -190,7 +190,7 @@ class MessageManager(private val plugin: Main) {
                 "§c[Missing message: $key]"
             }
         
-        return formatMessage(message, *args)
+        return formatMessage(message, *placeholders)
     }
     
     fun getMessageList(key: String): List<String> {
@@ -227,21 +227,12 @@ class MessageManager(private val plugin: Main) {
         return emptyList()
     }
     
-    private fun formatMessage(message: String, vararg args: Any): String {
+    private fun formatMessage(message: String, vararg placeholders: Pair<String, Any>): String {
         var result = message
         
-        // プレースホルダーの置換
-        for (i in args.indices) {
-            result = result.replace("{$i}", args[i].toString())
-        }
-        
-        // 名前付きプレースホルダーの置換（マップで渡された場合）
-        if (args.size == 1 && args[0] is Map<*, *>) {
-            @Suppress("UNCHECKED_CAST")
-            val placeholders = args[0] as Map<String, Any>
-            for ((key, value) in placeholders) {
-                result = result.replace("{$key}", value.toString())
-            }
+        // 名前付きプレースホルダーの置換
+        for ((key, value) in placeholders) {
+            result = result.replace("{$key}", value.toString())
         }
         
         return result
@@ -260,9 +251,9 @@ class MessageManager(private val plugin: Main) {
         
         if (SUPPORTED_LANGUAGES.contains(language)) {
             playerLanguages[player.uniqueId] = language
-            player.sendMessage(getMessage(player, "language.changed", language))
+            player.sendMessage(getMessage(player, "language.changed", "language" to language))
         } else {
-            player.sendMessage(getMessage(player, "language.unsupported", language))
+            player.sendMessage(getMessage(player, "language.unsupported", "language" to language))
         }
     }
     

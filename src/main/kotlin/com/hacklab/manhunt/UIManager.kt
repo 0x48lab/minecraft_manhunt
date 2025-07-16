@@ -108,16 +108,16 @@ class UIManager(
             if (deadRunners.isNotEmpty()) {
                 val respawningCount = gameManager.getDeadRunners().size
                 if (respawningCount > 0) {
-                    addScoreboardLine(messageManager.getMessage("ui.scoreboard.runners-respawning", mapOf("count" to respawningCount)), line--)
+                    addScoreboardLine(messageManager.getMessage("ui.scoreboard.runners-respawning", "count" to respawningCount), line--)
                 }
             }
             
             addScoreboardLine("§r   ", line--) // 空行
         } else {
             // ゲーム開始前：プレイヤー数表示
-            addScoreboardLine(messageManager.getMessage("ui.scoreboard.hunters-total", mapOf("count" to hunters.size)), line--)
-            addScoreboardLine(messageManager.getMessage("ui.scoreboard.runners-total", mapOf("count" to runners.size)), line--)
-            addScoreboardLine(messageManager.getMessage("ui.scoreboard.spectators-total", mapOf("count" to spectators.size)), line--)
+            addScoreboardLine(messageManager.getMessage("ui.scoreboard.hunters-total", "count" to hunters.size), line--)
+            addScoreboardLine(messageManager.getMessage("ui.scoreboard.runners-total", "count" to runners.size), line--)
+            addScoreboardLine(messageManager.getMessage("ui.scoreboard.spectators-total", "count" to spectators.size), line--)
             addScoreboardLine("§r  ", line--) // 空行
         }
         
@@ -125,7 +125,7 @@ class UIManager(
         if (gameState == GameState.WAITING) {
             val minPlayers = gameManager.getMinPlayers()
             val totalPlayers = hunters.size + runners.size
-            addScoreboardLine(messageManager.getMessage("ui.scoreboard.required-players", mapOf("current" to totalPlayers, "min" to minPlayers)), line--)
+            addScoreboardLine(messageManager.getMessage("ui.scoreboard.required-players", "current" to totalPlayers, "min" to minPlayers), line--)
             addScoreboardLine("§r    ", line--) // 空行
         }
         
@@ -189,7 +189,7 @@ class UIManager(
             if (deadRunners.isNotEmpty()) {
                 val respawningCount = gameManager.getDeadRunners().size
                 if (respawningCount > 0) {
-                    addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.runners-respawning", mapOf("count" to respawningCount)), line--)
+                    addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.runners-respawning", "count" to respawningCount), line--)
                 }
             }
             
@@ -197,7 +197,7 @@ class UIManager(
             if (role == PlayerRole.RUNNER && gameManager.isRunnerDead(player)) {
                 val respawnTime = gameManager.getRespawnTimeForPlayer(player)
                 if (respawnTime > 0) {
-                    addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.respawn-time", mapOf("time" to respawnTime)), line--)
+                    addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.respawn-time", "time" to respawnTime), line--)
                 }
             }
             
@@ -207,20 +207,20 @@ class UIManager(
             val elapsedTime = gameManager.getGameElapsedTime()
             val minutes = elapsedTime / 60
             val seconds = elapsedTime % 60
-            addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.elapsed-time", mapOf("minutes" to minutes, "seconds" to String.format("%02d", seconds))), line--)
+            addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.elapsed-time", "minutes" to minutes, "seconds" to String.format("%02d", seconds)), line--)
             
             // 所持金表示（ゲーム中のみ）
             if (role != null && role != PlayerRole.SPECTATOR) {
                 val balance = plugin.getEconomyManager().getBalance(player)
                 val unit = plugin.getConfigManager().getCurrencyConfig().currencyUnit
-                addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.balance", mapOf("balance" to balance, "unit" to unit)), line--)
+                addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.balance", "balance" to balance, "unit" to unit), line--)
                 addPlayerScoreboardLine(playerObjective, "§r     ", line--) // 空行
             }
         } else {
             // ゲーム開始前：プレイヤー数表示
-            addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.hunters-total", mapOf("count" to hunters.size)), line--)
-            addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.runners-total", mapOf("count" to runners.size)), line--)
-            addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.spectators-total", mapOf("count" to spectators.size)), line--)
+            addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.hunters-total", "count" to hunters.size), line--)
+            addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.runners-total", "count" to runners.size), line--)
+            addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.spectators-total", "count" to spectators.size), line--)
             addPlayerScoreboardLine(playerObjective, "§r  ", line--) // 空行
         }
         
@@ -229,7 +229,7 @@ class UIManager(
         if (gameState == GameState.WAITING) {
             val minPlayers = gameManager.getMinPlayers()
             val totalPlayers = hunters.size + runners.size
-            addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.required-players", mapOf("current" to totalPlayers, "min" to minPlayers)), line--)
+            addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.required-players", "current" to totalPlayers, "min" to minPlayers), line--)
             addPlayerScoreboardLine(playerObjective, "§r    ", line--) // 空行
         }
         
@@ -240,7 +240,7 @@ class UIManager(
             
             if (buddy != null && buddyInfo != null) {
                 addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.separator"), line--)
-                addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.buddy-title", mapOf("buddy" to buddy.name)), line--)
+                addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.buddy-title", "buddy" to buddy.name), line--)
                 addPlayerScoreboardLine(playerObjective, buddyInfo, line--)
             } else {
                 // バディーがいない場合はコマンド情報を表示
@@ -478,7 +478,7 @@ class UIManager(
                             PlayerRole.RUNNER -> messageManager.getMessage(player, "ui.actionbar.role.runner")
                             PlayerRole.SPECTATOR -> messageManager.getMessage(player, "ui.actionbar.role.spectator")
                         }
-                        messageManager.getMessage(player, "ui.actionbar.waiting", mapOf("role" to roleDisplay))
+                        messageManager.getMessage(player, "ui.actionbar.waiting", "role" to roleDisplay)
                     }
                 }
                 gameState == GameState.RUNNING && role != null -> {
@@ -486,7 +486,7 @@ class UIManager(
                     val stateDisplay = if (player.isDead && role == PlayerRole.RUNNER) {
                         val respawnTime = gameManager.getRespawnTimeForPlayer(player)
                         if (respawnTime > 0) {
-                            messageManager.getMessage(player, "ui.actionbar.respawning", mapOf("time" to respawnTime))
+                            messageManager.getMessage(player, "ui.actionbar.respawning", "time" to respawnTime)
                         } else {
                             messageManager.getMessage(player, "ui.actionbar.dead")
                         }
@@ -509,7 +509,7 @@ class UIManager(
                                 } catch (e: Exception) {
                                     -1
                                 }
-                                " | " + messageManager.getMessage(player, "ui.actionbar.hunter-with-target", mapOf("target" to nearestRunner.name, "distance" to distance))
+                                " | " + messageManager.getMessage(player, "ui.actionbar.hunter-with-target", "target" to nearestRunner.name, "distance" to distance)
                             } else {
                                 " | " + messageManager.getMessage(player, "ui.actionbar.hunter-no-target")
                             }
@@ -556,7 +556,7 @@ class UIManager(
         
         removeBossBar(player)
         
-        val title = messageManager.getMessage(player, "ui.bossbar.respawn-title", mapOf("time" to remainingTime))
+        val title = messageManager.getMessage(player, "ui.bossbar.respawn-title", "time" to remainingTime)
         val progress = remainingTime.toDouble() / totalTime.toDouble()
         
         val bossBar = Bukkit.createBossBar(title, BarColor.RED, BarStyle.SOLID)

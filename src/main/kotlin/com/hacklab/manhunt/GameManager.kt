@@ -190,14 +190,14 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
                 // 意図的な退出の場合はSpectatorにする
                 setPlayerRole(player, PlayerRole.SPECTATOR)
                 player.sendMessage(messageManager.getMessage(player, "quit.changed-to-spectator"))
-                Bukkit.broadcastMessage(messageManager.getMessage("game-management.player-left-spectator", mapOf("player" to player.name)))
+                Bukkit.broadcastMessage(messageManager.getMessage("game-management.player-left-spectator", "player" to player.name))
             } else {
                 // 切断の場合は元の役割を保存（ネットワークエラーの可能性）
                 playerRole?.let { role ->
                     disconnectedPlayers[player.uniqueId] = role
                     players.remove(player.uniqueId)
                     fixedHunters.remove(player.uniqueId)
-                    Bukkit.broadcastMessage(messageManager.getMessage("game-management.player-disconnected", mapOf("player" to player.name)))
+                    Bukkit.broadcastMessage(messageManager.getMessage("game-management.player-disconnected", "player" to player.name))
                 }
             }
             
@@ -240,8 +240,8 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
                 PlayerRole.SPECTATOR -> messageManager.getMessage(player, "role-display.spectator")
             }
             
-            player.sendMessage(messageManager.getMessage(player, "game-management.network-recovery", mapOf("role" to roleText)))
-            Bukkit.broadcastMessage(messageManager.getMessage("game-management.network-recovery-broadcast", mapOf("player" to player.name)))
+            player.sendMessage(messageManager.getMessage(player, "game-management.network-recovery", "role" to roleText))
+            Bukkit.broadcastMessage(messageManager.getMessage("game-management.network-recovery-broadcast", "player" to player.name))
             return true
         }
         
@@ -923,7 +923,7 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
                         player.gameMode = GameMode.SURVIVAL
                         
                         player.sendMessage(messageManager.getMessage(player, "respawn-system.runner-respawned"))
-                        Bukkit.broadcastMessage(messageManager.getMessage("respawn-system.runner-respawned-broadcast", mapOf("player" to player.name)))
+                        Bukkit.broadcastMessage(messageManager.getMessage("respawn-system.runner-respawned-broadcast", "player" to player.name))
                         
                         // UIManager経由でタイトルクリアとボスバー削除
                         try {
@@ -1241,8 +1241,8 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
         countdownTasks[player.uniqueId]?.cancel()
         
         // 死亡メッセージ
-        player.sendMessage(messageManager.getMessage(player, "respawn-system.runner-death", mapOf("time" to respawnTime)))
-        Bukkit.broadcastMessage(messageManager.getMessage("respawn-system.runner-death-broadcast", mapOf("player" to player.name, "time" to respawnTime)))
+        player.sendMessage(messageManager.getMessage(player, "respawn-system.runner-death", "time" to respawnTime))
+        Bukkit.broadcastMessage(messageManager.getMessage("respawn-system.runner-death-broadcast", "player" to player.name, "time" to respawnTime))
         
         // リスポン待ち中はスペクテーターモードに変更
         Bukkit.getScheduler().runTaskLater(plugin, Runnable {
@@ -1276,7 +1276,7 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
                         player.gameMode = GameMode.SURVIVAL
                         
                         player.sendMessage(messageManager.getMessage(player, "respawn-system.runner-respawned"))
-                        Bukkit.broadcastMessage(messageManager.getMessage("respawn-system.runner-respawned-broadcast", mapOf("player" to player.name)))
+                        Bukkit.broadcastMessage(messageManager.getMessage("respawn-system.runner-respawned-broadcast", "player" to player.name))
                         
                         // UIManager経由でタイトルクリアとボスバー削除
                         try {
@@ -1340,7 +1340,7 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
                     if (remainingTime > 0) {
                         // タイトルでカウントダウン表示
                         val title = messageManager.getMessage(player, "respawn-system.death-title")
-                        val subtitle = messageManager.getMessage(player, "respawn-system.death-subtitle", mapOf("time" to remainingTime))
+                        val subtitle = messageManager.getMessage(player, "respawn-system.death-subtitle", "time" to remainingTime)
                         
                         try {
                             plugin.getUIManager().showTitle(player, title, subtitle, 0, 25, 0)
@@ -1349,7 +1349,7 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
                             plugin.getUIManager().showRespawnBossBar(player, remainingTime, totalTime)
                         } catch (e: Exception) {
                             // フォールバック: チャットメッセージ
-                            player.sendMessage(messageManager.getMessage(player, "respawn-system.countdown-chat", mapOf("time" to remainingTime)))
+                            player.sendMessage(messageManager.getMessage(player, "respawn-system.countdown-chat", "time" to remainingTime))
                         }
                         
                         // 最後の3秒は音とメッセージで強調
@@ -1359,7 +1359,7 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
                             } catch (e: Exception) {
                                 // 音再生エラーは無視
                             }
-                            player.sendMessage(messageManager.getMessage(player, "respawn-system.countdown-emphasis", mapOf("time" to remainingTime)))
+                            player.sendMessage(messageManager.getMessage(player, "respawn-system.countdown-emphasis", "time" to remainingTime))
                         }
                         
                         remainingTime--
@@ -1387,7 +1387,7 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
         var remainingTime = countdownSeconds
         
         // カウントダウン開始メッセージ
-        Bukkit.broadcastMessage(messageManager.getMessage("game-management.start-countdown", mapOf("time" to countdownSeconds)))
+        Bukkit.broadcastMessage(messageManager.getMessage("game-management.start-countdown", "time" to countdownSeconds))
         
         // 既存のカウントダウンタスクをキャンセル
         countdownTask?.cancel()
@@ -1403,7 +1403,7 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
                     if (remainingTime > 0) {
                         // タイトルとサウンドでカウントダウン表示
                         val title = messageManager.getMessage("game-management.start-title")
-                        val subtitle = messageManager.getMessage("game-management.start-subtitle", mapOf("time" to remainingTime))
+                        val subtitle = messageManager.getMessage("game-management.start-subtitle", "time" to remainingTime)
                         
                         Bukkit.getOnlinePlayers().forEach { player ->
                             try {
@@ -1421,7 +1421,7 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
                         
                         // 最後の5秒はチャットでも表示
                         if (remainingTime <= 5) {
-                            Bukkit.broadcastMessage(messageManager.getMessage("game-management.countdown-final", mapOf("time" to remainingTime)))
+                            Bukkit.broadcastMessage(messageManager.getMessage("game-management.countdown-final", "time" to remainingTime))
                         }
                         
                         remainingTime--
@@ -1657,8 +1657,7 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
                 val timeString = String.format("%d:%02d", minutes, seconds)
                 
                 Bukkit.getOnlinePlayers().forEach { player ->
-                    val title = messageManager.getMessage(player, "ui.bossbar.reset-countdown", 
-                        mapOf("time" to timeString))
+                    val title = messageManager.getMessage(player, "ui.bossbar.reset-countdown", "time" to timeString)
                     val progress = remainingSeconds.toDouble() / totalSeconds.toDouble()
                     
                     plugin.getUIManager().showResetCountdownBossBar(player, title, progress)
@@ -1669,8 +1668,7 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
                     60 -> Bukkit.broadcastMessage(messageManager.getMessage("game.reset-warning-1min"))
                     30 -> Bukkit.broadcastMessage(messageManager.getMessage("game.reset-warning-30sec"))
                     10, 5, 4, 3, 2, 1 -> {
-                        Bukkit.broadcastMessage(messageManager.getMessage("game.reset-countdown", 
-                            mapOf("seconds" to remainingSeconds)))
+                        Bukkit.broadcastMessage(messageManager.getMessage("game.reset-countdown", "seconds" to remainingSeconds))
                         // サウンド再生
                         Bukkit.getOnlinePlayers().forEach { player ->
                             player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.0f)

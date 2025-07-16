@@ -83,7 +83,7 @@ class RoleSelectorMenu(
         meta.setDisplayName(prefix + messageManager.getMessage(player, nameKey))
         
         val lore = mutableListOf<String>()
-        lore.addAll(messageManager.getMessage(player, descKey).split("\\n"))
+        lore.addAll(messageManager.getMessage(player, descKey).split("\n"))
         lore.add("")
         
         if (isSelected) {
@@ -98,7 +98,7 @@ class RoleSelectorMenu(
             PlayerRole.HUNTER -> gameManager.getAllHunters().size
             PlayerRole.SPECTATOR -> gameManager.getAllSpectators().size
         }
-        lore.add(messageManager.getMessage(player, "role-selector.current-count", mapOf("count" to count)))
+        lore.add(messageManager.getMessage(player, "role-selector.current-count", "count" to count))
 
         meta.lore = lore
         item.itemMeta = meta
@@ -124,7 +124,7 @@ class RoleSelectorMenu(
             "",
             messageManager.getMessage(player, "role-selector.info.waiting-state"),
             messageManager.getMessage(player, "role-selector.info.min-players", 
-                mapOf("count" to gameManager.getMinPlayers()))
+                "count" to gameManager.getMinPlayers())
         )
 
         item.itemMeta = meta
@@ -191,7 +191,7 @@ class RoleSelectorMenu(
         
         if (currentRole == newRole) {
             player.sendMessage(messageManager.getMessage(player, "role-selector.already-selected", 
-                mapOf("role" to messageManager.getMessage(player, "role.${newRole.name.lowercase()}"))))
+                "role" to messageManager.getMessage(player, "role.${newRole.name.lowercase()}")))
             return
         }
 
@@ -199,7 +199,7 @@ class RoleSelectorMenu(
         try {
             gameManager.setPlayerRole(player, newRole)
             val roleName = messageManager.getMessage(player, "role.${newRole.name.lowercase()}")
-            player.sendMessage(messageManager.getMessage(player, "role.changed", mapOf("role" to roleName)))
+            player.sendMessage(messageManager.getMessage(player, "role.changed", "role" to roleName))
             
             // 音響効果
             player.playSound(player.location, org.bukkit.Sound.UI_BUTTON_CLICK, 1.0f, 1.0f)

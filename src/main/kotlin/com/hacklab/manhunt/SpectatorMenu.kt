@@ -60,7 +60,7 @@ class SpectatorMenu(
         val inventory = Bukkit.createInventory(
             null, 
             INVENTORY_SIZE, 
-            messageManager.getMessage("spectate.menu-title-with-page", mapOf("current" to (currentPage + 1), "total" to totalPages))
+            messageManager.getMessage("spectate.menu-title-with-page", "current" to (currentPage + 1), "total" to totalPages)
         )
         
         // プレイヤーヘッドを配置
@@ -104,9 +104,9 @@ class SpectatorMenu(
         meta.setDisplayName("$roleColor${playerInfo.player.name}")
         
         val lore = mutableListOf<String>()
-        lore.add(messageManager.getMessage("spectate.lore.role", mapOf("roleColor" to roleColor, "role" to roleText)))
-        lore.add(messageManager.getMessage("spectate.lore.health", mapOf("health" to String.format("%.1f", playerInfo.player.health))))
-        lore.add(messageManager.getMessage("spectate.lore.world", mapOf("world" to playerInfo.player.world.name)))
+        lore.add(messageManager.getMessage("spectate.lore.role", "roleColor" to roleColor, "role" to roleText))
+        lore.add(messageManager.getMessage("spectate.lore.health", "health" to String.format("%.1f", playerInfo.player.health)))
+        lore.add(messageManager.getMessage("spectate.lore.world", "world" to playerInfo.player.world.name))
         lore.add("")
         lore.add(messageManager.getMessage("spectate.lore.click-teleport"))
         
@@ -122,7 +122,7 @@ class SpectatorMenu(
             val previousButton = ItemStack(Material.ARROW)
             val meta = previousButton.itemMeta
             meta?.setDisplayName(messageManager.getMessage("spectate.button.previous-page"))
-            meta?.lore = listOf(messageManager.getMessage("spectate.button.to-page", mapOf("page" to currentPage)))
+            meta?.lore = listOf(messageManager.getMessage("spectate.button.to-page", "page" to currentPage))
             previousButton.itemMeta = meta
             inventory.setItem(45, previousButton)
         }
@@ -132,7 +132,7 @@ class SpectatorMenu(
             val nextButton = ItemStack(Material.ARROW)
             val meta = nextButton.itemMeta
             meta?.setDisplayName(messageManager.getMessage("spectate.button.next-page"))
-            meta?.lore = listOf(messageManager.getMessage("spectate.button.to-page", mapOf("page" to (currentPage + 2))))
+            meta?.lore = listOf(messageManager.getMessage("spectate.button.to-page", "page" to (currentPage + 2)))
             nextButton.itemMeta = meta
             inventory.setItem(53, nextButton)
         }
@@ -216,7 +216,7 @@ class SpectatorMenu(
                     if (targetPlayer != null && targetPlayer.isOnline) {
                         player.teleport(targetPlayer.location)
                         player.closeInventory()
-                        player.sendMessage(messageManager.getMessage(player, "spectate.teleported", mapOf("player" to targetPlayer.name)))
+                        player.sendMessage(messageManager.getMessage(player, "spectate.teleported", "player" to targetPlayer.name))
                     } else {
                         player.sendMessage(messageManager.getMessage(player, "spectate.player-offline"))
                     }

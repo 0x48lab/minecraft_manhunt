@@ -78,7 +78,7 @@ class ShopListener(
                     messageManager.getMessage(player, "shop-extended.buttons.toggle-item-enabled")
                 else 
                     messageManager.getMessage(player, "shop-extended.buttons.toggle-item-disabled")
-                player.sendMessage(messageManager.getMessage(player, "shop-extended.buttons.toggle-item-changed", mapOf("status" to status)))
+                player.sendMessage(messageManager.getMessage(player, "shop-extended.buttons.toggle-item-changed", "status" to status))
                 
                 // メニューを更新
                 shopManager.openShop(player)

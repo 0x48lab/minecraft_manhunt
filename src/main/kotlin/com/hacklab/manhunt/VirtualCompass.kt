@@ -64,7 +64,7 @@ class VirtualCompass(
         if (now - lastUse < cooldownTime) {
             val remaining = ((cooldownTime - (now - lastUse)) / 1000.0)
             player.sendMessage(messageManager.getMessage(player, "compass.cooldown", 
-                mapOf("time" to String.format("%.1f", remaining))))
+                "time" to String.format("%.1f", remaining)))
             return
         }
         
@@ -80,7 +80,7 @@ class VirtualCompass(
         // 同じワールドかチェック
         if (player.world != targetRunner.world) {
             player.sendMessage(messageManager.getMessage(player, "compass.different-world", 
-                mapOf("world" to targetRunner.world.name)))
+                "world" to targetRunner.world.name))
             showDifferentWorldEffect(player)
             cooldowns[player] = now
             return
@@ -233,7 +233,7 @@ class VirtualCompass(
         
         // チャットメッセージ
         hunter.sendMessage(messageManager.getMessage(hunter, "compass.tracking", 
-            mapOf("player" to target.name, "distance" to formattedDistance)))
+            "player" to target.name, "distance" to formattedDistance))
     }
     
     private fun showTargetSwitchEffect(hunter: Player, direction: Vector, target: Player, distance: Double, currentIndex: Int, totalTargets: Int) {
@@ -258,7 +258,7 @@ class VirtualCompass(
         
         // チャットメッセージ
         hunter.sendMessage(messageManager.getMessage(hunter, "compass.target-switched", 
-            mapOf("index" to currentIndex, "total" to totalTargets, "player" to target.name, "distance" to formattedDistance)))
+            "index" to currentIndex, "total" to totalTargets, "player" to target.name, "distance" to formattedDistance))
     }
     
     private fun showDirectionParticles(player: Player, direction: Vector) {

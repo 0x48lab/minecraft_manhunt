@@ -87,26 +87,33 @@ class TeamChatCommand(
      * チームメッセージを送信
      */
     private fun sendTeamMessage(sender: Player, senderRole: PlayerRole, message: String, teammates: List<Player>) {
-        val rolePrefix = when (senderRole) {
+        val senderRolePrefix = when (senderRole) {
             PlayerRole.HUNTER -> messageManager.getMessage(sender, "teamchat.hunter-prefix")
             PlayerRole.RUNNER -> messageManager.getMessage(sender, "teamchat.runner-prefix")
             PlayerRole.SPECTATOR -> "" // 実際は使用されない
         }
-        
-        val formattedMessage = messageManager.getMessage(sender, "teamchat.format", 
-            "prefix" to rolePrefix, 
-            "sender" to sender.name, 
+
+        val formattedMessage = messageManager.getMessage(
+            sender, "teamchat.format",
+            "prefix" to senderRolePrefix,
+            "sender" to sender.name,
             "message" to message
         )
-        
+
         // 送信者自身にも表示
         sender.sendMessage(formattedMessage)
-        
+
         // チームメンバーに送信
         teammates.forEach { teammate ->
             // 各チームメイトの言語設定に応じたメッセージを送信
-            val teammateMessage = messageManager.getMessage(teammate, "teamchat.format",
-                "prefix" to rolePrefix,
+            val teammateRolePrefix = when (senderRole) {
+                PlayerRole.HUNTER -> messageManager.getMessage(teammate, "teamchat.hunter-prefix")
+                PlayerRole.RUNNER -> messageManager.getMessage(teammate, "teamchat.runner-prefix")
+                PlayerRole.SPECTATOR -> "" // 実際は使用されない
+            }
+            val teammateMessage = messageManager.getMessage(
+                teammate, "teamchat.format",
+                "prefix" to teammateRolePrefix,
                 "sender" to sender.name,
                 "message" to message
             )

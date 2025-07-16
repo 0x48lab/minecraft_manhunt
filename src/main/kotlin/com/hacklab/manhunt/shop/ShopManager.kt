@@ -117,9 +117,9 @@ class ShopManager(
                 val unit = plugin.getConfigManager().getCurrencyConfig().currencyUnit
                 meta.setDisplayName("§e${displayName}")
                 meta.lore = listOf(
-                    messageManager.getMessage(player, "shop-extended.menu.category-click", mapOf("category" to displayName)),
+                    messageManager.getMessage(player, "shop-extended.menu.category-click", "category" to displayName),
                     "",
-                    messageManager.getMessage(player, "shop-extended.menu.balance-display", mapOf("balance" to economyManager.getBalance(player), "unit" to unit))
+                    messageManager.getMessage(player, "shop-extended.menu.balance-display", "balance" to economyManager.getBalance(player), "unit" to unit)
                 )
                 item.itemMeta = meta
                 inventory.setItem(startSlot + index, item)
@@ -140,7 +140,7 @@ class ShopManager(
         val items = getItemsForCategory(role, category)
         val size = ((items.size - 1) / 9 + 2) * 9 // 最低2行、アイテム数に応じて拡張
         val categoryDisplayName = categories[category]?.displayName ?: messageManager.getMessage(category.messageKey)
-        val title = messageManager.getMessage(player, "shop-extended.menu.shop-title", mapOf("category" to categoryDisplayName))
+        val title = messageManager.getMessage(player, "shop-extended.menu.shop-title", "category" to categoryDisplayName)
         val inventory = Bukkit.createInventory(null, size.coerceIn(18, 54), title)
         
         // アイテムを配置
@@ -185,23 +185,23 @@ class ShopManager(
         lore.addAll(description)
         lore.add("")
         val unit = plugin.getConfigManager().getCurrencyConfig().currencyUnit
-        lore.add(messageManager.getMessage(player, "shop-extended.item.price-format", mapOf("price" to shopItem.price, "unit" to unit)))
+        lore.add(messageManager.getMessage(player, "shop-extended.item.price-format", "price" to shopItem.price, "unit" to unit))
         
         if (shopItem.maxPurchases > 0) {
-            lore.add(messageManager.getMessage(player, "shop-extended.item.purchase-limit", mapOf("current" to purchaseCount, "max" to shopItem.maxPurchases)))
+            lore.add(messageManager.getMessage(player, "shop-extended.item.purchase-limit", "current" to purchaseCount, "max" to shopItem.maxPurchases))
         }
         
         if (shopItem.cooldown > 0 && purchaseRecord != null) {
             val remainingCooldown = getRemainingCooldown(purchaseRecord, shopItem.cooldown)
             if (remainingCooldown > 0) {
-                lore.add(messageManager.getMessage(player, "shop-extended.item.cooldown", mapOf("time" to remainingCooldown)))
+                lore.add(messageManager.getMessage(player, "shop-extended.item.cooldown", "time" to remainingCooldown))
             }
         }
         
         lore.add("")
         when {
             !economyManager.hasEnoughMoney(player, shopItem.price) -> {
-                lore.add(messageManager.getMessage(player, "shop-extended.item.insufficient-funds", mapOf("unit" to unit)))
+                lore.add(messageManager.getMessage(player, "shop-extended.item.insufficient-funds", "unit" to unit))
             }
             !canPurchase -> {
                 lore.add(messageManager.getMessage(player, "shop-extended.item.cannot-purchase"))
@@ -230,7 +230,7 @@ class ShopManager(
         // 残高チェック
         if (!economyManager.hasEnoughMoney(player, shopItem.price)) {
             val unit = plugin.getConfigManager().getCurrencyConfig().currencyUnit
-            player.sendMessage(messageManager.getMessage(player, "shop.insufficient-funds", mapOf("unit" to unit, "price" to shopItem.price)))
+            player.sendMessage(messageManager.getMessage(player, "shop.insufficient-funds", "unit" to unit, "price" to shopItem.price))
             return false
         }
         
@@ -264,8 +264,8 @@ class ShopManager(
         
         // 成功メッセージ
         val unit = plugin.getConfigManager().getCurrencyConfig().currencyUnit
-        player.sendMessage(messageManager.getMessage(player, "shop.purchase-success", mapOf("item" to shopItem.displayName, "price" to shopItem.price, "unit" to unit)))
-        player.sendMessage(messageManager.getMessage(player, "shop.balance-remaining", mapOf("balance" to economyManager.getBalance(player), "unit" to unit)))
+        player.sendMessage(messageManager.getMessage(player, "shop.purchase-success", "item" to shopItem.displayName, "price" to shopItem.price, "unit" to unit))
+        player.sendMessage(messageManager.getMessage(player, "shop.balance-remaining", "balance" to economyManager.getBalance(player), "unit" to unit))
         
         // 効果音
         player.playSound(player.location, org.bukkit.Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
@@ -387,7 +387,7 @@ class ShopManager(
         val meta = item.itemMeta!!
         val unit = plugin.getConfigManager().getCurrencyConfig().currencyUnit
         meta.setDisplayName(messageManager.getMessage(player, "shop-extended.buttons.balance-title"))
-        meta.lore = listOf(messageManager.getMessage(player, "shop-extended.buttons.balance-amount", mapOf("balance" to economyManager.getBalance(player), "unit" to unit)))
+        meta.lore = listOf(messageManager.getMessage(player, "shop-extended.buttons.balance-amount", "balance" to economyManager.getBalance(player), "unit" to unit))
         item.itemMeta = meta
         return item
     }
@@ -403,10 +403,10 @@ class ShopManager(
         meta.setDisplayName(messageManager.getMessage(player, "shop-extended.buttons.toggle-item-title"))
         meta.lore = listOf(
             messageManager.getMessage(player, "shop-extended.buttons.toggle-item-current", 
-                mapOf("status" to if (showShopItem) 
+                "status" to if (showShopItem) 
                     messageManager.getMessage(player, "shop-extended.buttons.toggle-item-enabled") 
                 else 
-                    messageManager.getMessage(player, "shop-extended.buttons.toggle-item-disabled"))),
+                    messageManager.getMessage(player, "shop-extended.buttons.toggle-item-disabled")),
             "",
             messageManager.getMessage(player, "shop-extended.buttons.toggle-item-click")
         )

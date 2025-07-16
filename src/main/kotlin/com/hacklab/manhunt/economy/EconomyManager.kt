@@ -74,21 +74,21 @@ class EconomyManager(private val plugin: Main) {
             if (shouldShowMessage) {
                 val unit = getCurrencyUnit()
                 val message = when (reason) {
-                    is EarnReason.Hunter -> messageManager.getMessage(player, "economy.currency.hunter-earned", mapOf(
+                    is EarnReason.Hunter -> messageManager.getMessage(player, "economy.currency.hunter-earned",
                         "amount" to amount,
                         "unit" to unit,
                         "reason" to reason.getDescription(player)
-                    ))
-                    is EarnReason.Runner -> messageManager.getMessage(player, "economy.currency.runner-earned", mapOf(
+                    )
+                    is EarnReason.Runner -> messageManager.getMessage(player, "economy.currency.runner-earned",
                         "amount" to amount,
                         "unit" to unit,
                         "reason" to reason.getDescription(player)
-                    ))
-                    is EarnReason.Movement -> messageManager.getMessage(player, "economy.currency.movement-earned", mapOf(
+                    )
+                    is EarnReason.Movement -> messageManager.getMessage(player, "economy.currency.movement-earned",
                         "amount" to amount,
                         "unit" to unit,
                         "reason" to reason.getDescription(player)
-                    ))
+                    )
                     is EarnReason.AdminGrant -> "" // 空文字（表示されない）
                 }
                 player.sendMessage(message)
@@ -192,8 +192,8 @@ sealed class EarnReason {
             messageManagerGetter = getter
         }
         
-        protected fun getMessage(player: Player?, key: String, placeholders: Map<String, Any> = emptyMap()): String {
-            return messageManagerGetter?.invoke()?.getMessage(player, key, placeholders) ?: key
+        protected fun getMessage(player: Player?, key: String, vararg placeholders: Pair<String, Any>): String {
+            return messageManagerGetter?.invoke()?.getMessage(player, key, *placeholders) ?: key
         }
     }
     
@@ -201,17 +201,17 @@ sealed class EarnReason {
     sealed class Hunter : EarnReason() {
         data class DamageDealt(val damage: Int) : Hunter() {
             override fun getDescription(player: Player?) = 
-                getMessage(player, "earn-reasons.hunter.damage-dealt", mapOf("damage" to damage))
+                getMessage(player, "earn-reasons.hunter.damage-dealt", "damage" to damage)
         }
         
         data class Kill(val runnerName: String) : Hunter() {
             override fun getDescription(player: Player?) = 
-                getMessage(player, "earn-reasons.hunter.kill", mapOf("runner" to runnerName))
+                getMessage(player, "earn-reasons.hunter.kill", "runner" to runnerName)
         }
         
         data class Proximity(val distance: Int) : Hunter() {
             override fun getDescription(player: Player?) = 
-                getMessage(player, "earn-reasons.hunter.proximity", mapOf("distance" to distance))
+                getMessage(player, "earn-reasons.hunter.proximity", "distance" to distance)
         }
         
         object TimeBonus : Hunter() {
@@ -237,7 +237,7 @@ sealed class EarnReason {
         
         data class ItemCollected(val itemName: String, val count: Int) : Runner() {
             override fun getDescription(player: Player?) = 
-                getMessage(player, "earn-reasons.runner.item-collected", mapOf("item" to itemName, "count" to count))
+                getMessage(player, "earn-reasons.runner.item-collected", "item" to itemName, "count" to count)
         }
         
         object EscapeBonus : Runner() {
@@ -250,14 +250,14 @@ sealed class EarnReason {
     sealed class Movement : EarnReason() {
         data class Sprint(val distance: Int) : Movement() {
             override fun getDescription(player: Player?) = 
-                getMessage(player, "earn-reasons.movement.sprint", mapOf("distance" to distance))
+                getMessage(player, "earn-reasons.movement.sprint", "distance" to distance)
         }
     }
     
     // 管理者からの付与
     data class AdminGrant(val adminName: String) : EarnReason() {
         override fun getDescription(player: Player?) = 
-            getMessage(player, "earn-reasons.admin-grant", mapOf("admin" to adminName))
+            getMessage(player, "earn-reasons.admin-grant", "admin" to adminName)
     }
 }
 

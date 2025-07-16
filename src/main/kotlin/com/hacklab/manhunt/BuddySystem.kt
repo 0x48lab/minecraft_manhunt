@@ -48,7 +48,7 @@ class BuddySystem(
         if (buddyPairs.containsKey(sender.uniqueId)) {
             val currentBuddy = plugin.server.getPlayer(buddyPairs[sender.uniqueId]!!)
             sender.sendMessage(messageManager.getMessage(sender, "buddy.already-have-buddy", 
-                mapOf("buddy" to (currentBuddy?.name ?: "Unknown"))))
+                "buddy" to (currentBuddy?.name ?: "Unknown")))
             return false
         }
         
@@ -56,14 +56,14 @@ class BuddySystem(
         if (buddyPairs.containsKey(target.uniqueId)) {
             val targetBuddy = plugin.server.getPlayer(buddyPairs[target.uniqueId]!!)
             sender.sendMessage(messageManager.getMessage(sender, "buddy.target-has-buddy", 
-                mapOf("player" to target.name, "buddy" to (targetBuddy?.name ?: "Unknown"))))
+                "player" to target.name, "buddy" to (targetBuddy?.name ?: "Unknown")))
             return false
         }
         
         // 既に招待を送信済みの場合
         if (pendingInvites[sender.uniqueId] == target.uniqueId) {
             sender.sendMessage(messageManager.getMessage(sender, "buddy.invite-already-sent", 
-                mapOf("player" to target.name)))
+                "player" to target.name))
             return false
         }
         
@@ -72,9 +72,9 @@ class BuddySystem(
         
         // メッセージ送信
         sender.sendMessage(messageManager.getMessage(sender, "buddy.invite-sent", 
-            mapOf("player" to target.name)))
+            "player" to target.name))
         target.sendMessage(messageManager.getMessage(target, "buddy.invite-received", 
-            mapOf("sender" to sender.name)))
+            "sender" to sender.name))
         target.sendMessage(messageManager.getMessage(target, "buddy.invite-instructions"))
         
         return true
@@ -87,7 +87,7 @@ class BuddySystem(
         // 招待が存在するかチェック
         if (pendingInvites[sender.uniqueId] != accepter.uniqueId) {
             accepter.sendMessage(messageManager.getMessage(accepter, "buddy.no-invite-from", 
-                mapOf("player" to sender.name)))
+                "player" to sender.name))
             return false
         }
         
@@ -107,9 +107,9 @@ class BuddySystem(
         
         // 成功メッセージ
         sender.sendMessage(messageManager.getMessage(sender, "buddy.paired-success", 
-            mapOf("buddy" to accepter.name)))
+            "buddy" to accepter.name))
         accepter.sendMessage(messageManager.getMessage(accepter, "buddy.paired-success", 
-            mapOf("buddy" to sender.name)))
+            "buddy" to sender.name))
         
         return true
     }
@@ -132,9 +132,9 @@ class BuddySystem(
         
         // メッセージ送信
         player.sendMessage(messageManager.getMessage(player, "buddy.removed", 
-            mapOf("buddy" to (buddy?.name ?: "Unknown"))))
+            "buddy" to (buddy?.name ?: "Unknown")))
         buddy?.sendMessage(messageManager.getMessage(buddy, "buddy.partner-removed", 
-            mapOf("partner" to player.name)))
+            "partner" to player.name))
         
         return true
     }
@@ -145,16 +145,16 @@ class BuddySystem(
     fun declineBuddyInvite(decliner: Player, sender: Player): Boolean {
         if (pendingInvites[sender.uniqueId] != decliner.uniqueId) {
             decliner.sendMessage(messageManager.getMessage(decliner, "buddy.no-invite-from", 
-                mapOf("player" to sender.name)))
+                "player" to sender.name))
             return false
         }
         
         pendingInvites.remove(sender.uniqueId)
         
         sender.sendMessage(messageManager.getMessage(sender, "buddy.invite-declined", 
-            mapOf("player" to decliner.name)))
+            "player" to decliner.name))
         decliner.sendMessage(messageManager.getMessage(decliner, "buddy.invite-declined-by-you", 
-            mapOf("player" to sender.name)))
+            "player" to sender.name))
         
         return true
     }
@@ -238,7 +238,7 @@ class BuddySystem(
             // バディーに通知
             val buddy = plugin.server.getPlayer(buddyId)
             buddy?.sendMessage(messageManager.getMessage(buddy, "buddy.partner-left", 
-                mapOf("partner" to player.name)))
+                "partner" to player.name))
         }
         
         // 送信した招待を削除

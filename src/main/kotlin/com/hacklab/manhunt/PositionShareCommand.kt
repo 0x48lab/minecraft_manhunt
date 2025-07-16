@@ -70,23 +70,24 @@ class PositionShareCommand(
      * 座標メッセージを送信
      */
     private fun sendPositionMessage(
-        sender: Player, 
-        senderRole: PlayerRole, 
-        x: Int, 
-        y: Int, 
-        z: Int, 
+        sender: Player,
+        senderRole: PlayerRole,
+        x: Int,
+        y: Int,
+        z: Int,
         world: String,
         teammates: List<Player>
     ) {
-        val rolePrefix = when (senderRole) {
+        val senderRolePrefix = when (senderRole) {
             PlayerRole.HUNTER -> messageManager.getMessage(sender, "position.hunter-prefix")
             PlayerRole.RUNNER -> messageManager.getMessage(sender, "position.runner-prefix")
             PlayerRole.SPECTATOR -> "" // 実際は使用されない
         }
-        
+
         // 送信者自身にも表示（確認用）
-        val sentMessage = messageManager.getMessage(sender, "position.sent-format",
-            "prefix" to rolePrefix,
+        val sentMessage = messageManager.getMessage(
+            sender, "position.sent-format",
+            "prefix" to senderRolePrefix,
             "sender" to sender.name,
             "x" to x,
             "y" to y,
@@ -95,11 +96,17 @@ class PositionShareCommand(
             "count" to teammates.size
         )
         sender.sendMessage(sentMessage)
-        
+
         // チームメンバーに送信
         teammates.forEach { teammate ->
-            val formattedMessage = messageManager.getMessage(teammate, "position.format",
-                "prefix" to rolePrefix,
+            val teammateRolePrefix = when (senderRole) {
+                PlayerRole.HUNTER -> messageManager.getMessage(teammate, "position.hunter-prefix")
+                PlayerRole.RUNNER -> messageManager.getMessage(teammate, "position.runner-prefix")
+                PlayerRole.SPECTATOR -> "" // 実際は使用されない
+            }
+            val formattedMessage = messageManager.getMessage(
+                teammate, "position.format",
+                "prefix" to teammateRolePrefix,
                 "sender" to sender.name,
                 "x" to x,
                 "y" to y,
@@ -107,7 +114,7 @@ class PositionShareCommand(
                 "world" to world
             )
             teammate.sendMessage(formattedMessage)
-            
+
             // 相対座標も表示（便利機能）
             if (teammate.world == sender.world) {
                 val deltaX = x - teammate.location.blockX

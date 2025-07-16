@@ -53,7 +53,7 @@ class BuddyCommand(
         
         if (target == null) {
             sender.sendMessage(messageManager.getMessage(sender, "buddy.player-not-found", 
-                mapOf("player" to targetName)))
+                "player" to targetName))
             return
         }
 
@@ -72,7 +72,7 @@ class BuddyCommand(
             sender.sendMessage(messageManager.getMessage(sender, "buddy.pending-invites-header"))
             incomingInvites.forEach { inviter ->
                 sender.sendMessage(messageManager.getMessage(sender, "buddy.pending-invite-item", 
-                    mapOf("player" to inviter.name)))
+                    "player" to inviter.name))
             }
             sender.sendMessage(messageManager.getMessage(sender, "buddy.command.accept-usage"))
             return
@@ -83,7 +83,7 @@ class BuddyCommand(
         
         if (senderPlayer == null) {
             sender.sendMessage(messageManager.getMessage(sender, "buddy.player-not-found", 
-                mapOf("player" to senderName)))
+                "player" to senderName))
             return
         }
 
@@ -101,7 +101,7 @@ class BuddyCommand(
         
         if (senderPlayer == null) {
             sender.sendMessage(messageManager.getMessage(sender, "buddy.player-not-found", 
-                mapOf("player" to senderName)))
+                "player" to senderName))
             return
         }
 
@@ -117,7 +117,7 @@ class BuddyCommand(
         if (buddy != null) {
             val coordinates = buddySystem.getBuddyRelativeCoordinates(sender)
             sender.sendMessage(messageManager.getMessage(sender, "buddy.status-has-buddy", 
-                mapOf("buddy" to buddy.name, "coordinates" to (coordinates ?: "Unknown"))))
+                "buddy" to buddy.name, "coordinates" to (coordinates ?: "Unknown")))
         } else {
             sender.sendMessage(messageManager.getMessage(sender, "buddy.status-no-buddy"))
         }
@@ -126,14 +126,14 @@ class BuddyCommand(
         val pendingTarget = buddySystem.hasPendingInvite(sender)
         if (pendingTarget != null) {
             sender.sendMessage(messageManager.getMessage(sender, "buddy.status-pending-sent", 
-                mapOf("player" to pendingTarget.name)))
+                "player" to pendingTarget.name))
         }
 
         // 受信した招待をチェック
         val incomingInvites = buddySystem.getIncomingInvites(sender)
         if (incomingInvites.isNotEmpty()) {
             sender.sendMessage(messageManager.getMessage(sender, "buddy.status-pending-received", 
-                mapOf("count" to incomingInvites.size)))
+                "count" to incomingInvites.size))
         }
     }
 
