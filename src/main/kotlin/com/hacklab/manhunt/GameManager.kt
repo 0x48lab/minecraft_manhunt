@@ -25,6 +25,7 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
     private var proximityTask: BukkitRunnable? = null
     private val currentProximityWarnings = mutableMapOf<UUID, String?>()
     private var resetCountdownTask: BukkitRunnable? = null
+    private var nightSkipTask: BukkitRunnable? = null
     
     // 統計とリザルト管理
     private val gameStats = GameStats()
@@ -542,6 +543,48 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
         proximityTask?.runTaskTimer(plugin, 0L, configManager.getProximityCheckInterval())
     }
     
+    private fun startNightSkipMonitoring() {
+        try {
+            nightSkipTask?.cancel()
+        } catch (e: Exception) {
+            plugin.logger.warning("Error canceling existing night skip task: ${e.message}")
+        }
+        
+        nightSkipTask = object : BukkitRunnable() {
+            override fun run() {
+                try {
+                    if (gameState != GameState.RUNNING) {
+                        cancel()
+                        return
+                    }
+                    
+                    // 全てのワールドをチェック
+                    Bukkit.getWorlds().forEach { world ->
+                        val currentTime = world.time
+                        // Minecraftの時間: 0=朝6時, 6000=正午, 12000=夕方, 18000=夜0時
+                        // 夜は12542〜23460 (夕暮れから夜明けまで)
+                        // 18000=真夜中、23000=夜明け2分前
+                        // 真夜中を過ぎたらスキップ（約6分間の夜を体験）
+                        if (currentTime in 18000..22999) {
+                            world.time = 23000 // 夜明け2分前に設定
+                            plugin.logger.info("Skipped night in world ${world.name}: time set to dawn minus 2 minutes")
+                            
+                            // プレイヤーに通知
+                            world.players.forEach { player ->
+                                if (getPlayerRole(player) != null && getPlayerRole(player) != PlayerRole.SPECTATOR) {
+                                    player.sendMessage(messageManager.getMessage(player, "game-management.night-skipped"))
+                                }
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    plugin.logger.warning("Error in night skip monitoring: ${e.message}")
+                }
+            }
+        }
+        nightSkipTask?.runTaskTimer(plugin, 0L, 100L) // 5秒ごとにチェック（100 ticks = 5秒）
+    }
+    
     private fun checkProximityWarnings() {
         val hunters = getAllHunters().filter { it.isOnline && !it.isDead }
         val runners = getAllRunners().filter { it.isOnline && !it.isDead }
@@ -687,6 +730,14 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
         }
         
         try {
+            nightSkipTask?.cancel()
+        } catch (e: Exception) {
+            plugin.logger.warning("Error canceling night skip task: ${e.message}")
+        } finally {
+            nightSkipTask = null
+        }
+        
+        try {
             plugin.getCompassTracker().stopTracking()
         } catch (e: Exception) {
             plugin.logger.warning("Error stopping compass tracking: ${e.message}")
@@ -697,6 +748,9 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
         } catch (e: Exception) {
             plugin.logger.warning("Error stopping currency tracking: ${e.message}")
         }
+        
+        // WarpCommandのクリーンアップ
+        (plugin.getCommand("warp")?.getExecutor() as? WarpCommand)?.onGameEnd()
         
         // 新しいリザルト表示システムを使用
         try {
@@ -1181,15 +1235,36 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
                 player.level = 0
                 player.exp = 0.0f
                 player.totalExperience = 0
-                
-                plugin.logger.info("Cleared inventory for player ${player.name}")
-                
             } catch (e: Exception) {
-                plugin.logger.warning("Error clearing inventory for player ${player.name}: ${e.message}")
+                plugin.logger.warning("Failed to clear inventory for ${player.name}: ${e.message}")
             }
         }
+    }
+    
+    private fun resetPlayerAdvancements() {
+        val hunters = getAllHunters().filter { it.isOnline }
+        val runners = getAllRunners().filter { it.isOnline }
         
-        Bukkit.broadcastMessage(messageManager.getMessage("game-management.inventory-cleared"))
+        (hunters + runners).forEach { player ->
+            try {
+                // 全ての実績をリセット
+                val advancementIterator = Bukkit.advancementIterator()
+                while (advancementIterator.hasNext()) {
+                    val advancement = advancementIterator.next()
+                    val progress = player.getAdvancementProgress(advancement)
+                    
+                    // 達成済みの条件をすべて取り消し
+                    progress.awardedCriteria.forEach { criterion ->
+                        progress.revokeCriteria(criterion)
+                    }
+                }
+                
+                plugin.logger.info("Reset advancements for ${player.name}")
+                player.sendMessage(messageManager.getMessage(player, "game-management.advancements-reset"))
+            } catch (e: Exception) {
+                plugin.logger.warning("Failed to reset advancements for ${player.name}: ${e.message}")
+            }
+        }
     }
     
     // ======== 死亡・リスポン管理システム ========
@@ -1445,6 +1520,11 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
         // プレイヤーのインベントリをクリア（ゲーム開始前のアイテムを削除）
         clearAllPlayerInventories()
         
+        // 実績リセット（設定で有効な場合）
+        if (configManager.shouldResetAdvancements()) {
+            resetPlayerAdvancements()
+        }
+        
         // 時間を朝に設定
         plugin.logger.info("Setting time to day for all worlds...")
         Bukkit.getWorlds().forEach { world ->
@@ -1515,6 +1595,11 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
         
         // Start currency tracking
         plugin.getCurrencyTracker().startTracking()
+        
+        // Start night skip monitoring if enabled
+        if (configManager.isNightSkipEnabled()) {
+            startNightSkipMonitoring()
+        }
         
         // Reset economy for all players
         plugin.getEconomyManager().resetAllBalances()

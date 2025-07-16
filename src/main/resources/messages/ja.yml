@@ -454,6 +454,8 @@ game-management:
   start-cancelled-roles: '§cハンターとランナーが最低1人ずつ必要です。ゲーム開始を中止しました。'
   players-teleported: '§6プレイヤーが各開始地点に転送されました！'
   inventory-cleared: '§6[Manhunt] プレイヤーのインベントリがクリアされました！'
+  advancements-reset: '§6[Manhunt] 実績がリセットされました！'
+  night-skipped: '§6[Manhunt] 夜がスキップされ、夜明け前になりました。'
   start-countdown: '§6[Manhunt] ゲーム開始まで {time}秒...'
   start-title: '§6🎮 ゲーム開始'
   start-subtitle: '§f{time}秒後に開始'
@@ -541,6 +543,8 @@ command-interface:
   help-position: '§a/pos - 座標を味方に共有'
   help-shop-open: '§a/shop - ショップを開く'
   help-shop-balance: '§a/shop balance - 所持金確認'
+  help-buddy: '§a/buddy help - バディーコマンドのヘルプを表示'
+  help-warp: '§a/warp <プレイヤー> - 100Gで味方にテレポート（5秒後）'
   help-admin-start: '§c/manhunt start - ゲーム強制開始'
   help-admin-stop: '§c/manhunt stop - ゲーム強制終了'
   help-admin-sethunter: '§c/manhunt sethunter <プレイヤー> - 指定プレイヤーをハンターに設定'
@@ -552,6 +556,8 @@ command-interface:
   help-admin-respawntime: '§c/manhunt respawntime <プレイヤー> <秒> - リスポン時間変更'
   help-admin-reset: '§c/manhunt reset - ゲーム強制リセット'
   help-admin-give: '§c/manhunt give <プレイヤー> <金額> - お金を付与'
+  help-admin-validate: '§c/manhunt validate-messages - メッセージキーの不足をチェック'
+  help-admin-diagnose: '§c/manhunt diagnose - 診断情報を出力'
 
 # Game result and MVP system
 result:
@@ -673,6 +679,7 @@ economy:
     received-from-admin: '§6[システム] §a管理者{admin}から{amount}{unit}を受け取りました。'
     runner-earned: '§a[+{amount}{unit}] {reason}'
     movement-earned: '§a[+{amount}{unit}] {reason}'
+    advancement-earned: '§a[+{amount}{unit}] {reason}'
     balance-updated: '残高が更新されました: {balance}{unit}'
     statistics-error: '統計記録でエラーが発生しました: {error}'
   
@@ -683,6 +690,7 @@ earn-reasons:
     kill: '{runner}を倒した'
     proximity: 'ランナーとの距離{distance}m以内に接近'
     time-bonus: '追跡ボーナス'
+    tracking-persistence: '{runner}を{duration}秒間追跡し続けた'
   
   runner:
     survival-bonus: '生存ボーナス'
@@ -696,6 +704,28 @@ earn-reasons:
     sprint: 'スプリント移動 ({distance}m)'
   
   admin-grant: '管理者{admin}からの付与'
+  advancement: '実績解除: {advancement}'
+
+# ワープコマンド
+warp:
+  player-only: '§cこのコマンドはプレイヤーのみが使用できます。'
+  game-only: '§cワープはゲーム中のみ使用できます。'
+  spectator-cannot-use: '§c観戦者はワープを使用できません。'
+  usage: '§c使用法: /warp <プレイヤー名>'
+  player-not-found: '§cプレイヤー {player} が見つかりません。'
+  cannot-warp-self: '§c自分自身にワープすることはできません。'
+  not-teammate: '§c{player} はあなたの味方ではありません。'
+  insufficient-funds: '§cワープには{cost}{unit}が必要です。（現在: {balance}{unit}）'
+  already-warping: '§c既にワープ処理中です。'
+  cost-deducted: '§6ワープ費用として{cost}{unit}を消費しました。'
+  starting: '§a{target}へのワープを開始します... §e({seconds}秒)'
+  incoming: '§e{player}があなたの元へワープしてきます。'
+  cancelled-offline: '§cプレイヤーがオフラインになったため、ワープがキャンセルされました。'
+  cancelled-moved: '§c移動したため、ワープがキャンセルされました。'
+  countdown-title: '§6§lワープ中'
+  countdown-subtitle: '§e{seconds}秒後にテレポート'
+  success: '§a{target}へのワープに成功しました！'
+  arrived: '§e{player}がワープしてきました！'
   
   # リセット関連
   reset:
@@ -1114,25 +1144,4 @@ shop-extended:
     player-purchase: '{player} が {item} を購入 ({price}{unit})'
     invalid-material: '無効なマテリアル: {material} (セットアイテム: {itemId})'
 
-# Test keys
-color: '§7[未翻訳: color]'
-count: '§7[未翻訳: count]'
-current: '§7[未翻訳: current]'
-dealt: '§7[未翻訳: dealt]'
-dimensions: '§7[未翻訳: dimensions]'
-duration: '§7[未翻訳: duration]'
-earned: '§7[未翻訳: earned]'
-error: '§c[エラー: error]'
-health: '§7[未翻訳: health]'
-input: '§7[未翻訳: input]'
-kills: '§7[未翻訳: kills]'
-page: '§7[未翻訳: page]'
-player: '§7[未翻訳: player]'
-rank: '§7[未翻訳: rank]'
-roleColor: '§7[未翻訳: roleColor]'
-seconds: '§7[未翻訳: seconds]'
-state: '§7[未翻訳: state]'
-status: '§7[未翻訳: status]'
-survival: '§7[未翻訳: survival]'
-time: '§7[未翻訳: time]'
-world: '§7[未翻訳: world]'
+

@@ -65,6 +65,7 @@ class EconomyManager(private val plugin: Main) {
             val shouldShowMessage = when (reason) {
                 is EarnReason.Hunter.TimeBonus -> false
                 is EarnReason.Hunter.DamageDealt -> false  // ダメージ報酬も抑制
+                is EarnReason.Hunter.TrackingPersistence -> true  // 追跡持続ボーナスは表示
                 is EarnReason.Runner.SurvivalBonus -> false
                 is EarnReason.Movement.Sprint -> false  // スプリント報酬も抑制（ログが多すぎるため）
                 is EarnReason.AdminGrant -> false  // 管理者付与も抑制（別途通知）
@@ -89,6 +90,11 @@ class EconomyManager(private val plugin: Main) {
                         "unit" to unit,
                         "reason" to reason.getDescription(player)
                     )
+                    is EarnReason.Advancement -> messageManager.getMessage(player, "economy.currency.advancement-earned",
+                        "amount" to amount,
+                        "unit" to unit,
+                        "reason" to reason.getDescription(player)
+                    )
                     is EarnReason.AdminGrant -> "" // 空文字（表示されない）
                 }
                 player.sendMessage(message)
@@ -99,6 +105,7 @@ class EconomyManager(private val plugin: Main) {
         val shouldLog = when (reason) {
             is EarnReason.Hunter.TimeBonus -> false
             is EarnReason.Hunter.DamageDealt -> false  // ダメージ報酬も抑制
+            is EarnReason.Hunter.TrackingPersistence -> true  // 追跡持続ボーナスはログに記録
             is EarnReason.Runner.SurvivalBonus -> false
             is EarnReason.Movement.Sprint -> false  // スプリント報酬も抑制
             is EarnReason.AdminGrant -> true  // 管理者付与はログに記録
@@ -218,6 +225,14 @@ sealed class EarnReason {
             override fun getDescription(player: Player?) = 
                 getMessage(player, "earn-reasons.hunter.time-bonus")
         }
+        
+        data class TrackingPersistence(val runnerName: String, val duration: Int) : Hunter() {
+            override fun getDescription(player: Player?) = 
+                getMessage(player, "earn-reasons.hunter.tracking-persistence", 
+                    "runner" to runnerName, 
+                    "duration" to duration
+                )
+        }
     }
     
     // ランナー用の獲得理由
@@ -258,6 +273,12 @@ sealed class EarnReason {
     data class AdminGrant(val adminName: String) : EarnReason() {
         override fun getDescription(player: Player?) = 
             getMessage(player, "earn-reasons.admin-grant", "admin" to adminName)
+    }
+
+    // 実績解除
+    data class Advancement(val advancementName: String) : EarnReason() {
+        override fun getDescription(player: Player?) = 
+            getMessage(player, "earn-reasons.advancement", "advancement" to advancementName)
     }
 }
 

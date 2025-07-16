@@ -39,6 +39,9 @@ A comprehensive multiplayer Manhunt plugin for Minecraft servers featuring advan
 - **Team Communication**: Private team chat and coordinate sharing
 - **Buddy System**: Partner up with a teammate for enhanced coordination
 - **Real-time UI**: Dynamic scoreboard, action bar, and boss bar displays
+- **Warp System**: Teleport to teammates with cost and delay
+- **Automatic Night Skip**: Skip to dawn when night falls
+- **Achievement Reset**: Fresh start for each game
 
 ## 🎯 Game Objectives
 
@@ -62,8 +65,8 @@ A comprehensive multiplayer Manhunt plugin for Minecraft servers featuring advan
 
 ## 🎮 Quick Start
 
-1. Join the server and run `/manhunt join`
-2. Select your role using `/manhunt roles` (GUI menu)
+1. Join the server and run `/manhunt roles`
+2. Select your role using menu (GUI menu)
 3. Wait for minimum players and automatic game start
 4. Use `/manhunt help` for all available commands
 
@@ -81,6 +84,9 @@ language:
 game:
   min-players: 2                   # Minimum players to start
   start-countdown: 10              # Countdown before game start
+  reset-advancements: true         # Reset achievements on game start
+  night-skip:
+    enabled: true                  # Auto-skip to dawn
 
 # Economy Settings
 economy:
@@ -107,6 +113,7 @@ economy:
 - `/shop` - Open shop menu
 - `/shop balance` - Check balance
 - `/buddy <subcommand>` - Buddy system commands (during game only)
+- `/warp <player>` - Teleport to teammate (costs 100G, 5s delay)
 
 ### Admin Commands
 - `/manhunt start` - Force start game
@@ -130,6 +137,7 @@ economy:
 **🗡 Hunters:**
 - 5G per damage point dealt to Runners
 - 150G per Runner elimination
+- 30G for tracking a Runner continuously for 30 seconds (within 100m)
 - 1.5G every 30 seconds (time bonus)
 
 **🏃 Runners:**
@@ -211,9 +219,19 @@ To manually check message keys:
 
 If any keys are missing, the build will fail and provide suggestions for the missing keys.
 
-## 📝 Changelog
+## 📝 Latest Updates (2025-01-16)
 
-See [CHANGELOG.md](CHANGELOG.md) for detailed version history.
+### New Features
+- **Achievement Reset**: Automatically resets all player achievements when game starts
+- **Night Skip**: Automatically advances to dawn when night falls (configurable)
+- **Warp Command**: Teleport to teammates with 100G cost and 5-second delay
+- **Tracking Persistence Bonus**: Hunters earn 30G for continuously tracking runners
+
+### Bug Fixes
+- Fixed role selector GUI not working during post-game cooldown
+- Fixed message placeholder issues in team chat and position share
+
+See [docs/CHANGELOG.md](docs/CHANGELOG.md) for detailed version history.
 
 ## 🤝 Contributing
 

@@ -23,6 +23,7 @@
                 <li><a href="#commands" class="nav-link" data-i18n="nav.commands">コマンド</a></li>
                 <li><a href="#economy" class="nav-link" data-i18n="nav.economy">経済</a></li>
                 <li><a href="#shop" class="nav-link" data-i18n="nav.shop">ショップ</a></li>
+                <li><a href="#updates" class="nav-link" data-i18n="nav.updates">更新情報</a></li>
                 <li><a href="#tips" class="nav-link" data-i18n="nav.tips">攻略</a></li>
                 <li><a href="#download" class="nav-link" data-i18n="nav.download">ダウンロード</a></li>
             </ul>
@@ -206,6 +207,20 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="feature-category">
+                    <h3 class="category-title" data-i18n="features.game.title">🎮 ゲーム管理機能</h3>
+                    <div class="feature-grid">
+                        <div class="feature-item">
+                            <h4 data-i18n="features.game.reset.title">実績リセット</h4>
+                            <p data-i18n="features.game.reset.desc">ゲーム開始時に全プレイヤーの実績を自動リセット。公平なスタートを実現。</p>
+                        </div>
+                        <div class="feature-item">
+                            <h4 data-i18n="features.game.night.title">自動夜スキップ</h4>
+                            <p data-i18n="features.game.night.desc">夜になると自動的に夜明け2分前まで時間を進める。モンスター出現時間を確保。</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
@@ -247,6 +262,10 @@
                         <div class="command-item">
                             <code>/pos</code>
                             <p data-i18n="commands.pos.desc">座標をチームに共有</p>
+                        </div>
+                        <div class="command-item">
+                            <code>/warp &lt;プレイヤー&gt;</code>
+                            <p data-i18n="commands.warp.desc">味方にテレポート（100G・5秒詠唱）</p>
                         </div>
                         <div class="command-item">
                             <code>/buddy invite &lt;プレイヤー&gt;</code>
@@ -296,6 +315,10 @@
                         <div class="earning-item">
                             <span class="earning-name" data-i18n="economy.hunter.time">時間ボーナス</span>
                             <span class="earning-value" data-i18n="economy.hunter.time.desc">30秒ごとに1.5G</span>
+                        </div>
+                        <div class="earning-item">
+                            <span class="earning-name" data-i18n="economy.hunter.tracking">追跡持続ボーナス</span>
+                            <span class="earning-value" data-i18n="economy.hunter.tracking.desc">100m以内30秒継続で30G</span>
                         </div>
                     </div>
                 </div>
@@ -600,6 +623,34 @@
                             <div class="item-restriction" data-i18n="shop.role.hunter_only">Hunter only</div>
                             <div class="item-limit" data-i18n="shop.limit.once">Purchase limit: 1</div>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="updates" class="section">
+        <div class="container">
+            <h2 class="section-title" data-i18n="updates.title">最新アップデート</h2>
+            
+            <div class="update-card">
+                <h3 class="update-version">v2025.01.16</h3>
+                <div class="update-grid">
+                    <div class="update-item">
+                        <h4 data-i18n="updates.features">新機能</h4>
+                        <ul>
+                            <li data-i18n="updates.achievement">実績リセット: ゲーム開始時に全実績を自動リセット</li>
+                            <li data-i18n="updates.nightskip">自動夜スキップ: 夜になると夜明け2分前まで自動スキップ</li>
+                            <li data-i18n="updates.warp">ワープコマンド: 100Gで味方にテレポート（5秒詠唱）</li>
+                            <li data-i18n="updates.tracking">追跡持続ボーナス: ハンターが100m以内30秒継続で30G獲得</li>
+                        </ul>
+                    </div>
+                    <div class="update-item">
+                        <h4 data-i18n="updates.fixes">修正</h4>
+                        <ul>
+                            <li data-i18n="updates.roleselector">ゲーム終了後も役割選択本が使用可能に</li>
+                            <li data-i18n="updates.messages">メッセージシステムの改善</li>
+                        </ul>
                     </div>
                 </div>
             </div>

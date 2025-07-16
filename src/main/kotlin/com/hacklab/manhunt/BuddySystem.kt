@@ -75,7 +75,8 @@ class BuddySystem(
             "player" to target.name))
         target.sendMessage(messageManager.getMessage(target, "buddy.invite-received", 
             "sender" to sender.name))
-        target.sendMessage(messageManager.getMessage(target, "buddy.invite-instructions"))
+        target.sendMessage(messageManager.getMessage(target, "buddy.invite-instructions",
+            "sender" to sender.name))
         
         return true
     }
@@ -198,12 +199,12 @@ class BuddySystem(
             val deltaX = buddy.location.blockX - player.location.blockX
             val deltaY = buddy.location.blockY - player.location.blockY
             val deltaZ = buddy.location.blockZ - player.location.blockZ
-            
-            val xSign = if (deltaX >= 0) "+" else ""
-            val ySign = if (deltaY >= 0) "+" else ""
-            val zSign = if (deltaZ >= 0) "+" else ""
-            
-            return "X:$xSign$deltaX Y:$ySign$deltaY Z:$zSign$deltaZ"
+
+            val xStr = if (deltaX >= 0) "§a+${deltaX}" else "§c${deltaX}"
+            val yStr = if (deltaY >= 0) "§a+${deltaY}" else "§c${deltaY}"
+            val zStr = if (deltaZ >= 0) "§a+${deltaZ}" else "§c${deltaZ}"
+
+            return "X:$xStr Y:$yStr Z:$zStr"
         } catch (e: Exception) {
             return messageManager.getMessage(player, "buddy.coordinate-error")
         }

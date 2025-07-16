@@ -22,8 +22,8 @@ class RoleSelectorMenu(
     private val openMenus = mutableSetOf<Player>()
 
     fun openMenu(player: Player) {
-        // ゲーム開始前かつスペクテーターの場合のみ開ける
-        if (gameManager.getGameState() != GameState.WAITING) {
+        // ゲーム開始前またはゲーム終了後のみ開ける
+        if (gameManager.getGameState() != GameState.WAITING && gameManager.getGameState() != GameState.ENDED) {
             player.sendMessage(messageManager.getMessage(player, "role-selector.game-running"))
             return
         }

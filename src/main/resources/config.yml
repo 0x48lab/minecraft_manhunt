@@ -39,6 +39,14 @@ game:
     # ハンターの即座リスポン有効
     hunter-instant-respawn: true
   
+  # ゲーム開始時に全プレイヤーの実績をリセットする
+  reset-advancements: true
+  
+  # 夜スキップ設定
+  night-skip:
+    # 夜になったら自動的に夜明け2分前に時間を進める
+    enabled: true
+  
   # 名前タグ表示設定
   name-tag:
     # ゲーム中に名前タグを非表示にする
@@ -124,6 +132,14 @@ economy:
     time-bonus: 0.05
     # 時間ボーナスの支給間隔（秒）
     time-bonus-interval: 30
+    # 追跡持続ボーナス
+    tracking-reward: 30
+    # 追跡持続ボーナスの距離（メートル）
+    tracking-distance: 100
+    # 追跡持続に必要な時間（秒）
+    tracking-duration: 30
+    # 追跡持続ボーナスのクールダウン（秒）
+    tracking-cooldown: 60
   
   # ランナー用設定
   runner:
@@ -143,6 +159,9 @@ economy:
     escape-reward: 20
     # 逃走成功とみなす距離（メートル）
     escape-distance: 100
+
+  # 実績解除ボーナス
+  advancement-reward: 10
 
 # 移動報酬システム
 movement:

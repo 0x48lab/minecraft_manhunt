@@ -111,7 +111,7 @@ class MessageManager(private val plugin: Main) {
                 value is String -> {
                     result[fullKey] = value
                     // 特定のキーをデバッグ用にログ出力
-                    if (fullKey.contains("reset-countdown")) {
+                    if (fullKey.contains("reset-countdown") || fullKey.startsWith("warp.")) {
                         plugin.logger.info("Loaded message key: $fullKey = $value")
                     }
                 }
@@ -281,15 +281,31 @@ class MessageManager(private val plugin: Main) {
             // reset-countdown関連のキーを探す
             val resetKeys = msgs.keys.filter { it.contains("reset-countdown") }
             plugin.logger.info("  Reset-countdown keys in $lang: $resetKeys")
+            
+            // warp関連のキーを探す
+            val warpKeys = msgs.keys.filter { it.startsWith("warp.") }
+            plugin.logger.info("  Warp keys in $lang: ${warpKeys.size} found")
+            if (warpKeys.isNotEmpty()) {
+                plugin.logger.info("  Warp message keys: ${warpKeys.joinToString(", ")}")
+            }
         }
         
         // 特定のキーの存在確認
-        val testKey = "ui.bossbar.reset-countdown"
-        messages.forEach { (lang, msgs) ->
-            if (msgs.containsKey(testKey)) {
-                plugin.logger.info("  ✓ $testKey found in $lang: ${msgs[testKey]}")
-            } else {
-                plugin.logger.warning("  ✗ $testKey NOT found in $lang")
+        val testKeys = listOf(
+            "ui.bossbar.reset-countdown",
+            "warp.starting",
+            "warp.countdown",
+            "warp.success",
+            "warp.cancelled.movement"
+        )
+        
+        testKeys.forEach { testKey ->
+            messages.forEach { (lang, msgs) ->
+                if (msgs.containsKey(testKey)) {
+                    plugin.logger.info("  ✓ $testKey found in $lang")
+                } else {
+                    plugin.logger.warning("  ✗ $testKey NOT found in $lang")
+                }
             }
         }
         plugin.logger.info("=== End Diagnostic Info ===")

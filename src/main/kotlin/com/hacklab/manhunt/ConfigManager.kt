@@ -33,6 +33,12 @@ class ConfigManager(private val plugin: Main) {
     fun getRunnerRespawnTime(): Int = config.getInt("game.respawn.runner-respawn-time", 10)
     fun isHunterInstantRespawn(): Boolean = config.getBoolean("game.respawn.hunter-instant-respawn", true)
     
+    // 実績リセット設定
+    fun shouldResetAdvancements(): Boolean = config.getBoolean("game.reset-advancements", true)
+    
+    // 夜スキップ設定
+    fun isNightSkipEnabled(): Boolean = config.getBoolean("game.night-skip.enabled", true)
+    
     // 距離表示設定
     fun getMinimumDisplayDistance(): Int = config.getInt("ui.distance-display.minimum-distance", 5)
     
@@ -197,6 +203,10 @@ class ConfigManager(private val plugin: Main) {
             hunterProximityDistance = economySection.getInt("hunter.proximity-distance", 50),
             hunterTimeBonus = economySection.getDouble("hunter.time-bonus", 0.3),
             hunterTimeBonusInterval = economySection.getInt("hunter.time-bonus-interval", 10),
+            hunterTrackingReward = economySection.getInt("hunter.tracking-reward", 30),
+            hunterTrackingDistance = economySection.getInt("hunter.tracking-distance", 100),
+            hunterTrackingDuration = economySection.getInt("hunter.tracking-duration", 30),
+            hunterTrackingCooldown = economySection.getInt("hunter.tracking-cooldown", 60),
             
             // ランナー設定
             runnerSurvivalBonus = economySection.getDouble("runner.survival-bonus", 0.5),
@@ -207,6 +217,7 @@ class ConfigManager(private val plugin: Main) {
             runnerDiamondReward = economySection.getInt("runner.diamond-reward", 100),
             runnerEscapeReward = economySection.getInt("runner.escape-reward", 50),
             runnerEscapeDistance = economySection.getInt("runner.escape-distance", 100),
+            advancementReward = economySection.getInt("runner.advancement-reward", 10),
             
             // 共通設定（config.ymlの実際の値に合わせてデフォルト値を修正）
             startingBalance = economySection.getInt("starting-balance", 0),

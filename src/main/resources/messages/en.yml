@@ -453,6 +453,8 @@ game-management:
   start-cancelled-roles: '§cAt least 1 hunter and 1 runner required. Game start cancelled.'
   players-teleported: '§6Players have been teleported to starting positions!'
   inventory-cleared: '§6[Manhunt] Player inventories have been cleared!'
+  advancements-reset: '§6[Manhunt] Advancements have been reset!'
+  night-skipped: '§6[Manhunt] Night has been skipped to dawn.'
   start-countdown: '§6[Manhunt] Game starting in {time} seconds...'
   start-title: '§6🎮 Game Start'
   start-subtitle: '§fStarting in {time} seconds'
@@ -540,6 +542,8 @@ command-interface:
   help-position: '§a/pos - Share position with teammates'
   help-shop-open: '§a/shop - Open shop'
   help-shop-balance: '§a/shop balance - Check balance'
+  help-buddy: '§a/buddy help - Show buddy commands'
+  help-warp: '§a/warp <player> - Teleport to teammate for 100G (5s delay)'
   help-admin-start: '§c/manhunt start - Force start game'
   help-admin-stop: '§c/manhunt stop - Force stop game'
   help-admin-sethunter: '§c/manhunt sethunter <player> - Set player as hunter'
@@ -551,6 +555,8 @@ command-interface:
   help-admin-respawntime: '§c/manhunt respawntime <player> <seconds> - Change respawn time'
   help-admin-reset: '§c/manhunt reset - Force reset game'
   help-admin-give: '§c/manhunt give <player> <amount> - Give money to player'
+  help-admin-validate: '§c/manhunt validate-messages - Check for missing message keys'
+  help-admin-diagnose: '§c/manhunt diagnose - Output diagnostic information'
 
 # Game result and MVP system
 result:
@@ -671,6 +677,7 @@ economy:
     hunter-earned: '§a[+{amount}{unit}] {reason}'
     runner-earned: '§a[+{amount}{unit}] {reason}'
     movement-earned: '§a[+{amount}{unit}] {reason}'
+    advancement-earned: '§a[+{amount}{unit}] {reason}'
     received-from-admin: '§6[System] §aReceived {amount}{unit} from admin {admin}.'
     balance-updated: 'Balance updated: {balance}{unit}'
     statistics-error: 'Error occurred in statistics recording: {error}'
@@ -682,6 +689,7 @@ earn-reasons:
     kill: 'Killed {runner}'
     proximity: 'Approached runner within {distance}m'
     time-bonus: 'Tracking bonus'
+    tracking-persistence: 'Tracked {runner} continuously for {duration} seconds'
   
   runner:
     survival-bonus: 'Survival bonus'
@@ -695,6 +703,28 @@ earn-reasons:
     sprint: 'Sprint movement ({distance}m)'
   
   admin-grant: 'Grant from admin {admin}'
+  advancement: 'Advancement Get: {advancement}'
+
+# Warp command
+warp:
+  player-only: '§cThis command can only be used by players.'
+  game-only: '§cWarp can only be used during the game.'
+  spectator-cannot-use: '§cSpectators cannot use warp.'
+  usage: '§cUsage: /warp <player>'
+  player-not-found: '§cPlayer {player} not found.'
+  cannot-warp-self: '§cYou cannot warp to yourself.'
+  not-teammate: '§c{player} is not your teammate.'
+  insufficient-funds: '§cWarp costs {cost}{unit}. (Current: {balance}{unit})'
+  already-warping: '§cAlready processing a warp.'
+  cost-deducted: '§6Deducted {cost}{unit} for warp cost.'
+  starting: '§aStarting warp to {target}... §e({seconds}s)'
+  incoming: '§e{player} is warping to you.'
+  cancelled-offline: '§cWarp cancelled - player went offline.'
+  cancelled-moved: '§cWarp cancelled - you moved.'
+  countdown-title: '§6§lWarping'
+  countdown-subtitle: '§eTeleporting in {seconds}s'
+  success: '§aSuccessfully warped to {target}!'
+  arrived: '§e{player} has warped to you!'
   
   # Reset related
   reset:
@@ -1113,25 +1143,4 @@ shop-extended:
     player-purchase: '{player} purchased {item} ({price}{unit})'
     invalid-material: 'Invalid material: {material} (Set item: {itemId})'
 
-# Test keys
-color: '§7[Missing: color]'
-count: '§7[Missing: count]'
-current: '§7[Missing: current]'
-dealt: '§7[Missing: dealt]'
-dimensions: '§7[Missing: dimensions]'
-duration: '§7[Missing: duration]'
-earned: '§7[Missing: earned]'
-error: '§c[Error: error]'
-health: '§7[Missing: health]'
-input: '§7[Missing: input]'
-kills: '§7[Missing: kills]'
-page: '§7[Missing: page]'
-player: '§7[Missing: player]'
-rank: '§7[Missing: rank]'
-roleColor: '§7[Missing: roleColor]'
-seconds: '§7[Missing: seconds]'
-state: '§7[Missing: state]'
-status: '§7[Missing: status]'
-survival: '§7[Missing: survival]'
-time: '§7[Missing: time]'
-world: '§7[Missing: world]'
+

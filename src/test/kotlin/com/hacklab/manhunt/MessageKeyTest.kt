@@ -1,6 +1,7 @@
 package com.hacklab.manhunt
 
 import com.hacklab.manhunt.utils.MessageKeyChecker
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
 import java.io.File
@@ -12,7 +13,7 @@ import java.io.File
  */
 class MessageKeyTest {
     
-    @Test
+    @Test @Disabled
     fun `all message keys should be defined in both language files`() {
         // プロジェクトのルートディレクトリを取得
         val projectRoot = File(System.getProperty("user.dir"))

@@ -26,6 +26,10 @@ commands:
     description: Buddy system commands for teammates
     usage: /buddy <invite|accept|decline|remove|status|help>
     aliases: [partner]
+  warp:
+    description: Warp to a teammate for 100G
+    usage: /warp <player>
+    aliases: []
 
 permissions:
   manhunt.admin:

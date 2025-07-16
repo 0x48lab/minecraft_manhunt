@@ -20,6 +20,7 @@ import org.bukkit.Material
 import org.bukkit.inventory.ItemFlag
 import org.bukkit.enchantments.Enchantment
 import org.bukkit.event.player.PlayerToggleSprintEvent
+import org.bukkit.event.player.PlayerAdvancementDoneEvent
 import org.bukkit.event.player.PlayerMoveEvent
 
 class EventListener(
@@ -104,6 +105,9 @@ class EventListener(
             // ゲーム待機中またはゲームに参加していない場合
             gameManager.removePlayer(player, true)
         }
+        
+        // WarpCommandのクリーンアップ
+        (player.server.getPluginCommand("warp")?.getExecutor() as? WarpCommand)?.onPlayerQuit(player)
     }
     
     @EventHandler
@@ -137,7 +141,8 @@ class EventListener(
             event.action == Action.LEFT_CLICK_AIR || event.action == Action.LEFT_CLICK_BLOCK) {
             
             // ロール変更アイテムかチェック
-            if (isRoleChangeItem(item) && gameManager.getGameState() == GameState.WAITING) {
+            if (isRoleChangeItem(item) && 
+                (gameManager.getGameState() == GameState.WAITING || gameManager.getGameState() == GameState.ENDED)) {
                 event.isCancelled = true
                 plugin.logger.info("${player.name} clicked role change item, opening menu")
                 roleSelectorMenu.openMenu(player)
@@ -367,5 +372,33 @@ class EventListener(
         } catch (e: Exception) {
             plugin.logger.warning("Error tracking sprint movement for ${player.name}: ${e.message}")
         }
+    }
+
+    @EventHandler
+    fun onAdvancementDone(event: PlayerAdvancementDoneEvent) {
+        val player = event.player
+        val advancement = event.advancement
+
+        // ゲーム中でなければ処理しない
+        if (gameManager.getGameState() != GameState.RUNNING) {
+            return
+        }
+
+        // プレイヤーの役割をチェック
+        val role = gameManager.getPlayerRole(player)
+        if (role == null || role == PlayerRole.SPECTATOR) {
+            return
+        }
+
+        // レシピのアンロックは除外
+        if (advancement.key.key.startsWith("recipes/")) {
+            return
+        }
+
+        // 通貨を付与
+        val economyManager = plugin.getEconomyManager()
+        val advancementReward = plugin.getConfigManager().getCurrencyConfig().advancementReward
+        val advancementName = advancement.key.key
+        economyManager.addMoney(player, advancementReward, com.hacklab.manhunt.economy.EarnReason.Advancement(advancementName))
     }
 }

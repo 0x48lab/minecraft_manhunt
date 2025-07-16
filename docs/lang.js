@@ -8,6 +8,7 @@ const translations = {
         'nav.commands': 'コマンド',
         'nav.economy': '経済',
         'nav.shop': 'ショップ',
+        'nav.updates': '更新情報',
         'nav.tips': '攻略',
         'nav.download': 'ダウンロード',
         
@@ -74,6 +75,11 @@ const translations = {
         'features.team.chat.desc': '/rコマンドで味方だけにメッセージ送信。',
         'features.visibility.title': '名前表示システム',
         'features.visibility.desc': 'スプリント中（スニーク解除時）は名前が表示され、敵が3チャンク以内にいると移動でG獲得。',
+        'features.game.title': '🎮 ゲーム管理機能',
+        'features.game.reset.title': '実績リセット',
+        'features.game.reset.desc': 'ゲーム開始時に全プレイヤーの実績を自動リセット。公平なスタートを実現。',
+        'features.game.night.title': '自動夜スキップ',
+        'features.game.night.desc': '夜になると自動的に夜明け2分前まで時間を進める。モンスター出現時間を確保。',
         
         // Commands Section
         'commands.title': 'コマンド一覧',
@@ -86,6 +92,7 @@ const translations = {
         'commands.compass.desc': '追跡コンパスを取得（ハンターのみ）',
         'commands.teamchat.desc': 'チームチャット',
         'commands.pos.desc': '座標をチームに共有',
+        'commands.warp.desc': '味方にテレポート（100G・5秒詠唱）',
         'commands.buddy.desc': 'バディー申請を送る',
         'commands.shop.desc': 'ショップメニューを開く',
         'commands.balance.desc': '所持金を確認',
@@ -101,6 +108,8 @@ const translations = {
         'economy.hunter.kill.desc': '1キル = 150G',
         'economy.hunter.time': '時間ボーナス',
         'economy.hunter.time.desc': '30秒ごとに1.5G',
+        'economy.hunter.tracking': '追跡持続ボーナス',
+        'economy.hunter.tracking.desc': '100m以内30秒継続で30G',
         'economy.runner.title': '🏃 ランナーの獲得方法',
         'economy.runner.survival': '生存ボーナス',
         'economy.runner.survival.desc': '30秒ごとに1.5G',
@@ -252,6 +261,17 @@ const translations = {
         'download.install.3': 'サーバーを再起動',
         'download.install.4': 'config.ymlで設定をカスタマイズ',
         
+        // Updates Section
+        'updates.title': '最新アップデート',
+        'updates.features': '新機能',
+        'updates.achievement': '実績リセット: ゲーム開始時に全実績を自動リセット',
+        'updates.nightskip': '自動夜スキップ: 夜になると夜明け2分前まで自動スキップ',
+        'updates.warp': 'ワープコマンド: 100Gで味方にテレポート（5秒詠唱）',
+        'updates.tracking': '追跡持続ボーナス: ハンターが100m以内30秒継続で30G獲得',
+        'updates.fixes': '修正',
+        'updates.roleselector': 'ゲーム終了後も役割選択本が使用可能に',
+        'updates.messages': 'メッセージシステムの改善',
+        
         // Footer
         'footer.description': '究極の追跡ゲーム体験を提供する<br>Minecraftプラグイン',
         'footer.links': 'リンク',
@@ -270,6 +290,7 @@ const translations = {
         'nav.commands': 'Commands',
         'nav.economy': 'Economy',
         'nav.shop': 'Shop',
+        'nav.updates': 'Updates',
         'nav.tips': 'Tips',
         'nav.download': 'Download',
         
@@ -336,6 +357,11 @@ const translations = {
         'features.team.chat.desc': 'Send messages to teammates only with /r command.',
         'features.visibility.title': 'Name Display System',
         'features.visibility.desc': 'Names visible when sprinting (not sneaking). Earn G by moving when enemies within 3 chunks.',
+        'features.game.title': '🎮 Game Management',
+        'features.game.reset.title': 'Achievement Reset',
+        'features.game.reset.desc': 'Automatically reset all player achievements at game start for fair play.',
+        'features.game.night.title': 'Auto Night Skip',
+        'features.game.night.desc': 'Automatically advances to 2 minutes before dawn when night falls.',
         
         // Commands Section
         'commands.title': 'Commands',
@@ -348,6 +374,7 @@ const translations = {
         'commands.compass.desc': 'Get tracking compass (Hunters only)',
         'commands.teamchat.desc': 'Team chat',
         'commands.pos.desc': 'Share coordinates with team',
+        'commands.warp.desc': 'Teleport to teammate (100G, 5s delay)',
         'commands.buddy.desc': 'Send buddy invitation',
         'commands.shop.desc': 'Open shop menu',
         'commands.balance.desc': 'Check balance',
@@ -363,6 +390,8 @@ const translations = {
         'economy.hunter.kill.desc': '1 kill = 150G',
         'economy.hunter.time': 'Time Bonus',
         'economy.hunter.time.desc': '1.5G every 30 seconds',
+        'economy.hunter.tracking': 'Tracking Persistence',
+        'economy.hunter.tracking.desc': '30G for 30s within 100m',
         'economy.runner.title': '🏃 Runner Earning Methods',
         'economy.runner.survival': 'Survival Bonus',
         'economy.runner.survival.desc': '1.5G every 30 seconds',
@@ -513,6 +542,17 @@ const translations = {
         'download.install.2': 'Place JAR file in plugins folder',
         'download.install.3': 'Restart server',
         'download.install.4': 'Customize settings in config.yml',
+        
+        // Updates Section
+        'updates.title': 'Latest Updates',
+        'updates.features': 'New Features',
+        'updates.achievement': 'Achievement Reset: Automatically reset all achievements at game start',
+        'updates.nightskip': 'Auto Night Skip: Automatically advances to 2 minutes before dawn',
+        'updates.warp': 'Warp Command: Teleport to teammate (100G, 5s cast time)',
+        'updates.tracking': 'Tracking Persistence: Hunters earn 30G for staying within 100m for 30s',
+        'updates.fixes': 'Fixes',
+        'updates.roleselector': 'Role selector book now works after game ends',
+        'updates.messages': 'Message system improvements',
         
         // Footer
         'footer.description': 'The ultimate chase experience<br>for Minecraft servers',

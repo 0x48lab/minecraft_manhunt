@@ -601,6 +601,8 @@ class ManhuntCommand(
         sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-position"))
         sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-shop-open"))
         sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-shop-balance"))
+        sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-buddy"))
+        sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-warp"))
         sender.sendMessage("")
         sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-virtual-compass"))
         sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-compass-usage"))
@@ -621,6 +623,8 @@ class ManhuntCommand(
             sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-admin-respawntime"))
             sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-admin-reset"))
             sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-admin-give"))
+            sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-admin-validate"))
+            sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-admin-diagnose"))
         }
     }
     

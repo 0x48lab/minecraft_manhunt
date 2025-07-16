@@ -62,14 +62,10 @@ object MessageKeyChecker {
         
         // getMessage呼び出しのパターン
         val patterns = listOf(
+            // getMessage("key", ...)
+            """\.getMessage\s*\([^,)]+,\s*"([^"]+)"""".toRegex(),
             // getMessage("key")
-            """getMessage\s*\(\s*"([^"]+)"""".toRegex(),
-            // getMessage(player, "key")
-            """getMessage\s*\([^,]+,\s*"([^"]+)"""".toRegex(),
-            // messageManager.getMessage("key")
-            """messageManager\.getMessage\s*\(\s*"([^"]+)"""".toRegex(),
-            // messageManager.getMessage(player, "key")
-            """messageManager\.getMessage\s*\([^,]+,\s*"([^"]+)"""".toRegex()
+            """\.getMessage\s*\(\s*"([^"]+)"""".toRegex()
         )
         
         patterns.forEach { pattern ->

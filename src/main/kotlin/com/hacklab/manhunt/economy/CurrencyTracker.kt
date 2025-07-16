@@ -28,6 +28,10 @@ class CurrencyTracker(
     private val lastSprintReward = mutableMapOf<UUID, Long>()
     private val sprintRewardThisMinute = mutableMapOf<UUID, Int>()
     
+    // 追跡持続ボーナス用
+    private val trackingStartTime = mutableMapOf<String, Long>() // "hunter_uuid:runner_uuid" -> 開始時刻
+    private val lastTrackingBonus = mutableMapOf<String, Long>() // 最後にボーナスを付与した時刻
+    
     private var timeBonusTask: BukkitRunnable? = null
     
     /**
@@ -59,6 +63,8 @@ class CurrencyTracker(
         collectedDiamonds.clear()
         lastSprintReward.clear()
         sprintRewardThisMinute.clear()
+        trackingStartTime.clear()
+        lastTrackingBonus.clear()
         
         plugin.logger.info("Currency tracking stopped")
     }
@@ -92,6 +98,9 @@ class CurrencyTracker(
                         checkEscapeBonus(runner)
                     }
                 }
+                
+                // 追跡持続ボーナスチェック
+                checkTrackingPersistenceBonus()
                 
                 // 接近ボーナスは削除（ログが多すぎるため）
                 // checkProximityBonus()
@@ -127,6 +136,53 @@ class CurrencyTracker(
                             )
                             lastProximityCheck[hunter.uniqueId] = currentTime
                         }
+                    }
+                }
+            }
+        }
+    }
+    
+    /**
+     * 追跡持続ボーナスをチェック
+     */
+    private fun checkTrackingPersistenceBonus() {
+        val hunters = plugin.getGameManager().getAllHunters().filter { it.isOnline && !it.isDead }
+        val runners = plugin.getGameManager().getAllRunners().filter { it.isOnline && !it.isDead }
+        val currentTime = System.currentTimeMillis()
+        
+        hunters.forEach { hunter ->
+            runners.forEach { runner ->
+                if (hunter.world == runner.world) {
+                    val distance = hunter.location.distance(runner.location)
+                    val trackingKey = "${hunter.uniqueId}:${runner.uniqueId}"
+                    
+                    if (distance <= config.hunterTrackingDistance) {
+                        // 追跡範囲内
+                        val startTime = trackingStartTime[trackingKey]
+                        if (startTime == null) {
+                            // 追跡開始
+                            trackingStartTime[trackingKey] = currentTime
+                        } else {
+                            // 追跡継続時間をチェック
+                            val trackingDuration = (currentTime - startTime) / 1000 // 秒単位
+                            if (trackingDuration >= config.hunterTrackingDuration) {
+                                // ボーナス付与条件を満たす
+                                val lastBonus = lastTrackingBonus[trackingKey] ?: 0L
+                                val cooldown = config.hunterTrackingCooldown * 1000L
+                                
+                                if (currentTime - lastBonus >= cooldown) {
+                                    economyManager.addMoney(
+                                        hunter,
+                                        config.hunterTrackingReward,
+                                        EarnReason.Hunter.TrackingPersistence(runner.name, trackingDuration.toInt())
+                                    )
+                                    lastTrackingBonus[trackingKey] = currentTime
+                                }
+                            }
+                        }
+                    } else {
+                        // 追跡範囲外になったらリセット
+                        trackingStartTime.remove(trackingKey)
                     }
                 }
             }

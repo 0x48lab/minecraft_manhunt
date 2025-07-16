@@ -23,6 +23,7 @@ class Main : JavaPlugin() {
     private lateinit var buddySystem: BuddySystem
     private lateinit var buddyCommand: BuddyCommand
     private lateinit var spawnManager: SpawnManager
+    private lateinit var warpCommand: WarpCommand
     
     // Economy & Shop
     private lateinit var economyManager: EconomyManager
@@ -72,6 +73,7 @@ class Main : JavaPlugin() {
         positionShareCommand = PositionShareCommand(gameManager, messageManager)
         buddySystem = BuddySystem(this, gameManager, messageManager)
         buddyCommand = BuddyCommand(this, gameManager, buddySystem, messageManager)
+        warpCommand = WarpCommand(gameManager, messageManager, economyManager)
         
         // Register commands
         val manhuntCommand = ManhuntCommand(gameManager, compassTracker, spectatorMenu, messageManager, roleSelectorMenu)
@@ -92,6 +94,10 @@ class Main : JavaPlugin() {
         // Register buddy command
         getCommand("buddy")?.setExecutor(buddyCommand)
         getCommand("buddy")?.tabCompleter = buddyCommand
+        
+        // Register warp command
+        getCommand("warp")?.setExecutor(warpCommand)
+        getCommand("warp")?.tabCompleter = warpCommand
         
         // Register events
         server.pluginManager.registerEvents(eventListener, this)

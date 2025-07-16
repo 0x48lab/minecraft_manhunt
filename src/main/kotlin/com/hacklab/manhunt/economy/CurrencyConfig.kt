@@ -11,6 +11,10 @@ data class CurrencyConfig(
     val hunterProximityDistance: Int = 50,      // 接近ボーナスの距離（メートル）
     val hunterTimeBonus: Double = 0.3,          // 1秒あたりの時間ボーナス
     val hunterTimeBonusInterval: Int = 10,      // 時間ボーナスの支給間隔（秒）
+    val hunterTrackingReward: Int = 30,         // 追跡持続ボーナス
+    val hunterTrackingDistance: Int = 100,      // 追跡持続ボーナスの距離（メートル）
+    val hunterTrackingDuration: Int = 30,       // 追跡持続に必要な時間（秒）
+    val hunterTrackingCooldown: Int = 60,       // 追跡持続ボーナスのクールダウン（秒）
     
     // ランナー用設定
     val runnerSurvivalBonus: Double = 0.5,      // 1秒あたりの生存ボーナス
@@ -21,6 +25,7 @@ data class CurrencyConfig(
     val runnerDiamondReward: Int = 100,         // ダイヤモンド1個あたりの報酬
     val runnerEscapeReward: Int = 50,           // 逃走成功ボーナス
     val runnerEscapeDistance: Int = 100,        // 逃走成功とみなす距離（メートル）
+    val advancementReward: Int = 10,            // 実績解除報酬
     
     // 共通設定
     val startingBalance: Int = 0,               // ゲーム開始時の所持金
@@ -36,6 +41,10 @@ data class CurrencyConfig(
                 hunterProximityDistance = (map["hunter-proximity-distance"] as? Int) ?: 50,
                 hunterTimeBonus = (map["hunter-time-bonus"] as? Double) ?: 0.3,
                 hunterTimeBonusInterval = (map["hunter-time-bonus-interval"] as? Int) ?: 10,
+                hunterTrackingReward = (map["hunter-tracking-reward"] as? Int) ?: 30,
+                hunterTrackingDistance = (map["hunter-tracking-distance"] as? Int) ?: 100,
+                hunterTrackingDuration = (map["hunter-tracking-duration"] as? Int) ?: 30,
+                hunterTrackingCooldown = (map["hunter-tracking-cooldown"] as? Int) ?: 60,
                 
                 runnerSurvivalBonus = (map["runner-survival-bonus"] as? Double) ?: 0.5,
                 runnerSurvivalInterval = (map["runner-survival-interval"] as? Int) ?: 5,
@@ -45,6 +54,7 @@ data class CurrencyConfig(
                 runnerDiamondReward = (map["runner-diamond-reward"] as? Int) ?: 100,
                 runnerEscapeReward = (map["runner-escape-reward"] as? Int) ?: 50,
                 runnerEscapeDistance = (map["runner-escape-distance"] as? Int) ?: 100,
+                advancementReward = (map["advancement-reward"] as? Int) ?: 10,
                 
                 startingBalance = (map["starting-balance"] as? Int) ?: 0,
                 maxBalance = (map["max-balance"] as? Int) ?: 999999,
