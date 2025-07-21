@@ -27,6 +27,8 @@ game:
     proximity-distance: 3
     # ランナーの即時リスポン（タイムモード時のみ）
     runner-instant-respawn: true
+    # タイムモード時のランナーリスポン待機時間（秒）
+    runner-respawn-time: 30
   
   # 近接警告の距離設定（チャンク単位）
   proximity-warning:

@@ -68,6 +68,7 @@ class ConfigManager(private val plugin: Main) {
     fun getTimeModeKillBonus(): Int = config.getInt("game.time-mode.kill-bonus", 5)
     fun getTimeModeProximityDistance(): Int = config.getInt("game.time-mode.proximity-distance", 3)
     fun isRunnerInstantRespawnInTimeMode(): Boolean = config.getBoolean("game.time-mode.runner-instant-respawn", true)
+    fun getTimeModeRunnerRespawnTime(): Int = config.getInt("game.time-mode.runner-respawn-time", 30)
     
     // エンカウント通知設定
     fun isEncounterNotificationEnabled(): Boolean = config.getBoolean("game.encounter.enabled", true)

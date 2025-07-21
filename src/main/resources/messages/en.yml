@@ -500,8 +500,6 @@ respawn-system:
   waiting-spectator: '§7[Waiting] You can spectate in spectator mode.'
   runner-respawned: '§a[Runner] Respawned! Defeat the Ender Dragon.'
   runner-respawned-broadcast: '§e{player} (Runner) has respawned.'
-  runner-instant-respawned: '§a[Runner] Respawned instantly! Continue your escape!'
-  runner-instant-respawned-broadcast: '§e{player} (Runner) has respawned instantly.'
   death-title: '§c💀 Dead'
   death-subtitle: '§fRespawning in {time} seconds'
   countdown-chat: '§c[Respawn] {time} seconds remaining...'

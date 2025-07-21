@@ -6,6 +6,7 @@ import org.bukkit.Location
 import org.bukkit.World
 import org.bukkit.entity.Player
 import org.bukkit.scheduler.BukkitRunnable
+import org.bukkit.scheduler.BukkitTask
 import org.bukkit.scoreboard.Team
 import java.util.*
 import kotlin.random.Random
@@ -136,7 +137,7 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
     
     // リスポン管理
     private val deadRunners = mutableMapOf<UUID, Long>() // プレイヤーID -> 死亡時刻
-    private val respawnTasks = mutableMapOf<UUID, BukkitRunnable>() // プレイヤーID -> リスポンタスク
+    private val respawnTasks = mutableMapOf<UUID, Any>() // プレイヤーID -> リスポンタスク（BukkitRunnable or BukkitTask）
     private val countdownTasks = mutableMapOf<UUID, BukkitRunnable>() // プレイヤーID -> カウントダウンタスク
     private val customRespawnTimes = mutableMapOf<UUID, Int>() // プレイヤーID -> カスタムリスポン時間
     
@@ -970,7 +971,12 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
         currentProximityWarnings.clear()
         
         // リスポンタスクをクリア
-        respawnTasks.values.forEach { it.cancel() }
+        respawnTasks.values.forEach { task ->
+            when (task) {
+                is BukkitRunnable -> task.cancel()
+                is BukkitTask -> task.cancel()
+            }
+        }
         respawnTasks.clear()
         countdownTasks.values.forEach { it.cancel() }
         countdownTasks.clear()
@@ -1044,7 +1050,12 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
         // 既に死亡中の場合は、リスポンタスクを更新
         if (deadRunners.containsKey(player.uniqueId) && gameState == GameState.RUNNING) {
             // 既存のタスクをキャンセル
-            respawnTasks[player.uniqueId]?.cancel()
+            respawnTasks[player.uniqueId]?.let { task ->
+                when (task) {
+                    is BukkitRunnable -> task.cancel()
+                    is BukkitTask -> task.cancel()
+                }
+            }
             countdownTasks[player.uniqueId]?.cancel()
             
             // 新しいリスポン時間で再スケジュール
@@ -1674,7 +1685,7 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
             PlayerRole.RUNNER -> {
                 // タイムモードかつ即時リスポンが有効な場合
                 if (configManager.isTimeLimitMode() && configManager.isRunnerInstantRespawnInTimeMode()) {
-                    handleRunnerInstantRespawn(player)
+                    handleRunnerTimeModeRespawn(player)
                 } else {
                     // 通常のランナー死亡処理とリスポンタイマー開始
                     handleRunnerDeath(player)
@@ -1700,21 +1711,103 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
         }
     }
     
-    private fun handleRunnerInstantRespawn(player: Player) {
+    private fun handleRunnerTimeModeRespawn(player: Player) {
         try {
-            // 統計のための死亡カウントを増やす（deadRunnersには追加しない）
-            incrementRunnerDeathCount(player)
+            // タイムモード用の短縮リスポン時間を使用
+            val timeModeRespawnTime = configManager.getTimeModeRunnerRespawnTime()
             
+            // 通常のランナー死亡処理を使用（短縮時間で）
+            val currentTime = System.currentTimeMillis()
+            deadRunners[player.uniqueId] = currentTime
+            
+            // 既存のタスクをキャンセル
+            respawnTasks[player.uniqueId]?.let { task ->
+                when (task) {
+                    is BukkitRunnable -> task.cancel()
+                    is BukkitTask -> task.cancel()
+                }
+            }
+            countdownTasks[player.uniqueId]?.cancel()
+            
+            // 1tick後にスペクテーターモードに変更
             Bukkit.getScheduler().runTaskLater(plugin, Runnable {
                 if (player.isOnline && gameState == GameState.RUNNING) {
-                    player.spigot().respawn()
-                    player.sendMessage(messageManager.getMessage(player, "respawn-system.runner-instant-respawned"))
-                    Bukkit.broadcastMessage(messageManager.getMessage("respawn-system.runner-instant-respawned-broadcast", "player" to player.name))
-                    plugin.logger.info("Runner ${player.name} respawned instantly in time mode")
+                    player.gameMode = GameMode.SPECTATOR
+                    player.sendMessage(messageManager.getMessage(player, "respawn-system.runner-death", 
+                        "time" to timeModeRespawnTime))
+                    Bukkit.broadcastMessage(messageManager.getMessage("respawn-system.runner-death-broadcast", 
+                        "player" to player.name, "time" to timeModeRespawnTime))
+                    player.sendMessage(messageManager.getMessage(player, "respawn-system.waiting-spectator"))
+                    
+                    plugin.logger.info("Runner ${player.name} died in time mode, respawn in ${timeModeRespawnTime} seconds")
                 }
-            }, 1L) // 1tick後にリスポン
+            }, 1L)
+            
+            // カウントダウンタスクを開始
+            val countdownTask = object : BukkitRunnable() {
+                var remainingTime = timeModeRespawnTime
+                
+                override fun run() {
+                    if (!player.isOnline || gameState != GameState.RUNNING) {
+                        cancel()
+                        return
+                    }
+                    
+                    if (remainingTime <= 0) {
+                        cancel()
+                        return
+                    }
+                    
+                    // カウントダウン表示（タイトル）
+                    val title = messageManager.getMessage(player, "respawn-system.death-title")
+                    val subtitle = messageManager.getMessage(player, "respawn-system.death-subtitle", 
+                        "time" to remainingTime)
+                    player.sendTitle(title, subtitle, 0, 30, 10)
+                    
+                    // チャットメッセージ（5秒ごと、または最後の3秒）
+                    if (remainingTime % 5 == 0 || remainingTime <= 3) {
+                        if (remainingTime <= 3) {
+                            player.sendMessage(messageManager.getMessage(player, "respawn-system.countdown-emphasis", 
+                                "time" to remainingTime))
+                            player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.0f)
+                        } else {
+                            player.sendMessage(messageManager.getMessage(player, "respawn-system.countdown-chat", 
+                                "time" to remainingTime))
+                        }
+                    }
+                    
+                    remainingTime--
+                }
+            }
+            countdownTask.runTaskTimer(plugin, 0L, 20L)
+            countdownTasks[player.uniqueId] = countdownTask
+            
+            // リスポンタスクを設定
+            val respawnTask = Bukkit.getScheduler().runTaskLater(plugin, Runnable {
+                if (player.isOnline && gameState == GameState.RUNNING) {
+                    // 死亡リストから削除
+                    deadRunners.remove(player.uniqueId)
+                    
+                    // リスポン実行
+                    player.spigot().respawn()
+                    player.gameMode = GameMode.SURVIVAL
+                    player.sendMessage(messageManager.getMessage(player, "respawn-system.runner-respawned"))
+                    Bukkit.broadcastMessage(messageManager.getMessage("respawn-system.runner-respawned-broadcast", 
+                        "player" to player.name))
+                    
+                    plugin.logger.info("Runner ${player.name} respawned after ${timeModeRespawnTime} seconds in time mode")
+                }
+                
+                // タスクをクリーンアップ
+                respawnTasks.remove(player.uniqueId)
+                countdownTasks[player.uniqueId]?.cancel()
+                countdownTasks.remove(player.uniqueId)
+            }, (timeModeRespawnTime * 20).toLong())
+            
+            respawnTasks[player.uniqueId] = respawnTask
+            
         } catch (e: Exception) {
-            plugin.logger.warning("Error in runner instant respawn process for ${player.name}: ${e.message}")
+            plugin.logger.warning("Error in runner time mode respawn process for ${player.name}: ${e.message}")
         }
     }
     
@@ -1725,7 +1818,12 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
         val respawnTime = customRespawnTimes[player.uniqueId] ?: configManager.getRunnerRespawnTime()
         
         // 既存のタスクをキャンセル
-        respawnTasks[player.uniqueId]?.cancel()
+        respawnTasks[player.uniqueId]?.let { task ->
+            when (task) {
+                is BukkitRunnable -> task.cancel()
+                is BukkitTask -> task.cancel()
+            }
+        }
         countdownTasks[player.uniqueId]?.cancel()
         
         // 死亡メッセージ
@@ -1804,7 +1902,12 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
             
             // ゲームが終了した場合、リスポンタスクをキャンセル
             if (gameState == GameState.ENDED) {
-                respawnTasks[player.uniqueId]?.cancel()
+                respawnTasks[player.uniqueId]?.let { task ->
+                    when (task) {
+                        is BukkitRunnable -> task.cancel()
+                        is BukkitTask -> task.cancel()
+                    }
+                }
                 respawnTasks.remove(player.uniqueId)
                 countdownTasks[player.uniqueId]?.cancel()
                 countdownTasks.remove(player.uniqueId)
