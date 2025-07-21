@@ -39,9 +39,6 @@ class ConfigManager(private val plugin: Main) {
     // 実績リセット設定
     fun shouldResetAdvancements(): Boolean = config.getBoolean("game.reset-advancements", true)
     
-    // 統計リセット設定
-    fun shouldResetStatistics(): Boolean = config.getBoolean("game.reset-statistics", true)
-    
     // 夜スキップ設定
     fun isNightSkipEnabled(): Boolean = config.getBoolean("game.night-skip.enabled", true)
     

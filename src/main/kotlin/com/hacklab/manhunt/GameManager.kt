@@ -1689,36 +1689,6 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
         }
     }
     
-    private fun resetPlayerStatistics() {
-        val hunters = getAllHunters().filter { it.isOnline }
-        val runners = getAllRunners().filter { it.isOnline }
-        
-        (hunters + runners).forEach { player ->
-            try {
-                // プレイヤーキルとモブキルの統計をリセット
-                player.setStatistic(org.bukkit.Statistic.PLAYER_KILLS, 0)
-                player.setStatistic(org.bukkit.Statistic.MOB_KILLS, 0)
-                player.setStatistic(org.bukkit.Statistic.DEATHS, 0)
-                
-                // エンティティ別のキル統計をリセット
-                org.bukkit.entity.EntityType.values().forEach { entityType ->
-                    try {
-                        if (entityType.isAlive) {
-                            player.setStatistic(org.bukkit.Statistic.KILL_ENTITY, entityType, 0)
-                            player.setStatistic(org.bukkit.Statistic.ENTITY_KILLED_BY, entityType, 0)
-                        }
-                    } catch (e: Exception) {
-                        // 無効なエンティティタイプは無視
-                    }
-                }
-                
-                plugin.logger.info("Reset statistics for ${player.name}")
-            } catch (e: Exception) {
-                plugin.logger.warning("Failed to reset statistics for ${player.name}: ${e.message}")
-            }
-        }
-    }
-    
     // ======== 死亡・リスポン管理システム ========
     
     fun onPlayerDeath(player: Player) {
@@ -2098,10 +2068,6 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
             resetPlayerAdvancements()
         }
         
-        // 統計（キル数など）をリセット（設定で有効な場合）
-        if (configManager.shouldResetStatistics()) {
-            resetPlayerStatistics()
-        }
         
         // 時間を朝に設定
         plugin.logger.info("Setting time to day for all worlds...")
