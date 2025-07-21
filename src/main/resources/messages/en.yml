@@ -143,6 +143,7 @@ ui:
     runners-respawning: '§e⏳Respawn §f{count}'
     respawn-time: '§e⏳Respawn in: §f{time}s'
     elapsed-time: '§b⏱ time: §f{minutes}:{seconds}'
+    remaining-time: '§b⏱ Remaining: §f{minutes}:{seconds}'
     hunters-total: '§c🗡Hunter §f{count}'
     runners-total: '§a🏃Runner §f{count}'
     spectators-total: '§7👁Watch §f{count}'
@@ -171,6 +172,7 @@ ui:
   actionbar:
     join-game: '§e/manhunt join to join the game!'
     waiting: '§7Role: {role} §8| §eWaiting for game start...'
+    starting: '§e⚡ Game starting...'
     hunter-with-target: '§fNearest Target: §a{target} §7({distance}m)'
     hunter-no-target: '§7No targets found'
     runner: '§a🏃 Runner Mode §8| §7Defeat the Ender Dragon!'
@@ -392,6 +394,10 @@ shop:
 language:
   changed: 'Language changed to {language}'
   unsupported: 'Unsupported language: {language}'
+
+# PVP settings
+pvp:
+  friendly-fire-disabled: '§cFriendly fire is disabled!'
 
 # Role selector menu
 role-selector:
@@ -1144,5 +1150,16 @@ shop-extended:
     config-reload-error: 'Error reloading shop configuration: {error}'
     player-purchase: '{player} purchased {item} ({price}{unit})'
     invalid-material: 'Invalid material: {material} (Set item: {itemId})'
+
+# Time mode messages
+time-mode:
+  warning-10min: '§e⏰ Time remaining: 10 minutes'
+  warning-5min: '§e⏰ Time remaining: 5 minutes'
+  warning-1min: '§c⏰ Time remaining: 1 minute'
+  warning-30sec: '§c⏰ Time remaining: 30 seconds'
+  countdown: '§c⏰ Time remaining: {seconds} seconds'
+  victory-hunter: '§c🗡 Hunter Victory! (Dominance: {percent}%)'
+  victory-runner: '§a🏃 Runner Victory! (Dominance: {percent}%)'
+  victory-draw: '§eDraw! (Dominance: 50% - 50%)'
 
 

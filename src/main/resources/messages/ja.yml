@@ -143,6 +143,7 @@ ui:
     runners-respawning: '§e⏳復活 §f{count}人'
     respawn-time: '§e⏳復活まで: §f{time}秒'
     elapsed-time: '§b⏱ 経過時間: §f{minutes}:{seconds}'
+    remaining-time: '§b⏱ 残り時間: §f{minutes}:{seconds}'
     hunters-total: '§c🗡ハンター §f{count}'
     runners-total: '§a🏃ランナー §f{count}'
     spectators-total: '§7👁観戦 §f{count}'
@@ -171,6 +172,7 @@ ui:
   actionbar:
     join-game: '§e/manhunt join でゲームに参加しよう！'
     waiting: '§7役割: {role} §8| §eゲーム開始を待機中...'
+    starting: '§e⚡ ゲーム開始中...'
     hunter-with-target: '§f最寄りターゲット: §a{target} §7({distance}m)'
     hunter-no-target: '§7ターゲットが見つかりません'
     runner: '§a🏃 ランナーモード §8| §7エンダードラゴンを倒そう！'
@@ -393,6 +395,10 @@ shop:
 language:
   changed: '言語が{language}に変更されました'
   unsupported: 'サポートされていない言語です: {language}'
+
+# PVP設定
+pvp:
+  friendly-fire-disabled: '§c味方への攻撃は無効化されています！'
 
 # 役割選択メニュー
 role-selector:
@@ -1145,5 +1151,16 @@ shop-extended:
     config-reload-error: 'ショップ設定のリロードでエラー: {error}'
     player-purchase: '{player} が {item} を購入 ({price}{unit})'
     invalid-material: '無効なマテリアル: {material} (セットアイテム: {itemId})'
+
+# タイムモード用メッセージ
+time-mode:
+  warning-10min: '§e⏰ 残り時間: 10分'
+  warning-5min: '§e⏰ 残り時間: 5分'
+  warning-1min: '§c⏰ 残り時間: 1分'
+  warning-30sec: '§c⏰ 残り時間: 30秒'
+  countdown: '§c⏰ 残り時間: {seconds}秒'
+  victory-hunter: '§c🗡 ハンターの勝利！（優勢度: {percent}%）'
+  victory-runner: '§a🏃 ランナーの勝利！（優勢度: {percent}%）'
+  victory-draw: '§e引き分け！（優勢度: 50% - 50%）'
 
 

@@ -45,23 +45,31 @@ class EconomyManager(private val plugin: Main) {
     fun addMoney(player: Player, amount: Int, reason: EarnReason) {
         require(amount >= 0) { messageManager.getMessage(player, "economy.validation.amount-non-negative") }
         
+        // 倍率を適用（管理者からの付与は除外）
+        val multiplier = if (reason is EarnReason.AdminGrant) {
+            1.0
+        } else {
+            plugin.getConfigManager().getCurrencyConfig().earnMultiplier
+        }
+        val adjustedAmount = (amount * multiplier).toInt()
+        
         val currentBalance = getBalance(player)
-        val newBalance = currentBalance + amount
+        val newBalance = currentBalance + adjustedAmount
         playerBalances[player.uniqueId] = newBalance
         
         // ゲーム統計に通貨獲得を記録
         try {
-            plugin.getGameManager().recordEarnedCurrency(player, amount)
+            plugin.getGameManager().recordEarnedCurrency(player, adjustedAmount)
         } catch (e: Exception) {
             plugin.logger.warning("Error recording earned currency statistics: ${e.message}")
         }
         
         // 獲得履歴を記録
         val history = earnHistory.getOrPut(player.uniqueId) { mutableListOf() }
-        history.add(EarnRecord(reason, amount, System.currentTimeMillis()))
+        history.add(EarnRecord(reason, adjustedAmount, System.currentTimeMillis()))
         
         // 通知（時間ボーナス系とダメージ報酬は表示を抑制）
-        if (amount > 0) {
+        if (adjustedAmount > 0) {
             val shouldShowMessage = when (reason) {
                 is EarnReason.Hunter.TimeBonus -> false
                 is EarnReason.Hunter.DamageDealt -> false  // ダメージ報酬も抑制
@@ -76,22 +84,22 @@ class EconomyManager(private val plugin: Main) {
                 val unit = getCurrencyUnit()
                 val message = when (reason) {
                     is EarnReason.Hunter -> messageManager.getMessage(player, "economy.currency.hunter-earned",
-                        "amount" to amount,
+                        "amount" to adjustedAmount,
                         "unit" to unit,
                         "reason" to reason.getDescription(player)
                     )
                     is EarnReason.Runner -> messageManager.getMessage(player, "economy.currency.runner-earned",
-                        "amount" to amount,
+                        "amount" to adjustedAmount,
                         "unit" to unit,
                         "reason" to reason.getDescription(player)
                     )
                     is EarnReason.Movement -> messageManager.getMessage(player, "economy.currency.movement-earned",
-                        "amount" to amount,
+                        "amount" to adjustedAmount,
                         "unit" to unit,
                         "reason" to reason.getDescription(player)
                     )
                     is EarnReason.Advancement -> messageManager.getMessage(player, "economy.currency.advancement-earned",
-                        "amount" to amount,
+                        "amount" to adjustedAmount,
                         "unit" to unit,
                         "reason" to reason.getDescription(player)
                     )
@@ -114,7 +122,7 @@ class EconomyManager(private val plugin: Main) {
         
         if (shouldLog) {
             val unit = getCurrencyUnit()
-            plugin.logger.info("${player.name} earned ${amount}${unit} (reason: ${reason.getDescription(null)}, balance: $newBalance${unit})")
+            plugin.logger.info("${player.name} earned ${adjustedAmount}${unit} (reason: ${reason.getDescription(null)}, balance: $newBalance${unit})")
         }
     }
     

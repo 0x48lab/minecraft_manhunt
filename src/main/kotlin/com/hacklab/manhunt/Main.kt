@@ -24,6 +24,7 @@ class Main : JavaPlugin() {
     private lateinit var buddyCommand: BuddyCommand
     private lateinit var spawnManager: SpawnManager
     private lateinit var warpCommand: WarpCommand
+    private lateinit var proximityTimeTracker: ProximityTimeTracker
     
     // Economy & Shop
     private lateinit var economyManager: EconomyManager
@@ -68,12 +69,13 @@ class Main : JavaPlugin() {
         
         spectatorMenu = SpectatorMenu(gameManager, messageManager)
         roleSelectorMenu = RoleSelectorMenu(gameManager, messageManager)
-        eventListener = EventListener(gameManager, uiManager, messageManager, roleSelectorMenu)
+        eventListener = EventListener(this, gameManager, uiManager, messageManager, roleSelectorMenu)
         teamChatCommand = TeamChatCommand(gameManager, messageManager)
         positionShareCommand = PositionShareCommand(gameManager, messageManager)
         buddySystem = BuddySystem(this, gameManager, messageManager)
         buddyCommand = BuddyCommand(this, gameManager, buddySystem, messageManager)
         warpCommand = WarpCommand(gameManager, messageManager, economyManager)
+        proximityTimeTracker = ProximityTimeTracker(this, gameManager, messageManager)
         
         // Register commands
         val manhuntCommand = ManhuntCommand(gameManager, compassTracker, spectatorMenu, messageManager, roleSelectorMenu)
@@ -121,12 +123,20 @@ class Main : JavaPlugin() {
     fun getCurrencyTracker(): CurrencyTracker = currencyTracker
     fun getShopManager(): ShopManager = shopManager
     fun getBuddySystem(): BuddySystem = buddySystem
+    fun getProximityTimeTracker(): ProximityTimeTracker = proximityTimeTracker
 
     override fun onDisable() {
         compassTracker.stopTracking()
         uiManager.stopDisplaySystem()
         spectatorMenu.cleanup()
         roleSelectorMenu.cleanup()
+        
+        // ProximityTimeTrackerを停止
+        try {
+            proximityTimeTracker.stopTracking()
+        } catch (e: Exception) {
+            logger.warning("ProximityTimeTrackerの停止でエラー: ${e.message}")
+        }
         
         // ゲーム結果マネージャーのクリーンアップ
         try {

@@ -44,7 +44,8 @@ class GameStats {
         ENDER_DRAGON_KILLED,    // エンダードラゴン討伐
         ALL_RUNNERS_ELIMINATED, // 全ランナー撃破
         ALL_HUNTERS_LEFT,       // 全ハンター退出
-        ALL_RUNNERS_LEFT        // 全ランナー退出
+        ALL_RUNNERS_LEFT,       // 全ランナー退出
+        TIME_LIMIT              // タイムリミット
     }
     
     /**

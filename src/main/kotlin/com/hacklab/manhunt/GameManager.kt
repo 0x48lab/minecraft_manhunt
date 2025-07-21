@@ -60,6 +60,14 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
     fun recordKill(killer: Player, victim: Player) {
         if (gameState == GameState.RUNNING) {
             gameStats.addKill(killer, victim)
+            
+            // タイムモードの場合、キルボーナスを追加
+            if (configManager.isTimeLimitMode()) {
+                val killerRole = getPlayerRole(killer)
+                if (killerRole != null) {
+                    plugin.getProximityTimeTracker().addKillBonus(killerRole)
+                }
+            }
         }
     }
     
@@ -133,6 +141,10 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
     
     // ゲーム開始時刻
     private var gameStartTime: Long = 0
+    
+    // タイムモード用タイマー
+    private var timeLimitTask: BukkitRunnable? = null
+    private var gameEndTime: Long = 0
     
     // 近接警告のクールダウン管理
     private val proximityWarningCooldowns = mutableMapOf<UUID, Long>() // プレイヤーID -> 最後の警告時刻
@@ -400,6 +412,7 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
     }
     
     private fun startGame() {
+        plugin.logger.info("Starting game - changing state to STARTING")
         gameState = GameState.STARTING
         
         // UIにゲーム開始を通知
@@ -649,6 +662,11 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
     fun checkWinConditions() {
         if (gameState != GameState.RUNNING) return
         
+        // タイムモードの場合は時間制限での勝敗判定
+        if (configManager.isTimeLimitMode()) {
+            return // タイムモードでは時間切れまで終了しない
+        }
+        
         val allRunners = getAllRunners().filter { it.isOnline }
         val aliveRunners = allRunners.filter { !isRunnerDead(it) }
         val deadRunnersCount = allRunners.count { isRunnerDead(it) }
@@ -698,6 +716,23 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
     
     private fun endGame(message: String) {
         gameState = GameState.ENDED
+        
+        // タイムモード用タスクを停止
+        try {
+            timeLimitTask?.cancel()
+            timeLimitTask = null
+        } catch (e: Exception) {
+            plugin.logger.warning("Error canceling time limit task: ${e.message}")
+        }
+        
+        // ProximityTimeTrackerを停止
+        if (configManager.isTimeLimitMode()) {
+            try {
+                plugin.getProximityTimeTracker().stopTracking()
+            } catch (e: Exception) {
+                plugin.logger.warning("Error stopping proximity time tracker: ${e.message}")
+            }
+        }
         
         // 勝利条件を特定して統計を終了
         val winCondition = determineWinCondition(message)
@@ -781,6 +816,7 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
             message.contains("逃げる人を全員倒") -> GameStats.WinCondition.ALL_RUNNERS_ELIMINATED
             message.contains("追う人が全員退出") -> GameStats.WinCondition.ALL_HUNTERS_LEFT
             message.contains("逃げる人が全員退出") -> GameStats.WinCondition.ALL_RUNNERS_LEFT
+            message.contains("時間切れ") || message.contains("タイムアップ") -> GameStats.WinCondition.TIME_LIMIT
             else -> null
         }
     }
@@ -798,6 +834,15 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
     
     private fun resetGame() {
         gameState = GameState.WAITING
+        
+        // ProximityTimeTrackerをリセット
+        if (configManager.isTimeLimitMode()) {
+            try {
+                plugin.getProximityTimeTracker().reset()
+            } catch (e: Exception) {
+                plugin.logger.warning("Error resetting proximity time tracker: ${e.message}")
+            }
+        }
         
         // 全プレイヤーをアドベンチャーモードに設定し、お疲れ様メッセージを表示
         try {
@@ -830,6 +875,15 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
             plugin.logger.warning("Error canceling proximity task during reset: ${e.message}")
         } finally {
             proximityTask = null
+        }
+        
+        // タイムリミットタスクを停止
+        try {
+            timeLimitTask?.cancel()
+        } catch (e: Exception) {
+            plugin.logger.warning("Error canceling time limit task during reset: ${e.message}")
+        } finally {
+            timeLimitTask = null
         }
         
         try {
@@ -1023,10 +1077,12 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
     // ======== ゲーム開始時の転送システム ========
     
     private fun teleportPlayersToStartPositionsAsync() {
+        plugin.logger.info("Starting async teleport process")
         val hunters = getAllHunters().filter { it.isOnline }
         val runners = getAllRunners().filter { it.isOnline }
         val spectators = getAllSpectators().filter { it.isOnline }
         val totalPlayers = hunters.size + runners.size
+        plugin.logger.info("Teleporting ${totalPlayers} players (${hunters.size} hunters, ${runners.size} runners)")
         
         // ワールドを取得（デフォルトはオーバーワールド）
         val world = Bukkit.getWorlds().firstOrNull() ?: run {
@@ -1047,7 +1103,13 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
                 // SpawnManagerを使用してスポーン位置を生成
                 val spawnLocations = if (spawnManager != null) {
                     plugin.logger.info("Using SpawnManager for player spawn placement")
-                    spawnManager!!.generateSpawnLocations(world)
+                    try {
+                        spawnManager!!.generateSpawnLocations(world)
+                    } catch (e: Exception) {
+                        plugin.logger.severe("Error in SpawnManager.generateSpawnLocations: ${e.message}")
+                        e.printStackTrace()
+                        emptyMap<Player, Location>()
+                    }
                 } else {
                     plugin.logger.warning("SpawnManager not available, using legacy spawn system")
                     // レガシーシステムを使用
@@ -1068,7 +1130,15 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
                 }
                 
                 val calcTime = System.currentTimeMillis() - startTime
-                plugin.logger.info("Spawn location calculation completed in ${calcTime}ms")
+                plugin.logger.info("Spawn location calculation completed in ${calcTime}ms, ${spawnLocations.size} locations generated")
+                
+                if (spawnLocations.isEmpty() && totalPlayers > 0) {
+                    plugin.logger.severe("No spawn locations generated! Using emergency teleport")
+                    Bukkit.getScheduler().runTask(plugin, Runnable {
+                        emergencyTeleport(hunters, runners, spectators, world)
+                    })
+                    return@Runnable
+                }
                 
                 // メインスレッドでテレポート実行（最大10秒のタイムアウト付き）
                 Bukkit.getScheduler().runTask(plugin, Runnable {
@@ -1188,6 +1258,7 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
                     }
                     
                     Bukkit.broadcastMessage(messageManager.getMessage("game-management.players-teleported"))
+                    plugin.logger.info("All players teleported successfully - calling finishGameStart")
                     finishGameStart()
                 }
             }
@@ -1244,8 +1315,22 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
     }
     
     private fun finishGameStart() {
+        plugin.logger.info("Finishing game start - changing state to RUNNING")
         gameState = GameState.RUNNING
         gameStartTime = System.currentTimeMillis()
+        
+        // タイムモードの場合、終了時刻を設定
+        if (configManager.isTimeLimitMode()) {
+            val timeLimitMinutes = configManager.getTimeLimit()
+            gameEndTime = gameStartTime + (timeLimitMinutes * 60 * 1000L)
+            
+            // ProximityTimeTrackerをリセットして開始
+            plugin.getProximityTimeTracker().reset()
+            plugin.getProximityTimeTracker().startTracking()
+            
+            // タイムリミットタスクを開始
+            startTimeLimitTask()
+        }
         
         // ゲーム統計を初期化して開始
         gameStats.startGame()
@@ -1761,6 +1846,7 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
     }
     
     private fun actuallyStartGame() {
+        plugin.logger.info("Actually starting game - clearing inventories and setting up")
         // プレイヤーのインベントリをクリア（ゲーム開始前のアイテムを削除）
         clearAllPlayerInventories()
         
@@ -1995,6 +2081,110 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
                 viewerTeam.setOption(Team.Option.NAME_TAG_VISIBILITY, 
                     if (visible) Team.OptionStatus.ALWAYS else Team.OptionStatus.FOR_OWN_TEAM)
             }
+        }
+    }
+    
+    /**
+     * タイムリミットタスクを開始
+     */
+    private fun startTimeLimitTask() {
+        timeLimitTask?.cancel()
+        
+        timeLimitTask = object : BukkitRunnable() {
+            override fun run() {
+                if (gameState != GameState.RUNNING) {
+                    cancel()
+                    return
+                }
+                
+                val currentTime = System.currentTimeMillis()
+                val remainingTime = gameEndTime - currentTime
+                
+                if (remainingTime <= 0) {
+                    // 時間切れ - ゲーム終了
+                    cancel()
+                    handleTimeLimitEnd()
+                } else {
+                    // 残り時間の警告
+                    val remainingMinutes = (remainingTime / 60000).toInt()
+                    val remainingSeconds = ((remainingTime % 60000) / 1000).toInt()
+                    
+                    // 特定の時間で警告
+                    when {
+                        remainingMinutes == 10 && remainingSeconds == 0 -> {
+                            Bukkit.broadcastMessage(messageManager.getMessage("time-mode.warning-10min"))
+                        }
+                        remainingMinutes == 5 && remainingSeconds == 0 -> {
+                            Bukkit.broadcastMessage(messageManager.getMessage("time-mode.warning-5min"))
+                        }
+                        remainingMinutes == 1 && remainingSeconds == 0 -> {
+                            Bukkit.broadcastMessage(messageManager.getMessage("time-mode.warning-1min"))
+                        }
+                        remainingMinutes == 0 && remainingSeconds == 30 -> {
+                            Bukkit.broadcastMessage(messageManager.getMessage("time-mode.warning-30sec"))
+                        }
+                        remainingMinutes == 0 && remainingSeconds <= 10 && remainingSeconds > 0 -> {
+                            Bukkit.broadcastMessage(messageManager.getMessage("time-mode.countdown", "seconds" to remainingSeconds))
+                            // カウントダウン音
+                            Bukkit.getOnlinePlayers().forEach { player ->
+                                player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.0f)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        timeLimitTask?.runTaskTimer(plugin, 20L, 20L) // 1秒ごとに実行
+    }
+    
+    /**
+     * タイムリミット終了時の処理
+     */
+    private fun handleTimeLimitEnd() {
+        // ProximityTimeTrackerから最終結果を取得
+        val result = plugin.getProximityTimeTracker().getFinalResult()
+        val stats = plugin.getProximityTimeTracker().getStatistics()
+        val dominancePercent = plugin.getProximityTimeTracker().getHunterDominancePercentage()
+        
+        // 勝利メッセージを決定
+        val victoryMessage = when (result) {
+            TimeModeResult.HUNTER_WIN -> {
+                messageManager.getMessage("time-mode.victory-hunter", "percent" to dominancePercent)
+            }
+            TimeModeResult.RUNNER_WIN -> {
+                val runnerPercent = 100 - dominancePercent
+                messageManager.getMessage("time-mode.victory-runner", "percent" to runnerPercent)
+            }
+            TimeModeResult.DRAW -> {
+                messageManager.getMessage("time-mode.victory-draw")
+            }
+        }
+        
+        // ゲーム終了
+        endGame(victoryMessage)
+    }
+    
+    /**
+     * 残り時間を取得（秒単位）
+     */
+    fun getRemainingTime(): Int {
+        return if (gameState == GameState.RUNNING && configManager.isTimeLimitMode()) {
+            val remaining = gameEndTime - System.currentTimeMillis()
+            if (remaining > 0) (remaining / 1000).toInt() else 0
+        } else {
+            0
+        }
+    }
+    
+    /**
+     * 優勢度を取得（タイムモード用）
+     */
+    fun getHunterDominancePercentage(): Int {
+        return if (configManager.isTimeLimitMode()) {
+            plugin.getProximityTimeTracker().getHunterDominancePercentage()
+        } else {
+            0
         }
     }
 }

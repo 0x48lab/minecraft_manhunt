@@ -8,6 +8,8 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
 import org.bukkit.event.entity.EntityDeathEvent
+import org.bukkit.event.entity.EntityDamageByEntityEvent
+import org.bukkit.entity.Projectile
 import org.bukkit.event.inventory.InventoryCloseEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerJoinEvent
@@ -24,14 +26,12 @@ import org.bukkit.event.player.PlayerAdvancementDoneEvent
 import org.bukkit.event.player.PlayerMoveEvent
 
 class EventListener(
+    private val plugin: Main,
     private val gameManager: GameManager,
     private val uiManager: UIManager,
     private val messageManager: MessageManager,
     private val roleSelectorMenu: RoleSelectorMenu
 ) : Listener {
-    
-    private val plugin: Main
-        get() = gameManager.getPlugin()
     
     @EventHandler
     fun onPlayerJoin(event: PlayerJoinEvent) {
@@ -109,6 +109,48 @@ class EventListener(
         // WarpCommandのクリーンアップ
         (player.server.getPluginCommand("warp")?.getExecutor() as? WarpCommand)?.onPlayerQuit(player)
     }
+    
+    @EventHandler
+    fun onEntityDamageByEntity(event: EntityDamageByEntityEvent) {
+        // ゲーム中でない場合は処理しない
+        if (gameManager.getGameState() != GameState.RUNNING) return
+        
+        // 味方同士のPVPが無効化されているかチェック
+        if (!plugin.getConfigManager().isFriendlyFireDisabled()) return
+        
+        // 攻撃者を取得（投射物の場合は発射者を取得）
+        val attacker = when (val damager = event.damager) {
+            is Player -> damager
+            is Projectile -> damager.shooter as? Player
+            else -> null
+        } ?: return
+        
+        // 被害者がプレイヤーでない場合は処理しない
+        val victim = event.entity as? Player ?: return
+        
+        // 両者の役割を取得
+        val attackerRole = gameManager.getPlayerRole(attacker) ?: return
+        val victimRole = gameManager.getPlayerRole(victim) ?: return
+        
+        // 観戦者は関係ない
+        if (attackerRole == PlayerRole.SPECTATOR || victimRole == PlayerRole.SPECTATOR) return
+        
+        // 同じチーム（役割）の場合はダメージをキャンセル
+        if (attackerRole == victimRole) {
+            event.isCancelled = true
+            
+            // 攻撃者に通知（頻度制限付き）
+            val lastNotify = friendlyFireNotifications[attacker.uniqueId] ?: 0L
+            val currentTime = System.currentTimeMillis()
+            if (currentTime - lastNotify > 3000) { // 3秒に1回まで
+                attacker.sendMessage(messageManager.getMessage(attacker, "pvp.friendly-fire-disabled"))
+                friendlyFireNotifications[attacker.uniqueId] = currentTime
+            }
+        }
+    }
+    
+    // 味方攻撃通知の頻度制限用
+    private val friendlyFireNotifications = mutableMapOf<java.util.UUID, Long>()
     
     @EventHandler
     fun onEntityDeath(event: EntityDeathEvent) {

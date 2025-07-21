@@ -26,7 +26,8 @@
       "Bash(kotlinc:*)",
       "Bash(java:*)",
       "Bash(kotlin:*)",
-      "Bash(touch:*)"
+      "Bash(touch:*)",
+      "Bash(git restore:*)"
     ],
     "deny": []
   }

@@ -203,11 +203,26 @@ class UIManager(
             
             addPlayerScoreboardLine(playerObjective, "§r   ", line--) // 空行
             
-            // 経過時間を表示
-            val elapsedTime = gameManager.getGameElapsedTime()
-            val minutes = elapsedTime / 60
-            val seconds = elapsedTime % 60
-            addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.elapsed-time", "minutes" to minutes, "seconds" to String.format("%02d", seconds)), line--)
+            // タイムモードの場合は残り時間と優勢度を表示
+            if (configManager.isTimeLimitMode()) {
+                // 残り時間
+                val remainingTime = gameManager.getRemainingTime()
+                val remainingMinutes = remainingTime / 60
+                val remainingSeconds = remainingTime % 60
+                addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.remaining-time", "minutes" to remainingMinutes, "seconds" to String.format("%02d", remainingSeconds)), line--)
+                
+                // 優勢度
+                val dominancePercent = gameManager.getHunterDominancePercentage()
+                val runnerPercent = 100 - dominancePercent
+                val dominanceBar = createDominanceBar(dominancePercent)
+                addPlayerScoreboardLine(playerObjective, "§c" + dominancePercent + "% " + dominanceBar + " §a" + runnerPercent + "%", line--)
+            } else {
+                // 通常モードは経過時間を表示
+                val elapsedTime = gameManager.getGameElapsedTime()
+                val minutes = elapsedTime / 60
+                val seconds = elapsedTime % 60
+                addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.elapsed-time", "minutes" to minutes, "seconds" to String.format("%02d", seconds)), line--)
+            }
             
             // 所持金表示（ゲーム中のみ）
             if (role != null && role != PlayerRole.SPECTATOR) {
@@ -481,6 +496,9 @@ class UIManager(
                         messageManager.getMessage(player, "ui.actionbar.waiting", "role" to roleDisplay)
                     }
                 }
+                gameState == GameState.STARTING -> {
+                    messageManager.getMessage(player, "ui.actionbar.starting")
+                }
                 gameState == GameState.RUNNING && role != null -> {
                     // プレイヤーの現在の状態を表示
                     val stateDisplay = if (player.isDead && role == PlayerRole.RUNNER) {
@@ -736,5 +754,28 @@ class UIManager(
         } catch (e: Exception) {
             0
         }
+    }
+    
+    /**
+     * 優勢度を視覚的なバーで表現
+     */
+    private fun createDominanceBar(hunterPercent: Int): String {
+        val totalLength = 10
+        val hunterBars = (hunterPercent * totalLength) / 100
+        val runnerBars = totalLength - hunterBars
+        
+        val bar = StringBuilder()
+        // ハンター側（赤）
+        bar.append("§c")
+        for (i in 0 until hunterBars) {
+            bar.append("█")
+        }
+        // ランナー側（緑）
+        bar.append("§a")
+        for (i in 0 until runnerBars) {
+            bar.append("█")
+        }
+        
+        return bar.toString()
     }
 }

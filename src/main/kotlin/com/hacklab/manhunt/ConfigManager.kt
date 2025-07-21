@@ -59,6 +59,15 @@ class ConfigManager(private val plugin: Main) {
     // ショップアイテム設定
     fun isShopItemEnabled(): Boolean = config.getBoolean("shop.item-enabled", true)
     
+    // PVP設定
+    fun isFriendlyFireDisabled(): Boolean = config.getBoolean("game.pvp.disable-friendly-fire", false)
+    
+    // ゲームモード設定
+    fun getTimeLimit(): Int = config.getInt("game.time-limit", 0)
+    fun isTimeLimitMode(): Boolean = getTimeLimit() > 0
+    fun getTimeModeKillBonus(): Int = config.getInt("game.time-mode.kill-bonus", 5)
+    fun getTimeModeProximityDistance(): Int = config.getInt("game.time-mode.proximity-distance", 3)
+    
     // スポーン設定
     fun getSpawnMinRadius(): Double = config.getDouble("game.spawn.min-radius", 100.0)
     fun getSpawnMaxRadius(): Double = config.getDouble("game.spawn.max-radius", 2000.0)
@@ -222,7 +231,8 @@ class ConfigManager(private val plugin: Main) {
             // 共通設定（config.ymlの実際の値に合わせてデフォルト値を修正）
             startingBalance = economySection.getInt("starting-balance", 0),
             maxBalance = economySection.getInt("max-balance", 999999),
-            currencyUnit = economySection.getString("currency-unit", "G") ?: "G"
+            currencyUnit = economySection.getString("currency-unit", "G") ?: "G",
+            earnMultiplier = economySection.getDouble("earn-multiplier", 2.0)
         )
     }
     

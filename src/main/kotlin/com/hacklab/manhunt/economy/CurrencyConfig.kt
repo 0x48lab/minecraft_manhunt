@@ -30,7 +30,8 @@ data class CurrencyConfig(
     // 共通設定
     val startingBalance: Int = 0,               // ゲーム開始時の所持金
     val maxBalance: Int = 999999,               // 最大所持金
-    val currencyUnit: String = "g"              // 通貨単位
+    val currencyUnit: String = "g",             // 通貨単位
+    val earnMultiplier: Double = 2.0            // 獲得金額倍率
 ) {
     companion object {
         fun fromConfigMap(map: Map<String, Any>): CurrencyConfig {
@@ -58,7 +59,8 @@ data class CurrencyConfig(
                 
                 startingBalance = (map["starting-balance"] as? Int) ?: 0,
                 maxBalance = (map["max-balance"] as? Int) ?: 999999,
-                currencyUnit = (map["currency-unit"] as? String) ?: "g"
+                currencyUnit = (map["currency-unit"] as? String) ?: "g",
+                earnMultiplier = (map["earn-multiplier"] as? Double) ?: 2.0
             )
         }
     }

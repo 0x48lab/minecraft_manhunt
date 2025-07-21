@@ -15,6 +15,17 @@ game:
   # 自動スタート設定（最小プレイヤー数が満たされたら自動的にゲーム開始）
   auto-start: false
   
+  # ゲームモード設定
+  # time-limit: ゲーム制限時間（分）。0でエンドレスモード
+  time-limit: 40
+  
+  # タイムモード設定（time-limitが0以外の場合のみ有効）
+  time-mode:
+    # キルボーナス時間（分）
+    kill-bonus: 5
+    # 接近判定距離（チャンク）
+    proximity-distance: 3
+  
   # 近接警告の距離設定（チャンク単位）
   proximity-warning:
     level-1: 1  # 1チャンク以内で赤色警告
@@ -53,6 +64,11 @@ game:
     hide-during-game: true
     # 非表示モード (all: 全員非表示, team: チーム内のみ表示, none: 通常表示)
     visibility-mode: "all"
+  
+  # PVP設定
+  pvp:
+    # 味方同士のPVPを無効化（true: 無効化, false: 許可）
+    disable-friendly-fire: false
   
   # 初期装備設定
   starting-items:
@@ -118,6 +134,8 @@ economy:
   max-balance: 999999
   # 通貨単位（例: g, コイン, 円, $ など）
   currency-unit: "G"
+  # 獲得金額倍率（2.0で2倍、0.5で半額）
+  earn-multiplier: 2.0
   
   # ハンター用設定
   hunter:
