@@ -57,6 +57,9 @@ game:
   # ゲーム開始時に全プレイヤーの実績をリセットする
   reset-advancements: true
   
+  # ゲーム開始時に全プレイヤーの統計（キル数など）をリセットする
+  reset-statistics: true
+  
   # 夜スキップ設定
   night-skip:
     # 夜になったら自動的に夜明け2分前に時間を進める
