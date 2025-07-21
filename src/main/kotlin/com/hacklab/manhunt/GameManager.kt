@@ -25,7 +25,6 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
     private var minPlayers = configManager.getMinPlayers()
     private var proximityTask: BukkitRunnable? = null
     private val currentProximityWarnings = mutableMapOf<UUID, String?>()
-    private var resetCountdownTask: BukkitRunnable? = null
     private var nightSkipTask: BukkitRunnable? = null
     
     // 統計とリザルト管理
@@ -858,14 +857,15 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
             Bukkit.broadcastMessage(message)
         }
         
-        // Reset after 10 seconds
         // すべてのプレイヤーをスペクテイターモードに設定
         Bukkit.getOnlinePlayers().forEach { player ->
             player.gameMode = GameMode.SPECTATOR
         }
         
-        // 5分後にリセット（カウントダウン付き）
-        startResetCountdown()
+        // リザルト表示が終わったら即座にリセット（12秒後）
+        Bukkit.getScheduler().runTaskLater(plugin, Runnable {
+            resetGame()
+        }, 240L) // 12秒後（リザルト表示の時間）
     }
     
     /**
@@ -917,7 +917,6 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
                 
                 // ボスバーをクリア
                 plugin.getUIManager().removeBossBar(player)
-                plugin.getUIManager().removeResetCountdownBossBar(player)
                 
                 // インベントリをクリアしてロール変更アイテムを付与
                 player.inventory.clear()
@@ -2180,67 +2179,12 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
     // ======== 名前タグ可視性制御システム ========
     
     // ======== リセットカウントダウンシステム ========
-    
-    private fun startResetCountdown() {
-        // 既存のタスクをキャンセル
-        resetCountdownTask?.cancel()
-        
-        val totalSeconds = 300 // 5分 = 300秒
-        var remainingSeconds = totalSeconds
-        
-        resetCountdownTask = object : BukkitRunnable() {
-            override fun run() {
-                if (remainingSeconds <= 0) {
-                    resetGame()
-                    cancel()
-                    return
-                }
-                
-                // 全プレイヤーにボスバーを表示
-                val minutes = remainingSeconds / 60
-                val seconds = remainingSeconds % 60
-                val timeString = String.format("%d:%02d", minutes, seconds)
-                
-                Bukkit.getOnlinePlayers().forEach { player ->
-                    val title = messageManager.getMessage(player, "ui.bossbar.reset-countdown", "time" to timeString)
-                    val progress = remainingSeconds.toDouble() / totalSeconds.toDouble()
-                    
-                    plugin.getUIManager().showResetCountdownBossBar(player, title, progress)
-                }
-                
-                // 残り時間が少ない場合は警告
-                when (remainingSeconds) {
-                    60 -> Bukkit.broadcastMessage(messageManager.getMessage("game.reset-warning-1min"))
-                    30 -> Bukkit.broadcastMessage(messageManager.getMessage("game.reset-warning-30sec"))
-                    10, 5, 4, 3, 2, 1 -> {
-                        Bukkit.broadcastMessage(messageManager.getMessage("game.reset-countdown", "seconds" to remainingSeconds))
-                        // サウンド再生
-                        Bukkit.getOnlinePlayers().forEach { player ->
-                            player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.0f)
-                        }
-                    }
-                }
-                
-                remainingSeconds--
-            }
-        }
-        
-        resetCountdownTask?.runTaskTimer(plugin, 0L, 20L) // 1秒ごとに実行
-    }
+    // 削除済み - リセットカウントダウンは不要になりました
     
     /**
      * 管理者コマンドによる強制リセット
      */
     fun forceReset() {
-        // カウントダウンタスクをキャンセル
-        resetCountdownTask?.cancel()
-        resetCountdownTask = null
-        
-        // ボスバーをクリア
-        Bukkit.getOnlinePlayers().forEach { player ->
-            plugin.getUIManager().removeResetCountdownBossBar(player)
-        }
-        
         // 即座にリセット
         resetGame()
         

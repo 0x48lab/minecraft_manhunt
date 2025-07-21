@@ -32,7 +32,6 @@ class UIManager(
     
     // BossBar管理
     private val playerBossBars = mutableMapOf<Player, BossBar>()
-    private val resetCountdownBossBars = mutableMapOf<Player, BossBar>()
     
     // ActionBar表示用の状態
     private var currentActionBarMessage = ""
@@ -602,40 +601,10 @@ class UIManager(
     private fun clearAllBossBars() {
         playerBossBars.values.forEach { it.removeAll() }
         playerBossBars.clear()
-        resetCountdownBossBars.values.forEach { it.removeAll() }
-        resetCountdownBossBars.clear()
     }
     
     // ======== リセットカウントダウンBossBar ========
-    
-    fun showResetCountdownBossBar(player: Player, title: String, progress: Double) {
-        if (!configManager.isBossBarEnabled()) return
-        
-        // 既存のBossBarがあれば更新、なければ新規作成
-        val bossBar = resetCountdownBossBars.getOrPut(player) {
-            val newBossBar = Bukkit.createBossBar(title, BarColor.BLUE, BarStyle.SOLID)
-            newBossBar.addPlayer(player)
-            newBossBar.isVisible = true
-            newBossBar
-        }
-        
-        bossBar.setTitle(title)
-        bossBar.progress = progress.coerceIn(0.0, 1.0)
-        
-        // 残り時間によって色を変更
-        when {
-            progress > 0.5 -> bossBar.color = BarColor.BLUE
-            progress > 0.2 -> bossBar.color = BarColor.YELLOW
-            else -> bossBar.color = BarColor.RED
-        }
-    }
-    
-    fun removeResetCountdownBossBar(player: Player) {
-        resetCountdownBossBars[player]?.let { bossBar ->
-            bossBar.removeAll()
-            resetCountdownBossBars.remove(player)
-        }
-    }
+    // 削除済み - リセットカウントダウンは不要になりました
     
     // ======== Title/Subtitle システム ========
     

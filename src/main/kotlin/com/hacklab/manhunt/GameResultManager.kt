@@ -28,10 +28,8 @@ class GameResultManager(
         val mvp = gameStats.getMVP()
         val gameDuration = gameStats.getGameDuration()
         
-        // 1. 基本勝利メッセージ
+        // 結果表示（常に詳細版）
         showWinMessage(winningTeam, gameStats.getWinCondition())
-        
-        // 2. 視覚効果の開始
         startVictoryEffects(winningTeam)
         
         // 3. 詳細統計を3秒後に表示

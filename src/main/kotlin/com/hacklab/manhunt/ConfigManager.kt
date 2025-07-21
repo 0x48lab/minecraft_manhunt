@@ -20,6 +20,9 @@ class ConfigManager(private val plugin: Main) {
     fun getProximityCheckInterval(): Long = (config.getDouble("game.proximity-check-interval", 1.0) * 20).toLong()
     fun getStartCountdown(): Int = config.getInt("game.start-countdown", 10)
     
+    // ゲーム終了設定
+    // 削除済み - リセットカウントダウンと簡略化設定は不要になりました
+    
     // UI設定
     fun isScoreboardEnabled(): Boolean = config.getBoolean("ui.scoreboard-enabled", true)
     fun isActionBarEnabled(): Boolean = config.getBoolean("ui.actionbar-enabled", true)
