@@ -110,6 +110,9 @@ buddy:
     lore1: '§7右クリックでショップを開く'
     lore2: '§eアイテムを購入しよう！'
   cannot-drop-shop: '§cショップアイテムは捨てられません！'
+  tracking-compass:
+    name: '§6§l追跡コンパス'
+    lore: '§7右クリックでランナーを追跡'
 spectate:
   menu-title: '§6観戦メニュー'
   menu-title-with-page: '§6観戦メニュー §7- ページ {current}/{total}'

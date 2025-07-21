@@ -381,8 +381,8 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
         val compass = ItemStack(Material.COMPASS)
         val meta = compass.itemMeta
         if (meta != null) {
-            meta.setDisplayName("§6§l追跡コンパス")
-            meta.lore = listOf("§7右クリックでランナーを追跡")
+            meta.setDisplayName(messageManager.getMessage(player, "item.tracking-compass.name"))
+            meta.lore = listOf(messageManager.getMessage(player, "item.tracking-compass.lore"))
             meta.addEnchant(Enchantment.BINDING_CURSE, 1, true)
             meta.addItemFlags(ItemFlag.HIDE_ENCHANTS)
             compass.itemMeta = meta

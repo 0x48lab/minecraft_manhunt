@@ -110,6 +110,9 @@ buddy:
     lore1: '§7Right-click to open the shop'
     lore2: '§ePurchase items!'
   cannot-drop-shop: '§cCannot drop the shop item!'
+  tracking-compass:
+    name: '§6§lTracking Compass'
+    lore: '§7Right-click to track runners'
 spectate:
   menu-title: '§6Spectator Menu'
   menu-title-with-page: '§6Spectator Menu §7- Page {current}/{total}'
