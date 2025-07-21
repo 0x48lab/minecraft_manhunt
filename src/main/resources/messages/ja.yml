@@ -399,6 +399,8 @@ language:
 # PVP設定
 pvp:
   friendly-fire-disabled: '§c味方への攻撃は無効化されています！'
+  disabled-before-game: '§cゲーム開始前はPvPが無効です！'
+  disabled-after-game: '§cゲーム終了後はPvPが無効です！'
 
 # 役割選択メニュー
 role-selector:

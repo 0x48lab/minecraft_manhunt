@@ -398,6 +398,8 @@ language:
 # PVP settings
 pvp:
   friendly-fire-disabled: '§cFriendly fire is disabled!'
+  disabled-before-game: '§cPvP is disabled before the game starts!'
+  disabled-after-game: '§cPvP is disabled after the game ends!'
 
 # Role selector menu
 role-selector:

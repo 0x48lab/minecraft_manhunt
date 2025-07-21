@@ -113,12 +113,6 @@ class EventListener(
     
     @EventHandler
     fun onEntityDamageByEntity(event: EntityDamageByEntityEvent) {
-        // ゲーム中でない場合は処理しない
-        if (gameManager.getGameState() != GameState.RUNNING) return
-        
-        // 味方同士のPVPが無効化されているかチェック
-        if (!plugin.getConfigManager().isFriendlyFireDisabled()) return
-        
         // 攻撃者を取得（投射物の場合は発射者を取得）
         val attacker = when (val damager = event.damager) {
             is Player -> damager
@@ -128,6 +122,28 @@ class EventListener(
         
         // 被害者がプレイヤーでない場合は処理しない
         val victim = event.entity as? Player ?: return
+        
+        // ゲーム中以外は全てのPvPを無効化
+        if (gameManager.getGameState() != GameState.RUNNING) {
+            event.isCancelled = true
+            
+            // 攻撃者に通知（頻度制限付き）
+            val lastNotify = friendlyFireNotifications[attacker.uniqueId] ?: 0L
+            val currentTime = System.currentTimeMillis()
+            if (currentTime - lastNotify > 3000) { // 3秒に1回まで
+                val message = when (gameManager.getGameState()) {
+                    GameState.WAITING, GameState.STARTING -> "pvp.disabled-before-game"
+                    GameState.ENDED -> "pvp.disabled-after-game"
+                    else -> "pvp.disabled-before-game"
+                }
+                attacker.sendMessage(messageManager.getMessage(attacker, message))
+                friendlyFireNotifications[attacker.uniqueId] = currentTime
+            }
+            return
+        }
+        
+        // 味方同士のPVPが無効化されているかチェック
+        if (!plugin.getConfigManager().isFriendlyFireDisabled()) return
         
         // 両者の役割を取得
         val attackerRole = gameManager.getPlayerRole(attacker) ?: return
