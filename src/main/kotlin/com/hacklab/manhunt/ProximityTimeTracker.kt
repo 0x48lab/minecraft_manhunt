@@ -36,6 +36,10 @@ class ProximityTimeTracker(
     // キー: "ハンターUUID:ランナーUUID"、値: 最後の通知時刻
     private val encounterCooldowns = ConcurrentHashMap<String, Long>()
     
+    // 前回の接近状態を記録（新しい接近のみ通知するため）
+    // キー: "ハンターUUID:ランナーUUID"、値: 接近中かどうか
+    private val previousProximityStates = ConcurrentHashMap<String, Boolean>()
+    
     /**
      * 追跡を開始
      */
@@ -69,6 +73,7 @@ class ProximityTimeTracker(
         lastUpdateTime = System.currentTimeMillis()
         proximityStates.clear()
         encounterCooldowns.clear()
+        previousProximityStates.clear()
     }
     
     /**
@@ -99,7 +104,7 @@ class ProximityTimeTracker(
         val proximityBlocks = proximityDistance * 16.0 // チャンクをブロックに変換
         
         val hunters = gameManager.getAllHunters().filter { it.isOnline && !it.isDead }
-        val runners = gameManager.getAllRunners().filter { it.isOnline && !it.isDead }
+        val runners = gameManager.getAllRunners().filter { it.isOnline && !gameManager.isRunnerDead(it) }
         
         // 生存中のランナーがいない場合は更新しない
         if (runners.isEmpty()) return
@@ -117,6 +122,8 @@ class ProximityTimeTracker(
             var isInProximity = false
             
             for (runner in runners) {
+                val encounterKey = "${hunter.uniqueId}:${runner.uniqueId}"
+                
                 // 同じワールドにいる場合のみチェック
                 if (hunter.world == runner.world) {
                     try {
@@ -126,14 +133,26 @@ class ProximityTimeTracker(
                             anyHunterInProximity = true
                             runnerProximityStates[runner.uniqueId] = true
                             
-                            // エンカウント通知をチェック
-                            checkAndNotifyEncounter(hunter, runner)
-                            break
+                            // エンカウント通知をチェック（新しい接近の場合のみ）
+                            val wasInProximity = previousProximityStates[encounterKey] ?: false
+                            
+                            if (!wasInProximity) {
+                                // 新たに接近した場合のみ通知
+                                checkAndNotifyEncounter(hunter, runner)
+                            }
+                            previousProximityStates[encounterKey] = true
+                        } else {
+                            // 離れた場合は状態をリセット
+                            previousProximityStates[encounterKey] = false
                         }
                     } catch (e: Exception) {
                         // 異なるワールド間での距離計算エラーを無視
                         plugin.logger.warning("Distance calculation error between ${hunter.name} and ${runner.name}: ${e.message}")
+                        previousProximityStates[encounterKey] = false
                     }
+                } else {
+                    // 異なるワールドの場合も状態をリセット
+                    previousProximityStates[encounterKey] = false
                 }
             }
             

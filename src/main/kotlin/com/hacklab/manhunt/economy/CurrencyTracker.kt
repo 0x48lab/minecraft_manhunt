@@ -89,8 +89,9 @@ class CurrencyTracker(
                 }
                 
                 // ランナーの生存ボーナス
-                plugin.getGameManager().getAllRunners().forEach { runner ->
-                    if (runner.isOnline && !runner.isDead) {
+                val gameManager = plugin.getGameManager()
+                gameManager.getAllRunners().forEach { runner ->
+                    if (runner.isOnline && !gameManager.isRunnerDead(runner)) {
                         val amount = (config.runnerSurvivalBonus * config.runnerSurvivalInterval).toInt()
                         economyManager.addMoney(runner, amount, EarnReason.Runner.SurvivalBonus)
                         
@@ -146,8 +147,9 @@ class CurrencyTracker(
      * 追跡持続ボーナスをチェック
      */
     private fun checkTrackingPersistenceBonus() {
-        val hunters = plugin.getGameManager().getAllHunters().filter { it.isOnline && !it.isDead }
-        val runners = plugin.getGameManager().getAllRunners().filter { it.isOnline && !it.isDead }
+        val gameManager = plugin.getGameManager()
+        val hunters = gameManager.getAllHunters().filter { it.isOnline && !it.isDead }
+        val runners = gameManager.getAllRunners().filter { it.isOnline && !gameManager.isRunnerDead(it) }
         val currentTime = System.currentTimeMillis()
         
         hunters.forEach { hunter ->
@@ -371,12 +373,13 @@ class CurrencyTracker(
      */
     private fun isEnemyWithinProximity(player: Player, role: PlayerRole): Boolean {
         val configManager = plugin.getConfigManager()
+        val gameManager = plugin.getGameManager()
         val proximityDistance = configManager.getProximityLevel3() * 16 // 3チャンク = 48ブロック
         
         // プレイヤーの役割に応じて敵を特定
         val enemies = when (role) {
-            PlayerRole.HUNTER -> plugin.getGameManager().getAllRunners()
-            PlayerRole.RUNNER -> plugin.getGameManager().getAllHunters()
+            PlayerRole.HUNTER -> gameManager.getAllRunners().filter { !gameManager.isRunnerDead(it) }
+            PlayerRole.RUNNER -> gameManager.getAllHunters()
             PlayerRole.SPECTATOR -> return false
         }
         

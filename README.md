@@ -5,6 +5,8 @@
 [![Minecraft Version](https://img.shields.io/badge/Minecraft-1.21.4-green.svg)](https://www.minecraft.net/)
 [![Platform](https://img.shields.io/badge/Platform-Spigot%20%7C%20Paper-orange.svg)](https://papermc.io/)
 
+[日本語版 README はこちら](README.ja.md)
+
 A comprehensive multiplayer Manhunt plugin for Minecraft servers featuring advanced tracking systems, economy integration, and full internationalization support.
 
 ## ✨ Features
@@ -219,7 +221,7 @@ To manually check message keys:
 
 If any keys are missing, the build will fail and provide suggestions for the missing keys.
 
-## 📝 Latest Updates (2025-01-16)
+## 📝 Latest Updates (2025-07-22)
 
 ### New Features
 - **Achievement Reset**: Automatically resets all player achievements when game starts
@@ -228,10 +230,12 @@ If any keys are missing, the build will fail and provide suggestions for the mis
 - **Tracking Persistence Bonus**: Hunters earn 30G for continuously tracking runners
 
 ### Bug Fixes
-- Fixed role selector GUI not working during post-game cooldown
-- Fixed message placeholder issues in team chat and position share
-
-See [docs/CHANGELOG.md](docs/CHANGELOG.md) for detailed version history.
+- Fixed runner respawn visibility bug where dead runners appeared in survival mode instead of spectator mode
+- Fixed compass tracking continuing for dead runners during respawn wait time
+- Fixed distance display showing actual distance for dead runners (now shows 0m)
+- Fixed role selector GUI not working after game reset
+- Fixed various hardcoded language strings throughout the codebase
+- Removed unnecessary game reset countdown for instant reset after results display
 
 ## 🤝 Contributing
 
