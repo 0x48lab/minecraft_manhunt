@@ -81,7 +81,7 @@ class SpawnManager(
     }
     
     /**
-     * ランナーを地上に配置
+     * ランナーを地上に配置（最適化版）
      */
     private fun placeRunnersOnGround(
         world: World, 
@@ -101,38 +101,104 @@ class SpawnManager(
             plugin.logger.info("Runners will be placed close together (minority team)")
         }
         
-        runners.forEachIndexed { index, runner ->
-            var location: Location
-            var attempts = 0
-            val maxAttempts = 100
+        // 事前に候補位置を生成（並列処理可能）
+        val candidateLocations = mutableListOf<Location>()
+        val numCandidates = runners.size * 5 // 各プレイヤーに対して5つの候補
+        
+        // 候補位置を事前計算
+        for (i in 0 until numCandidates) {
+            val distance = Random.nextDouble(minRadius, maxRadius)
+            val angle = Random.nextDouble(360.0)
             
-            do {
-                // ランダムな位置を生成
-                val distance = Random.nextDouble(minRadius, maxRadius)
-                val angle = Random.nextDouble(360.0)
-                
-                val x = center.x + distance * cos(Math.toRadians(angle))
-                val z = center.z + distance * sin(Math.toRadians(angle))
-                
-                // 地上の高さを取得
-                location = getGroundLocation(world, x, z)
-                
-                attempts++
-                if (attempts >= maxAttempts) {
-                    plugin.logger.warning("Failed to find valid location for runner ${runner.name} after $maxAttempts attempts")
-                    break
+            val x = center.x + distance * cos(Math.toRadians(angle))
+            val z = center.z + distance * sin(Math.toRadians(angle))
+            
+            val location = getGroundLocation(world, x, z)
+            if (isSafeLocation(location)) {
+                candidateLocations.add(location)
+            }
+        }
+        
+        // 各ランナーに最適な位置を割り当て
+        runners.forEach { runner ->
+            var bestLocation: Location? = null
+            var bestScore = -1.0
+            
+            // 候補位置から最適なものを選択
+            candidateLocations.forEach { candidate ->
+                if (locations.values.any { it.distance(candidate) < 50.0 }) {
+                    return@forEach // 近すぎる場合はスキップ
                 }
-            } while (!isValidRunnerLocation(location, locations.values.toList(), runnerSpread))
+                
+                val score = evaluateLocation(candidate, locations.values.toList(), runnerSpread)
+                if (score > bestScore) {
+                    bestScore = score
+                    bestLocation = candidate
+                }
+            }
             
-            locations[runner] = location
-            plugin.logger.info("Runner ${runner.name} placed at: ${location.blockX}, ${location.blockY}, ${location.blockZ}")
+            // 最適な位置が見つからない場合は新しく生成
+            if (bestLocation == null) {
+                var attempts = 0
+                val maxAttempts = 20 // 試行回数を減らす
+                
+                do {
+                    val distance = Random.nextDouble(minRadius, maxRadius)
+                    val angle = Random.nextDouble(360.0)
+                    
+                    val x = center.x + distance * cos(Math.toRadians(angle))
+                    val z = center.z + distance * sin(Math.toRadians(angle))
+                    
+                    bestLocation = getGroundLocation(world, x, z)
+                    attempts++
+                } while (attempts < maxAttempts && !isValidRunnerLocation(bestLocation!!, locations.values.toList(), runnerSpread))
+            }
+            
+            val finalLocation = bestLocation ?: world.spawnLocation
+            locations[runner] = finalLocation
+            candidateLocations.remove(finalLocation) // 使用済みの候補を削除
+            
+            plugin.logger.info("Runner ${runner.name} placed at: ${finalLocation.blockX}, ${finalLocation.blockY}, ${finalLocation.blockZ}")
         }
         
         return locations
     }
     
     /**
-     * ハンターを配置
+     * 位置の評価スコアを計算
+     */
+    private fun evaluateLocation(
+        location: Location,
+        existingLocations: List<Location>,
+        targetSpread: Double
+    ): Double {
+        if (!isSafeLocation(location)) return -1.0
+        
+        var score = 100.0
+        
+        // 既存位置との距離を評価
+        existingLocations.forEach { existing ->
+            val distance = location.distance(existing)
+            
+            if (targetSpread > 0) {
+                // 目標距離に近いほど高スコア
+                val diff = kotlin.math.abs(distance - targetSpread)
+                score -= diff * 0.1
+            } else {
+                // 近いほど高スコア（ただし最小距離は保つ）
+                if (distance < 50.0) {
+                    score -= 50.0
+                } else {
+                    score += 10.0 / distance
+                }
+            }
+        }
+        
+        return score
+    }
+    
+    /**
+     * ハンターを配置（最適化版）
      */
     private fun placeHunters(
         world: World,
@@ -154,56 +220,202 @@ class SpawnManager(
             plugin.logger.info("Hunters will be placed close together (minority team)")
         }
         
-        hunters.forEachIndexed { index, hunter ->
-            var location: Location
-            var attempts = 0
-            val maxAttempts = 100
+        // ランナーから十分離れた候補位置を事前計算
+        val candidateLocations = mutableListOf<Location>()
+        val numCandidates = hunters.size * 8 // 各プレイヤーに対して8つの候補
+        
+        for (i in 0 until numCandidates) {
+            val distance = Random.nextDouble(minRadius, maxRadius)
+            val angle = Random.nextDouble(360.0)
             
-            do {
-                val distance = Random.nextDouble(minRadius, maxRadius)
-                val angle = Random.nextDouble(360.0)
-                
-                val x = center.x + distance * cos(Math.toRadians(angle))
-                val z = center.z + distance * sin(Math.toRadians(angle))
-                
-                location = getGroundLocation(world, x, z)
-                
-                attempts++
-                if (attempts >= maxAttempts) {
-                    plugin.logger.warning("Failed to find valid location for hunter ${hunter.name} after $maxAttempts attempts")
-                    break
+            val x = center.x + distance * cos(Math.toRadians(angle))
+            val z = center.z + distance * sin(Math.toRadians(angle))
+            
+            val location = getGroundLocation(world, x, z)
+            
+            // ランナーから十分離れているかチェック
+            if (isSafeLocation(location) && 
+                runnerLocations.all { it.distance(location) >= minEnemyDistance }) {
+                candidateLocations.add(location)
+            }
+        }
+        
+        // 各ハンターに最適な位置を割り当て
+        hunters.forEach { hunter ->
+            var bestLocation: Location? = null
+            var bestScore = -1.0
+            
+            // 候補位置から最適なものを選択
+            candidateLocations.forEach { candidate ->
+                if (locations.values.any { it.distance(candidate) < 50.0 }) {
+                    return@forEach // 近すぎる場合はスキップ
                 }
-            } while (!isValidHunterLocation(location, locations.values.toList(), runnerLocations, hunterSpread, minEnemyDistance))
+                
+                val score = evaluateHunterLocation(
+                    candidate, 
+                    locations.values.toList(), 
+                    runnerLocations,
+                    hunterSpread,
+                    minEnemyDistance
+                )
+                
+                if (score > bestScore) {
+                    bestScore = score
+                    bestLocation = candidate
+                }
+            }
             
-            locations[hunter] = location
-            plugin.logger.info("Hunter ${hunter.name} placed at: ${location.blockX}, ${location.blockY}, ${location.blockZ}")
+            // 最適な位置が見つからない場合は新しく生成（試行回数削減）
+            if (bestLocation == null) {
+                var attempts = 0
+                val maxAttempts = 30 // 試行回数を減らす
+                
+                do {
+                    val distance = Random.nextDouble(minRadius, maxRadius)
+                    val angle = Random.nextDouble(360.0)
+                    
+                    val x = center.x + distance * cos(Math.toRadians(angle))
+                    val z = center.z + distance * sin(Math.toRadians(angle))
+                    
+                    bestLocation = getGroundLocation(world, x, z)
+                    attempts++
+                } while (attempts < maxAttempts && 
+                         !isValidHunterLocation(bestLocation!!, locations.values.toList(), 
+                                              runnerLocations, hunterSpread, minEnemyDistance))
+            }
+            
+            val finalLocation = bestLocation ?: world.spawnLocation
+            locations[hunter] = finalLocation
+            candidateLocations.remove(finalLocation) // 使用済みの候補を削除
+            
+            plugin.logger.info("Hunter ${hunter.name} placed at: ${finalLocation.blockX}, ${finalLocation.blockY}, ${finalLocation.blockZ}")
         }
         
         return locations
     }
     
     /**
-     * 地上の安全な位置を取得
+     * ハンター位置の評価スコアを計算
+     */
+    private fun evaluateHunterLocation(
+        location: Location,
+        existingHunters: List<Location>,
+        runnerLocations: List<Location>,
+        targetSpread: Double,
+        minEnemyDistance: Double
+    ): Double {
+        if (!isSafeLocation(location)) return -1.0
+        
+        // ランナーとの最小距離チェック
+        val minRunnerDist = runnerLocations.minOfOrNull { it.distance(location) } ?: Double.MAX_VALUE
+        if (minRunnerDist < minEnemyDistance) return -1.0
+        
+        var score = 100.0
+        
+        // ランナーからの距離ボーナス（遠すぎず近すぎず）
+        val idealEnemyDistance = minEnemyDistance * 1.5
+        val enemyDistDiff = kotlin.math.abs(minRunnerDist - idealEnemyDistance)
+        score -= enemyDistDiff * 0.05
+        
+        // 既存ハンターとの距離を評価
+        existingHunters.forEach { existing ->
+            val distance = location.distance(existing)
+            
+            if (targetSpread > 0) {
+                // 目標距離に近いほど高スコア
+                val diff = kotlin.math.abs(distance - targetSpread)
+                score -= diff * 0.1
+            } else {
+                // 近いほど高スコア（ただし最小距離は保つ）
+                if (distance < 50.0) {
+                    score -= 50.0
+                } else {
+                    score += 10.0 / distance
+                }
+            }
+        }
+        
+        return score
+    }
+    
+    /**
+     * 地上の安全な位置を取得（最適化版）
      */
     private fun getGroundLocation(world: World, x: Double, z: Double): Location {
-        val highestBlock = world.getHighestBlockAt(x.toInt(), z.toInt())
-        var y = highestBlock.y
+        val xInt = x.toInt()
+        val zInt = z.toInt()
         
-        // 安全な地面を探す（水や溶岩の上でない）
-        while (y > 0) {
-            val block = world.getBlockAt(x.toInt(), y, z.toInt())
-            val below = world.getBlockAt(x.toInt(), y - 1, z.toInt())
-            
-            if (below.type.isSolid && 
-                block.type == Material.AIR && 
-                world.getBlockAt(x.toInt(), y + 1, z.toInt()).type == Material.AIR) {
-                return Location(world, x, y.toDouble(), z)
+        // チャンクがロードされていない場合は先にロード
+        val chunk = world.getChunkAt(xInt shr 4, zInt shr 4)
+        if (!chunk.isLoaded) {
+            chunk.load()
+        }
+        
+        // 最高ブロックから開始
+        val highestY = world.getHighestBlockYAt(xInt, zInt)
+        
+        // 最高点が十分低い場合は簡易チェック
+        if (highestY < 100) {
+            val highestBlock = world.getBlockAt(xInt, highestY, zInt)
+            if (highestBlock.type.isSolid && !isUnsafeBlock(highestBlock.type)) {
+                return Location(world, x, highestY + 1.0, z)
             }
-            y--
+        }
+        
+        // 二分探索で効率的に安全な位置を探す
+        var minY = 60 // 通常の地表レベル付近から開始
+        var maxY = highestY
+        var safeY = -1
+        
+        while (minY <= maxY && safeY == -1) {
+            val midY = (minY + maxY) / 2
+            val block = world.getBlockAt(xInt, midY, zInt)
+            val below = world.getBlockAt(xInt, midY - 1, zInt)
+            val above = world.getBlockAt(xInt, midY + 1, zInt)
+            
+            if (below.type.isSolid && !isUnsafeBlock(below.type) &&
+                block.type == Material.AIR && 
+                above.type == Material.AIR) {
+                safeY = midY
+                // より高い安全な位置があるか確認
+                for (y in midY + 1..minOf(midY + 5, maxY)) {
+                    val checkBelow = world.getBlockAt(xInt, y - 1, zInt)
+                    val checkBlock = world.getBlockAt(xInt, y, zInt)
+                    val checkAbove = world.getBlockAt(xInt, y + 1, zInt)
+                    
+                    if (checkBelow.type.isSolid && !isUnsafeBlock(checkBelow.type) &&
+                        checkBlock.type == Material.AIR && 
+                        checkAbove.type == Material.AIR) {
+                        safeY = y
+                    } else {
+                        break
+                    }
+                }
+            } else if (!below.type.isSolid || below.type == Material.AIR) {
+                minY = midY + 1
+            } else {
+                maxY = midY - 1
+            }
+        }
+        
+        // 安全な位置が見つかった場合
+        if (safeY != -1) {
+            return Location(world, x, safeY.toDouble(), z)
         }
         
         // 見つからない場合は最高点を使用
-        return highestBlock.location.add(0.5, 1.0, 0.5)
+        return Location(world, x, highestY + 1.0, z)
+    }
+    
+    /**
+     * 危険なブロックタイプかチェック
+     */
+    private fun isUnsafeBlock(type: Material): Boolean {
+        return type == Material.LAVA || 
+               type == Material.WATER || 
+               type == Material.CACTUS ||
+               type == Material.MAGMA_BLOCK ||
+               type.name.contains("FIRE")
     }
     
     /**

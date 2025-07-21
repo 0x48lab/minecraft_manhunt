@@ -452,6 +452,8 @@ game-management:
   runner-shortage-assign: '§aAutomatically assigned as Runner due to shortage!'
   start-cancelled-roles: '§cAt least 1 hunter and 1 runner required. Game start cancelled.'
   players-teleported: '§6Players have been teleported to starting positions!'
+  preparing-teleport: '§ePreparing player spawn positions...'
+  teleport-progress: '§aTeleporting: {current}/{total} ({percent}%)'
   inventory-cleared: '§6[Manhunt] Player inventories have been cleared!'
   advancements-reset: '§6[Manhunt] Advancements have been reset!'
   night-skipped: '§6[Manhunt] Night has been skipped to dawn.'

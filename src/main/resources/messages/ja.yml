@@ -453,6 +453,8 @@ game-management:
   runner-shortage-assign: '§aランナーが不足のため、自動的にランナーに割り当てられました！'
   start-cancelled-roles: '§cハンターとランナーが最低1人ずつ必要です。ゲーム開始を中止しました。'
   players-teleported: '§6プレイヤーが各開始地点に転送されました！'
+  preparing-teleport: '§eプレイヤーのスポーン位置を準備しています...'
+  teleport-progress: '§a転送中: {current}/{total} ({percent}%)'
   inventory-cleared: '§6[Manhunt] プレイヤーのインベントリがクリアされました！'
   advancements-reset: '§6[Manhunt] 実績がリセットされました！'
   night-skipped: '§6[Manhunt] 夜がスキップされ、夜明け前になりました。'

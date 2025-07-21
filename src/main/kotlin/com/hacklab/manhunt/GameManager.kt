@@ -1022,98 +1022,294 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
     
     // ======== ゲーム開始時の転送システム ========
     
-    private fun teleportPlayersToStartPositions() {
+    private fun teleportPlayersToStartPositionsAsync() {
         val hunters = getAllHunters().filter { it.isOnline }
         val runners = getAllRunners().filter { it.isOnline }
         val spectators = getAllSpectators().filter { it.isOnline }
+        val totalPlayers = hunters.size + runners.size
         
         // ワールドを取得（デフォルトはオーバーワールド）
         val world = Bukkit.getWorlds().firstOrNull() ?: run {
             plugin.logger.severe("World not found!")
+            finishGameStart()
             return
         }
         
-        try {
-            // SpawnManagerを使用してスポーン位置を生成
-            val spawnLocations = if (spawnManager != null) {
-                plugin.logger.info("Using SpawnManager for player spawn placement")
-                spawnManager!!.generateSpawnLocations(world)
-            } else {
-                plugin.logger.warning("SpawnManager not available, using legacy spawn system")
-                // レガシーシステムを使用
-                val locations = mutableMapOf<Player, Location>()
-                val spawnedLocations = mutableListOf<Location>()
+        // 進捗表示
+        Bukkit.broadcastMessage(messageManager.getMessage("game-management.preparing-teleport"))
+        
+        // 非同期でスポーン位置を計算
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, Runnable {
+            try {
+                val startTime = System.currentTimeMillis()
+                plugin.logger.info("Starting async spawn location calculation for $totalPlayers players")
                 
-                (hunters + runners).forEach { player ->
-                    val role = getPlayerRole(player)
-                    val spawnLocation = if (role == PlayerRole.RUNNER) {
-                        generateRandomSpawnLocation(world, spawnedLocations, 500.0, 1000.0, avoidOcean = true)
-                    } else {
-                        generateRandomSpawnLocation(world, spawnedLocations, 500.0, 1000.0, avoidOcean = false)
+                // SpawnManagerを使用してスポーン位置を生成
+                val spawnLocations = if (spawnManager != null) {
+                    plugin.logger.info("Using SpawnManager for player spawn placement")
+                    spawnManager!!.generateSpawnLocations(world)
+                } else {
+                    plugin.logger.warning("SpawnManager not available, using legacy spawn system")
+                    // レガシーシステムを使用
+                    val locations = mutableMapOf<Player, Location>()
+                    val spawnedLocations = mutableListOf<Location>()
+                    
+                    (hunters + runners).forEach { player ->
+                        val role = getPlayerRole(player)
+                        val spawnLocation = if (role == PlayerRole.RUNNER) {
+                            generateRandomSpawnLocation(world, spawnedLocations, 500.0, 1000.0, avoidOcean = true)
+                        } else {
+                            generateRandomSpawnLocation(world, spawnedLocations, 500.0, 1000.0, avoidOcean = false)
+                        }
+                        spawnedLocations.add(spawnLocation)
+                        locations[player] = spawnLocation
                     }
-                    spawnedLocations.add(spawnLocation)
-                    locations[player] = spawnLocation
+                    locations
                 }
-                locations
+                
+                val calcTime = System.currentTimeMillis() - startTime
+                plugin.logger.info("Spawn location calculation completed in ${calcTime}ms")
+                
+                // メインスレッドでテレポート実行（最大10秒のタイムアウト付き）
+                Bukkit.getScheduler().runTask(plugin, Runnable {
+                    executeTeleportWithTimeout(hunters, runners, spectators, spawnLocations, world)
+                })
+                
+            } catch (e: Exception) {
+                plugin.logger.severe("Error during async spawn calculation: ${e.message}")
+                e.printStackTrace()
+                
+                // エラー時はメインスレッドで緊急処理
+                Bukkit.getScheduler().runTask(plugin, Runnable {
+                    emergencyTeleport(hunters, runners, spectators, world)
+                })
             }
-            
-            // 各プレイヤーをスポーン位置に転送
-            (hunters + runners).forEach { player ->
-                try {
-                    val spawnLocation = spawnLocations[player] ?: world.spawnLocation
-                    val role = getPlayerRole(player)
-                    
-                    player.teleport(spawnLocation)
-                    player.gameMode = GameMode.SURVIVAL
-                    
-                    // 役割に応じたメッセージを送信と初期装備配布
-                    when (role) {
-                        PlayerRole.HUNTER -> {
-                            player.sendMessage(messageManager.getMessage(player, "game-start-role.hunter"))
-                            giveStartingItems(player, PlayerRole.HUNTER)
-                            giveShopItemToPlayer(player)
-                            plugin.logger.info("Hunter ${player.name} teleported to ${spawnLocation.blockX}, ${spawnLocation.blockY}, ${spawnLocation.blockZ}")
-                        }
-                        PlayerRole.RUNNER -> {
-                            player.sendMessage(messageManager.getMessage(player, "game-start-role.runner"))
-                            giveStartingItems(player, PlayerRole.RUNNER)
-                            giveShopItemToPlayer(player)
-                            plugin.logger.info("Runner ${player.name} teleported to ${spawnLocation.blockX}, ${spawnLocation.blockY}, ${spawnLocation.blockZ}")
-                        }
-                        else -> {}
+        })
+    }
+    
+    private fun executeTeleportWithTimeout(
+        hunters: List<Player>,
+        runners: List<Player>,
+        spectators: List<Player>,
+        spawnLocations: Map<Player, Location>,
+        world: World
+    ) {
+        val totalPlayers = hunters.size + runners.size
+        val teleportedCount = java.util.concurrent.atomic.AtomicInteger(0)
+        val maxTeleportTime = 10000L // 10秒
+        val startTime = System.currentTimeMillis()
+        
+        // プログレス表示用のタスク
+        val progressTask = object : BukkitRunnable() {
+            override fun run() {
+                val currentCount = teleportedCount.get()
+                if (currentCount < totalPlayers) {
+                    val progress = (currentCount * 100) / totalPlayers
+                    Bukkit.getOnlinePlayers().forEach { player ->
+                        plugin.getUIManager().sendActionBar(
+                            player,
+                            messageManager.getMessage(player, "game-management.teleport-progress", 
+                                "current" to currentCount, 
+                                "total" to totalPlayers,
+                                "percent" to progress
+                            )
+                        )
                     }
-                } catch (e: Exception) {
-                    plugin.logger.warning("Error teleporting player ${player.name}: ${e.message}")
-                    // エラーの場合はワールドスポーンに転送
+                }
+            }
+        }
+        progressTask.runTaskTimer(plugin, 0L, 10L) // 0.5秒ごとに更新
+        
+        // 各プレイヤーをテレポート（バッチ処理）
+        val teleportTask = object : BukkitRunnable() {
+            val playersToTeleport = (hunters + runners).toMutableList()
+            
+            override fun run() {
+                val elapsedTime = System.currentTimeMillis() - startTime
+                
+                // タイムアウトチェック
+                if (elapsedTime > maxTeleportTime) {
+                    plugin.logger.warning("Teleport timeout reached after ${elapsedTime}ms")
+                    cancel()
+                    progressTask.cancel()
+                    
+                    // 残りのプレイヤーは現在位置でゲーム開始
+                    playersToTeleport.forEach { player ->
+                        setupPlayerForGame(player, player.location)
+                    }
+                    
+                    finishGameStart()
+                    return
+                }
+                
+                // バッチサイズ（1tickあたり5人まで処理）
+                val batchSize = 5
+                var processed = 0
+                
+                while (playersToTeleport.isNotEmpty() && processed < batchSize) {
+                    val player = playersToTeleport.removeAt(0)
+                    
+                    if (!player.isOnline) {
+                        teleportedCount.incrementAndGet()
+                        processed++
+                        continue
+                    }
+                    
                     try {
-                        player.teleport(world.spawnLocation)
-                        player.gameMode = GameMode.SURVIVAL
-                    } catch (ex: Exception) {
-                        plugin.logger.severe("Critical error teleporting ${player.name}: ${ex.message}")
+                        val spawnLocation = spawnLocations[player] ?: world.spawnLocation
+                        player.teleport(spawnLocation)
+                        setupPlayerForGame(player, spawnLocation)
+                        
+                        teleportedCount.incrementAndGet()
+                        processed++
+                        
+                    } catch (e: Exception) {
+                        plugin.logger.warning("Error teleporting player ${player.name}: ${e.message}")
+                        // エラーの場合は現在位置でゲーム開始
+                        setupPlayerForGame(player, player.location)
+                        teleportedCount.incrementAndGet()
+                        processed++
                     }
                 }
-            }
-            
-            // 観戦者はスペクテーターモードを継続
-            spectators.forEach { spectator ->
-                try {
-                    spectator.gameMode = GameMode.SPECTATOR
-                    spectator.sendMessage(messageManager.getMessage(spectator, "game-start-role.spectator"))
-                } catch (e: Exception) {
-                    plugin.logger.warning("Error setting spectator mode for ${spectator.name}: ${e.message}")
+                
+                // 全員完了したら
+                if (playersToTeleport.isEmpty()) {
+                    cancel()
+                    progressTask.cancel()
+                    
+                    // 観戦者の処理
+                    spectators.forEach { spectator ->
+                        try {
+                            spectator.gameMode = GameMode.SPECTATOR
+                            spectator.sendMessage(messageManager.getMessage(spectator, "game-start-role.spectator"))
+                        } catch (e: Exception) {
+                            plugin.logger.warning("Error setting spectator mode for ${spectator.name}: ${e.message}")
+                        }
+                    }
+                    
+                    Bukkit.broadcastMessage(messageManager.getMessage("game-management.players-teleported"))
+                    finishGameStart()
                 }
             }
-            
-            Bukkit.broadcastMessage(messageManager.getMessage("game-management.players-teleported"))
-            
+        }
+        teleportTask.runTaskTimer(plugin, 0L, 1L) // 1tickごとに実行
+    }
+    
+    private fun setupPlayerForGame(player: Player, location: Location) {
+        val role = getPlayerRole(player) ?: return
+        
+        player.gameMode = GameMode.SURVIVAL
+        
+        // 役割に応じたメッセージを送信と初期装備配布
+        when (role) {
+            PlayerRole.HUNTER -> {
+                player.sendMessage(messageManager.getMessage(player, "game-start-role.hunter"))
+                giveStartingItems(player, PlayerRole.HUNTER)
+                giveShopItemToPlayer(player)
+                plugin.logger.info("Hunter ${player.name} setup at ${location.blockX}, ${location.blockY}, ${location.blockZ}")
+            }
+            PlayerRole.RUNNER -> {
+                player.sendMessage(messageManager.getMessage(player, "game-start-role.runner"))
+                giveStartingItems(player, PlayerRole.RUNNER)
+                giveShopItemToPlayer(player)
+                plugin.logger.info("Runner ${player.name} setup at ${location.blockX}, ${location.blockY}, ${location.blockZ}")
+            }
+            else -> {}
+        }
+    }
+    
+    private fun emergencyTeleport(
+        hunters: List<Player>,
+        runners: List<Player>,
+        spectators: List<Player>,
+        world: World
+    ) {
+        plugin.logger.warning("Using emergency teleport fallback")
+        
+        // 全員を現在位置でゲーム開始
+        (hunters + runners).forEach { player ->
+            if (player.isOnline) {
+                setupPlayerForGame(player, player.location)
+            }
+        }
+        
+        spectators.forEach { spectator ->
+            if (spectator.isOnline) {
+                spectator.gameMode = GameMode.SPECTATOR
+                spectator.sendMessage(messageManager.getMessage(spectator, "game-start-role.spectator"))
+            }
+        }
+        
+        finishGameStart()
+    }
+    
+    private fun finishGameStart() {
+        gameState = GameState.RUNNING
+        gameStartTime = System.currentTimeMillis()
+        
+        // ゲーム統計を初期化して開始
+        gameStats.startGame()
+        
+        // 全プレイヤーを統計に追加
+        players.values.forEach { manhuntPlayer ->
+            try {
+                val player = Bukkit.getPlayer(manhuntPlayer.player.uniqueId)
+                if (player != null && player.isOnline) {
+                    gameStats.addPlayer(player, manhuntPlayer.role)
+                }
+            } catch (e: Exception) {
+                plugin.logger.warning("Error adding player statistics: ${e.message}")
+            }
+        }
+        
+        // バディーシステムの初期化
+        try {
+            plugin.getBuddySystem().onGameStart()
         } catch (e: Exception) {
-            plugin.logger.severe("Error during player teleportation: ${e.message}")
-            // エラーの場合は全員をスペクテーターモードに設定
-            (hunters + runners + spectators).forEach { player ->
+            plugin.logger.warning("バディーシステムの初期化でエラー: ${e.message}")
+        }
+        
+        // UIにゲーム実行状態を通知
+        try {
+            plugin.getUIManager().showGameStateChange(GameState.RUNNING)
+        } catch (e: Exception) {
+            plugin.logger.warning("UI通知でエラー: ${e.message}")
+        }
+        
+        // Broadcast game start
+        Bukkit.broadcastMessage(messageManager.getMessage("game.start"))
+        Bukkit.broadcastMessage(messageManager.getMessage("game-start-role.runner"))
+        Bukkit.broadcastMessage(messageManager.getMessage("game-start-role.hunter"))
+        Bukkit.broadcastMessage(messageManager.getMessage("game-start-role.spectator"))
+        
+        // Start proximity checking
+        startProximityChecking()
+        
+        // Start compass tracking
+        plugin.getCompassTracker().startTracking()
+        
+        // Start currency tracking
+        plugin.getCurrencyTracker().startTracking()
+        
+        // Start night skip monitoring if enabled
+        if (configManager.isNightSkipEnabled()) {
+            startNightSkipMonitoring()
+        }
+        
+        // Reset economy for all players
+        plugin.getEconomyManager().resetAllBalances()
+        plugin.getShopManager().resetAllPurchases()
+        
+        // ロール変更アイテムを削除
+        removeRoleChangeItems()
+        
+        // ハンターに仮想コンパスの使い方を自動通知
+        getAllHunters().forEach { hunter ->
+            if (hunter.isOnline) {
                 try {
-                    player.gameMode = GameMode.SPECTATOR
-                } catch (ex: Exception) {
-                    plugin.logger.warning("Error in emergency mode setting: ${ex.message}")
+                    plugin.getCompassTracker().giveCompass(hunter)
+                } catch (e: Exception) {
+                    plugin.logger.warning("Error explaining compass to hunter: ${e.message}")
                 }
             }
         }
@@ -1183,24 +1379,72 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
     }
     
     private fun findSafeY(world: World, x: Int, z: Int): Int {
-        // 地上から少し上の安全な場所を探す
-        for (y in world.maxHeight - 1 downTo 1) {
-            val block = world.getBlockAt(x, y, z)
-            val blockBelow = world.getBlockAt(x, y - 1, z)
-            val blockAbove = world.getBlockAt(x, y + 1, z)
-            
-            // 足場があり、プレイヤーが立てる空間がある場所
-            if (!blockBelow.type.isAir && 
-                block.type.isAir && 
-                blockAbove.type.isAir && 
-                !blockBelow.type.name.contains("LAVA") &&
-                !blockBelow.type.name.contains("WATER")) {
-                return y
+        // チャンクがロードされていない場合は先にロード
+        val chunk = world.getChunkAt(x shr 4, z shr 4)
+        if (!chunk.isLoaded) {
+            chunk.load()
+        }
+        
+        // 最高ブロックから開始
+        val highestY = world.getHighestBlockYAt(x, z)
+        
+        // 最高点が十分低い場合は簡易チェック
+        if (highestY < 100) {
+            val highestBlock = world.getBlockAt(x, highestY, z)
+            if (highestBlock.type.isSolid && !isUnsafeBlockType(highestBlock.type)) {
+                return highestY + 1
             }
         }
         
-        // 見つからない場合は高い位置に配置
-        return world.getHighestBlockYAt(x, z) + 2
+        // 二分探索で効率的に安全な位置を探す
+        var minY = 60 // 通常の地表レベル付近から開始
+        var maxY = highestY
+        var safeY = -1
+        
+        while (minY <= maxY && safeY == -1) {
+            val midY = (minY + maxY) / 2
+            val block = world.getBlockAt(x, midY, z)
+            val blockBelow = world.getBlockAt(x, midY - 1, z)
+            val blockAbove = world.getBlockAt(x, midY + 1, z)
+            
+            if (blockBelow.type.isSolid && !isUnsafeBlockType(blockBelow.type) &&
+                block.type.isAir && blockAbove.type.isAir) {
+                safeY = midY
+                // より高い安全な位置があるか確認
+                for (y in midY + 1..minOf(midY + 5, maxY)) {
+                    val checkBelow = world.getBlockAt(x, y - 1, z)
+                    val checkBlock = world.getBlockAt(x, y, z)
+                    val checkAbove = world.getBlockAt(x, y + 1, z)
+                    
+                    if (checkBelow.type.isSolid && !isUnsafeBlockType(checkBelow.type) &&
+                        checkBlock.type.isAir && checkAbove.type.isAir) {
+                        safeY = y
+                    } else {
+                        break
+                    }
+                }
+            } else if (!blockBelow.type.isSolid || blockBelow.type.isAir) {
+                minY = midY + 1
+            } else {
+                maxY = midY - 1
+            }
+        }
+        
+        // 安全な位置が見つかった場合
+        if (safeY != -1) {
+            return safeY
+        }
+        
+        // 見つからない場合は最高点を使用
+        return highestY + 1
+    }
+    
+    private fun isUnsafeBlockType(type: Material): Boolean {
+        return type == Material.LAVA || 
+               type == Material.WATER || 
+               type == Material.CACTUS ||
+               type == Material.MAGMA_BLOCK ||
+               type.name.contains("FIRE")
     }
     
     
@@ -1542,82 +1786,8 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
         }
         
         // ハンターとランナーをランダムな場所に転送し、サバイバルモードに設定
-        teleportPlayersToStartPositions()
-        
-        gameState = GameState.RUNNING
-        gameStartTime = System.currentTimeMillis()
-        
-        // ゲーム統計を初期化して開始
-        gameStats.startGame()
-        
-        // 全プレイヤーを統計に追加
-        players.values.forEach { manhuntPlayer ->
-            try {
-                val player = Bukkit.getPlayer(manhuntPlayer.player.uniqueId)
-                if (player != null && player.isOnline) {
-                    gameStats.addPlayer(player, manhuntPlayer.role)
-                }
-            } catch (e: Exception) {
-                plugin.logger.warning("Error adding player statistics: ${e.message}")
-            }
-        }
-        
-        // バディーシステムの初期化
-        try {
-            plugin.getBuddySystem().onGameStart()
-        } catch (e: Exception) {
-            plugin.logger.warning("バディーシステムの初期化でエラー: ${e.message}")
-        }
-        
-        // UIにゲーム実行状態を通知
-        try {
-            plugin.getUIManager().showGameStateChange(GameState.RUNNING)
-        } catch (e: Exception) {
-            plugin.logger.warning("UI通知でエラー: ${e.message}")
-        }
-        
-        // Broadcast game start
-        Bukkit.broadcastMessage(messageManager.getMessage("game.start"))
-        Bukkit.broadcastMessage(messageManager.getMessage("game-start-role.runner"))
-        Bukkit.broadcastMessage(messageManager.getMessage("game-start-role.hunter"))
-        Bukkit.broadcastMessage(messageManager.getMessage("game-start-role.spectator"))
-        
-        // チームを作成してプレイヤーを割り当て
-        // UIManagerがスコアボードとチームを管理するため、ここでは不要
-        // createTeams()
-        // assignPlayersToTeams()
-        
-        // Start proximity checking
-        startProximityChecking()
-        
-        // Start compass tracking
-        plugin.getCompassTracker().startTracking()
-        
-        // Start currency tracking
-        plugin.getCurrencyTracker().startTracking()
-        
-        // Start night skip monitoring if enabled
-        if (configManager.isNightSkipEnabled()) {
-            startNightSkipMonitoring()
-        }
-        
-        // Reset economy for all players
-        plugin.getEconomyManager().resetAllBalances()
-        plugin.getShopManager().resetAllPurchases()
-        
-        // ロール変更アイテムを削除
-        removeRoleChangeItems()
-        
-        // ハンターに仮想コンパスの使い方を自動通知
-        getAllHunters().forEach { hunter ->
-            if (hunter.isOnline) {
-                try {
-                    plugin.getCompassTracker().giveCompass(hunter)
-                } catch (e: Exception) {
-                    plugin.logger.warning("Error explaining compass to hunter: ${e.message}")
-                }
-            }
-        }
+        // 非同期でテレポート処理を実行し、完了後にゲームを開始
+        teleportPlayersToStartPositionsAsync()
         
         // 開始完了タイトル
         Bukkit.getOnlinePlayers().forEach { player ->
