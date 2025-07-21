@@ -962,8 +962,20 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
         // UIManagerがスコアボードとチームを管理するため、ここでは不要
         // removeTeams()
         
-        // データをクリア
-        players.clear()
+        // プレイヤーの役割をリセット（プレイヤー自体は削除しない）
+        players.forEach { (uuid, player) ->
+            player.role = PlayerRole.SPECTATOR
+        }
+        
+        // オンラインプレイヤーがplayersマップに存在することを確認
+        Bukkit.getOnlinePlayers().forEach { player ->
+            if (!players.containsKey(player.uniqueId)) {
+                players[player.uniqueId] = ManhuntPlayer(player, PlayerRole.SPECTATOR)
+                plugin.logger.info("Re-added player to game: ${player.name}")
+            }
+        }
+        
+        // その他のデータをクリア
         fixedHunters.clear()
         disconnectedPlayers.clear()
         originalGameModes.clear()
@@ -996,6 +1008,16 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
             plugin.getShopManager().resetAllPurchases()
         } catch (e: Exception) {
             plugin.logger.warning("Error resetting economy during game reset: ${e.message}")
+        }
+        
+        // UIシステムを再起動
+        try {
+            plugin.getUIManager().stopDisplaySystem()
+            plugin.getUIManager().startDisplaySystem()
+            // ゲーム状態をWAITINGに更新
+            plugin.getUIManager().showGameStateChange(GameState.WAITING)
+        } catch (e: Exception) {
+            plugin.logger.warning("Error restarting UI system during game reset: ${e.message}")
         }
         
         Bukkit.broadcastMessage(messageManager.getMessage("game.reset"))
