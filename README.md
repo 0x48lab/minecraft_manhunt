@@ -45,6 +45,19 @@ A comprehensive multiplayer Manhunt plugin for Minecraft servers featuring advan
 - **Automatic Night Skip**: Skip to dawn when night falls
 - **Achievement Reset**: Fresh start for each game
 
+### ⏱️ Game Modes
+- **Time Limit Mode** (default 40 minutes)
+  - Game ends when time expires
+  - Winner determined by proximity/escape time ratio
+  - Kill bonus adds 5 minutes to killer's team time
+  - Real-time dominance percentage display
+  - Instant runner respawn in this mode
+- **Endless Mode** (time-limit: 0)
+  - Traditional Manhunt gameplay
+  - Game continues until victory conditions are met
+  - Runner respawn with 300-second wait time
+  - No time pressure, strategic gameplay focus
+
 ## 🎯 Game Objectives
 
 - **🏃 Runners**: Defeat the Ender Dragon to achieve victory
@@ -87,8 +100,16 @@ game:
   min-players: 2                   # Minimum players to start
   start-countdown: 10              # Countdown before game start
   reset-advancements: true         # Reset achievements on game start
+  time-limit: 40                   # Game time limit in minutes (0 for endless)
   night-skip:
     enabled: true                  # Auto-skip to dawn
+  
+  # Time Mode Settings (only active when time-limit > 0)
+  time-mode:
+    kill-bonus: 5                  # Minutes added for each kill
+    proximity-distance: 3          # Chunks for proximity calculation
+    runner-instant-respawn: true   # Instant respawn for runners
+    runner-respawn-time: 30        # Respawn wait time in seconds
 
 # Economy Settings
 economy:

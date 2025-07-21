@@ -107,6 +107,34 @@
                 </div>
             </div>
 
+            <div class="game-modes">
+                <h3 data-i18n="rules.modes.title">ゲームモード</h3>
+                <div class="mode-grid">
+                    <div class="mode-card">
+                        <div class="mode-icon">⏱️</div>
+                        <h4 data-i18n="rules.modes.timelimit.title">時間制限モード</h4>
+                        <p data-i18n="rules.modes.timelimit.desc">デフォルト40分の制限時間でプレイ</p>
+                        <ul>
+                            <li data-i18n="rules.modes.timelimit.1">時間切れで優勢度により勝敗決定</li>
+                            <li data-i18n="rules.modes.timelimit.2">キルで所属チームに5分追加</li>
+                            <li data-i18n="rules.modes.timelimit.3">リアルタイム優勢度表示</li>
+                            <li data-i18n="rules.modes.timelimit.4">ランナーも即時リスポン</li>
+                        </ul>
+                    </div>
+                    <div class="mode-card">
+                        <div class="mode-icon">♾️</div>
+                        <h4 data-i18n="rules.modes.endless.title">エンドレスモード</h4>
+                        <p data-i18n="rules.modes.endless.desc">時間制限なしの従来型ゲームプレイ</p>
+                        <ul>
+                            <li data-i18n="rules.modes.endless.1">勝利条件達成まで継続</li>
+                            <li data-i18n="rules.modes.endless.2">ランナーは300秒リスポン待機</li>
+                            <li data-i18n="rules.modes.endless.3">戦略的プレイ重視</li>
+                            <li data-i18n="rules.modes.endless.4">時間圧力なし</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
             <div class="gameplay-flow">
                 <h3 data-i18n="rules.flow.title">ゲームの流れ</h3>
                 <div class="flow-timeline">
@@ -634,7 +662,7 @@
             <h2 class="section-title" data-i18n="updates.title">最新アップデート</h2>
             
             <div class="update-card">
-                <h3 class="update-version">v2025.01.16</h3>
+                <h3 class="update-version">v2025.07.22</h3>
                 <div class="update-grid">
                     <div class="update-item">
                         <h4 data-i18n="updates.features">新機能</h4>
@@ -648,8 +676,13 @@
                     <div class="update-item">
                         <h4 data-i18n="updates.fixes">修正</h4>
                         <ul>
-                            <li data-i18n="updates.roleselector">ゲーム終了後も役割選択本が使用可能に</li>
-                            <li data-i18n="updates.messages">メッセージシステムの改善</li>
+                            <li data-i18n="updates.respawn">ランナーのリスポン表示バグを修正（スペクテーターモードが正しく適用）</li>
+                            <li data-i18n="updates.compass">死亡中ランナーへのコンパス追跡と距離表示を修正（0m表示）</li>
+                            <li data-i18n="updates.economy">死亡中ランナーへの経済ボーナス付与を停止</li>
+                            <li data-i18n="updates.encounter">エンカウント通知の重複を防止</li>
+                            <li data-i18n="updates.reset">ゲームリセット後の役割選択不具合を修正</li>
+                            <li data-i18n="updates.language">ハードコードされた言語文字列を修正</li>
+                            <li data-i18n="updates.cooldown">ゲームリセットのカウントダウンを削除</li>
                         </ul>
                     </div>
                 </div>
