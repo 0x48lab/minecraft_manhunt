@@ -519,12 +519,18 @@ class UIManager(
                         PlayerRole.HUNTER -> {
                             val nearestRunner = findNearestRunner(player)
                             if (nearestRunner != null) {
-                                val distance = try {
-                                    val actualDistance = player.location.distance(nearestRunner.location).toInt()
-                                    val minDistance = configManager.getMinimumDisplayDistance()
-                                    if (actualDistance <= minDistance) minDistance else actualDistance
-                                } catch (e: Exception) {
-                                    -1
+                                // findNearestRunnerは既に死亡中のランナーを除外しているが、
+                                // 念のため再チェック
+                                val distance = if (gameManager.isRunnerDead(nearestRunner)) {
+                                    0 // 死亡中のランナーは距離0
+                                } else {
+                                    try {
+                                        val actualDistance = player.location.distance(nearestRunner.location).toInt()
+                                        val minDistance = configManager.getMinimumDisplayDistance()
+                                        if (actualDistance <= minDistance) minDistance else actualDistance
+                                    } catch (e: Exception) {
+                                        -1
+                                    }
                                 }
                                 " | " + messageManager.getMessage(player, "ui.actionbar.hunter-with-target", "target" to nearestRunner.name, "distance" to distance)
                             } else {
@@ -666,7 +672,7 @@ class UIManager(
     private fun findNearestRunner(hunter: Player): Player? {
         val hunterWorld = hunter.world ?: return null
         return gameManager.getAllRunners()
-            .filter { it.isOnline && !it.isDead && it.world == hunterWorld }
+            .filter { it.isOnline && !gameManager.isRunnerDead(it) && it.world == hunterWorld }
             .minByOrNull { 
                 try {
                     hunter.location.distance(it.location)

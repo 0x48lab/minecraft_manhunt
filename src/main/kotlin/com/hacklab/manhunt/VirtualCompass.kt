@@ -212,7 +212,9 @@ class VirtualCompass(
     }
     
     private fun showCompassEffect(hunter: Player, direction: Vector, target: Player, distance: Double) {
-        val formattedDistance = formatDistance(distance)
+        // 死亡中のランナーの場合は距離を0にする
+        val actualDistance = if (gameManager.isRunnerDead(target)) 0.0 else distance
+        val formattedDistance = formatDistance(actualDistance)
         
         // タイトル表示
         val titleLine = messageManager.getMessage(hunter, "compass.title-target-name", "name" to target.name)
@@ -233,7 +235,9 @@ class VirtualCompass(
     }
     
     private fun showTargetSwitchEffect(hunter: Player, direction: Vector, target: Player, distance: Double, currentIndex: Int, totalTargets: Int) {
-        val formattedDistance = formatDistance(distance)
+        // 死亡中のランナーの場合は距離を0にする
+        val actualDistance = if (gameManager.isRunnerDead(target)) 0.0 else distance
+        val formattedDistance = formatDistance(actualDistance)
         
         // タイトル表示（ターゲット切り替え情報付き）
         val titleLine = messageManager.getMessage(hunter, "compass.title-target-switch", 
@@ -459,7 +463,14 @@ class VirtualCompass(
                 
                 // 全ハンターのコンパスを更新
                 for ((hunter, target) in currentTargets) {
-                    if (!hunter.isOnline || hunter.isDead || !target.isOnline || target.isDead) {
+                    if (!hunter.isOnline || hunter.isDead || !target.isOnline) {
+                        continue
+                    }
+                    
+                    // ターゲットが死亡中（リスポン待機中）の場合はスキップ
+                    if (gameManager.isRunnerDead(target)) {
+                        // コンパスターゲットをリセット（ワールドスポーン地点を指す）
+                        hunter.compassTarget = hunter.world.spawnLocation
                         continue
                     }
                     
@@ -528,5 +539,9 @@ class VirtualCompass(
         currentTargets[hunter] = target
         targetIndex[hunter] = 0
         plugin.logger.info("VirtualCompass: Set initial target for ${hunter.name} to ${target.name}")
+    }
+    
+    fun getCurrentTarget(hunter: Player): Player? {
+        return currentTargets[hunter]
     }
 }
