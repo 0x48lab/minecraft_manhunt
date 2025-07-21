@@ -117,7 +117,7 @@ class ConfigManager(private val plugin: Main) {
         val minPlayers = getMinPlayers()
         if (minPlayers < 2) {
             config.set("game.min-players", 2)
-            plugin.logger.warning("最小プレイヤー数が無効だったため、2に修正しました。")
+            plugin.logger.warning("Invalid minimum player count, fixed to 2.")
             needsSave = true
         }
         
@@ -130,7 +130,7 @@ class ConfigManager(private val plugin: Main) {
             config.set("game.proximity-warning.level-1", 1)
             config.set("game.proximity-warning.level-2", 2)
             config.set("game.proximity-warning.level-3", 3)
-            plugin.logger.warning("近接警告レベルが無効だったため、デフォルト値に修正しました。")
+            plugin.logger.warning("Invalid proximity warning levels, fixed to default values.")
             needsSave = true
         }
         
@@ -138,7 +138,7 @@ class ConfigManager(private val plugin: Main) {
             config.set("game.proximity-warning.level-1", 1)
             config.set("game.proximity-warning.level-2", 2)
             config.set("game.proximity-warning.level-3", 3)
-            plugin.logger.warning("近接警告レベルの順序が無効だったため、デフォルト値に修正しました。")
+            plugin.logger.warning("Invalid proximity warning level order, fixed to default values.")
             needsSave = true
         }
         
@@ -148,13 +148,13 @@ class ConfigManager(private val plugin: Main) {
         
         if (compassInterval <= 0 || compassInterval > 10) {
             config.set("game.compass-update-interval", 1.0)
-            plugin.logger.warning("コンパス更新間隔が無効だったため、1秒に修正しました。")
+            plugin.logger.warning("Invalid compass update interval, fixed to 1 second.")
             needsSave = true
         }
         
         if (proximityInterval <= 0 || proximityInterval > 10) {
             config.set("game.proximity-check-interval", 1.0)
-            plugin.logger.warning("近接チェック間隔が無効だったため、1秒に修正しました。")
+            plugin.logger.warning("Invalid proximity check interval, fixed to 1 second.")
             needsSave = true
         }
         
@@ -162,7 +162,7 @@ class ConfigManager(private val plugin: Main) {
         val minDisplayDistance = getMinimumDisplayDistance()
         if (minDisplayDistance < 1 || minDisplayDistance > 100) {
             config.set("ui.distance-display.minimum-distance", 5)
-            plugin.logger.warning("最小表示距離が無効だったため、5メートルに修正しました。")
+            plugin.logger.warning("Invalid minimum display distance, fixed to 5 meters.")
             needsSave = true
         }
         
@@ -173,19 +173,19 @@ class ConfigManager(private val plugin: Main) {
         
         if (spawnMinRadius < 0 || spawnMinRadius > spawnMaxRadius) {
             config.set("game.spawn.min-radius", 100.0)
-            plugin.logger.warning("スポーン最小半径が無効だったため、100メートルに修正しました。")
+            plugin.logger.warning("Invalid spawn minimum radius, fixed to 100 meters.")
             needsSave = true
         }
         
         if (spawnMaxRadius < spawnMinRadius || spawnMaxRadius > 5000) {
             config.set("game.spawn.max-radius", 2000.0)
-            plugin.logger.warning("スポーン最大半径が無効だったため、2000メートルに修正しました。")
+            plugin.logger.warning("Invalid spawn maximum radius, fixed to 2000 meters.")
             needsSave = true
         }
         
         if (spawnEnemyMinDistance < 0 || spawnEnemyMinDistance > spawnMaxRadius) {
             config.set("game.spawn.enemy-min-distance", 500.0)
-            plugin.logger.warning("敵同士の最小距離が無効だったため、500メートルに修正しました。")
+            plugin.logger.warning("Invalid enemy minimum distance, fixed to 500 meters.")
             needsSave = true
         }
         
@@ -196,7 +196,7 @@ class ConfigManager(private val plugin: Main) {
             config.set("game.spawn.team-spread.low-threshold", 1.0)
             config.set("game.spawn.team-spread.medium-threshold", 1.5)
             config.set("game.spawn.team-spread.high-threshold", 2.0)
-            plugin.logger.warning("チーム分散の閾値が無効だったため、デフォルト値に修正しました。")
+            plugin.logger.warning("Invalid team spread thresholds, fixed to default values.")
             needsSave = true
         }
         

@@ -212,18 +212,14 @@ class VirtualCompass(
     }
     
     private fun showCompassEffect(hunter: Player, direction: Vector, target: Player, distance: Double) {
-        val formattedDistance = when {
-            distance < 10 -> "§c§l${distance.toInt()}m"
-            distance < 50 -> "§e§l${distance.toInt()}m"
-            else -> "§a§l${distance.toInt()}m"
-        }
+        val formattedDistance = formatDistance(distance)
         
         // タイトル表示
-        hunter.sendTitle(
-            "§6§l${target.name}",
-            "$formattedDistance §7| ${getDirectionArrow(direction)}",
-            10, 40, 10
-        )
+        val titleLine = messageManager.getMessage(hunter, "compass.title-target-name", "name" to target.name)
+        val subtitleLine = messageManager.getMessage(hunter, "compass.subtitle-distance-direction", 
+            "distance" to formattedDistance, 
+            "direction" to getDirectionArrow(direction))
+        hunter.sendTitle(titleLine, subtitleLine, 10, 40, 10)
         
         // パーティクル表示
         showDirectionParticles(hunter, direction)
@@ -237,18 +233,17 @@ class VirtualCompass(
     }
     
     private fun showTargetSwitchEffect(hunter: Player, direction: Vector, target: Player, distance: Double, currentIndex: Int, totalTargets: Int) {
-        val formattedDistance = when {
-            distance < 10 -> "§c§l${distance.toInt()}m"
-            distance < 50 -> "§e§l${distance.toInt()}m"
-            else -> "§a§l${distance.toInt()}m"
-        }
+        val formattedDistance = formatDistance(distance)
         
         // タイトル表示（ターゲット切り替え情報付き）
-        hunter.sendTitle(
-            "§b§l[${currentIndex}/${totalTargets}] §6§l${target.name}",
-            "$formattedDistance §7| ${getDirectionArrow(direction)} §8| ${messageManager.getMessage("virtual-compass.target-switch")}",
-            10, 50, 10
-        )
+        val titleLine = messageManager.getMessage(hunter, "compass.title-target-switch", 
+            "index" to currentIndex, 
+            "total" to totalTargets, 
+            "name" to target.name)
+        val subtitleLine = messageManager.getMessage(hunter, "compass.subtitle-switch-info", 
+            "distance" to formattedDistance, 
+            "direction" to getDirectionArrow(direction))
+        hunter.sendTitle(titleLine, subtitleLine, 10, 50, 10)
         
         // 特別なパーティクル表示（青色）
         showTargetSwitchParticles(hunter, direction)
@@ -347,6 +342,14 @@ class VirtualCompass(
             0.1
         )
         player.playSound(player.location, Sound.BLOCK_PORTAL_TRIGGER, 0.5f, 2.0f)
+    }
+    
+    private fun formatDistance(distance: Double): String {
+        return when {
+            distance < 10 -> "§c§l${distance.toInt()}m"
+            distance < 50 -> "§e§l${distance.toInt()}m"
+            else -> "§a§l${distance.toInt()}m"
+        }
     }
     
     private fun getDirectionArrow(direction: Vector): String {

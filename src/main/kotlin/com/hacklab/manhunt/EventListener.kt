@@ -483,7 +483,7 @@ class EventListener(
         if (result.type == Material.COMPASS) {
             event.isCancelled = true
             val player = event.whoClicked as? Player
-            player?.sendMessage("§cゲーム中はコンパスをクラフトできません。")
+            player?.sendMessage(messageManager.getMessage(player, "game.compass-craft-prevented"))
             plugin.logger.info("Prevented compass crafting by ${player?.name}")
         }
     }
