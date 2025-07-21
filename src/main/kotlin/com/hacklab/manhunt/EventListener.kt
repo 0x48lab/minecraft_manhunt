@@ -259,11 +259,21 @@ class EventListener(
         if (gameManager.getGameState() == GameState.RUNNING) {
             val role = gameManager.getPlayerRole(player)
             when (role) {
-                PlayerRole.HUNTER, PlayerRole.RUNNER -> {
+                PlayerRole.HUNTER -> {
                     Bukkit.getScheduler().runTaskLater(gameManager.getPlugin(), Runnable {
                         player.gameMode = GameMode.SURVIVAL
                         giveShopItem(player)
                     }, 1L)
+                }
+                PlayerRole.RUNNER -> {
+                    // ランナーが死亡中の場合は、GameManagerに処理を任せる
+                    if (!gameManager.isRunnerDead(player)) {
+                        Bukkit.getScheduler().runTaskLater(gameManager.getPlugin(), Runnable {
+                            player.gameMode = GameMode.SURVIVAL
+                            giveShopItem(player)
+                        }, 1L)
+                    }
+                    // 死亡中の場合はGameManagerがスペクテーターモードを管理
                 }
                 PlayerRole.SPECTATOR -> {
                     Bukkit.getScheduler().runTaskLater(gameManager.getPlugin(), Runnable {
