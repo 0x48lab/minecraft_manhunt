@@ -32,6 +32,10 @@ class ProximityTimeTracker(
     // プレイヤーごとの接近状態
     private val proximityStates = ConcurrentHashMap<UUID, Boolean>()
     
+    // エンカウント通知のクールダウン管理
+    // キー: "ハンターUUID:ランナーUUID"、値: 最後の通知時刻
+    private val encounterCooldowns = ConcurrentHashMap<String, Long>()
+    
     /**
      * 追跡を開始
      */
@@ -64,6 +68,7 @@ class ProximityTimeTracker(
         runnerBonusTime = 0L
         lastUpdateTime = System.currentTimeMillis()
         proximityStates.clear()
+        encounterCooldowns.clear()
     }
     
     /**
@@ -102,6 +107,12 @@ class ProximityTimeTracker(
         // ハンターが誰か一人でもランナーに接近しているかチェック
         var anyHunterInProximity = false
         
+        // 各ランナーの現在の接近状態を記録（エンカウント検出用）
+        val runnerProximityStates = mutableMapOf<UUID, Boolean>()
+        for (runner in runners) {
+            runnerProximityStates[runner.uniqueId] = false
+        }
+        
         for (hunter in hunters) {
             var isInProximity = false
             
@@ -113,6 +124,10 @@ class ProximityTimeTracker(
                         if (distance <= proximityBlocks) {
                             isInProximity = true
                             anyHunterInProximity = true
+                            runnerProximityStates[runner.uniqueId] = true
+                            
+                            // エンカウント通知をチェック
+                            checkAndNotifyEncounter(hunter, runner)
                             break
                         }
                     } catch (e: Exception) {
@@ -181,6 +196,57 @@ class ProximityTimeTracker(
      */
     fun isPlayerInProximity(player: Player): Boolean {
         return proximityStates[player.uniqueId] ?: false
+    }
+    
+    /**
+     * エンカウント通知をチェックして送信
+     */
+    private fun checkAndNotifyEncounter(hunter: Player, runner: Player) {
+        val encounterKey = "${hunter.uniqueId}:${runner.uniqueId}"
+        val currentTime = System.currentTimeMillis()
+        val cooldownTime = plugin.getConfigManager().getEncounterCooldown() * 1000L
+        
+        // クールダウンチェック
+        val lastNotification = encounterCooldowns[encounterKey] ?: 0L
+        if (currentTime - lastNotification < cooldownTime) {
+            return
+        }
+        
+        // エンカウント通知が有効か確認
+        if (!plugin.getConfigManager().isEncounterNotificationEnabled()) {
+            return
+        }
+        
+        // エンカウント通知を送信
+        encounterCooldowns[encounterKey] = currentTime
+        
+        // 全ハンターに通知
+        val hunters = gameManager.getAllHunters().filter { it.isOnline }
+        val encounterMessage = messageManager.getMessage("encounter.notification", 
+            "hunter" to hunter.name, 
+            "runner" to runner.name
+        )
+        
+        for (h in hunters) {
+            h.sendMessage(encounterMessage)
+            
+            // タイトル表示
+            if (plugin.getConfigManager().isEncounterTitleEnabled()) {
+                val title = messageManager.getMessage(h, "encounter.title")
+                val subtitle = messageManager.getMessage(h, "encounter.subtitle", 
+                    "hunter" to hunter.name, 
+                    "runner" to runner.name
+                )
+                h.sendTitle(title, subtitle, 10, 40, 10)
+            }
+            
+            // 音声通知
+            if (plugin.getConfigManager().isEncounterSoundEnabled()) {
+                h.playSound(h.location, org.bukkit.Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.5f)
+            }
+        }
+        
+        plugin.logger.info("Encounter notification sent: ${hunter.name} found ${runner.name}")
     }
 }
 

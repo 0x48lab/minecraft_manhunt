@@ -376,36 +376,35 @@ class VirtualCompass(
     @EventHandler
     fun onPlayerDeath(event: PlayerDeathEvent) {
         val player = event.entity
+        val playerRole = gameManager.getPlayerRole(player)
         
-        // ハンターが死亡した場合、追跡コンパスのみ保持する
-        if (gameManager.getPlayerRole(player) == PlayerRole.HUNTER) {
-            // 追跡コンパスを一時保存
-            var savedCompass: org.bukkit.inventory.ItemStack? = null
-            
-            val compassName = messageManager.getMessage("virtual-compass.name")
-            val iterator = event.drops.iterator()
-            while (iterator.hasNext()) {
-                val item = iterator.next()
-                if (item.type == Material.COMPASS) {
-                    val meta = item.itemMeta
-                    if (meta?.displayName == compassName) {
+        // 追跡コンパスをドロップから削除（ハンター・ランナー共通）
+        val compassName = messageManager.getMessage("virtual-compass.name")
+        val iterator = event.drops.iterator()
+        var savedCompass: org.bukkit.inventory.ItemStack? = null
+        
+        while (iterator.hasNext()) {
+            val item = iterator.next()
+            if (item.type == Material.COMPASS) {
+                val meta = item.itemMeta
+                if (meta?.displayName == compassName) {
+                    if (playerRole == PlayerRole.HUNTER) {
                         savedCompass = item.clone()
-                        iterator.remove() // ドロップから削除
-                        break
                     }
+                    iterator.remove() // ドロップから削除（ハンター・ランナー共通）
                 }
             }
-            
-            // リスポン後にコンパスを復元
-            savedCompass?.let { compass ->
-                plugin.server.scheduler.runTaskLater(plugin, Runnable {
-                    if (player.isOnline && gameManager.getPlayerRole(player) == PlayerRole.HUNTER) {
-                        // ホットバーの最初のスロットに復元
-                        player.inventory.setItem(0, compass)
-                        player.sendMessage(messageManager.getMessage(player, "virtual-compass.compass-restored"))
-                    }
-                }, 1L) // 1tick後に実行
-            }
+        }
+        
+        // ハンターの場合のみリスポン後にコンパスを復元
+        if (playerRole == PlayerRole.HUNTER && savedCompass != null) {
+            plugin.server.scheduler.runTaskLater(plugin, Runnable {
+                if (player.isOnline && gameManager.getPlayerRole(player) == PlayerRole.HUNTER) {
+                    // ホットバーの最初のスロットに復元
+                    player.inventory.setItem(0, savedCompass)
+                    player.sendMessage(messageManager.getMessage(player, "virtual-compass.compass-restored"))
+                }
+            }, 1L) // 1tick後に実行
         }
     }
     

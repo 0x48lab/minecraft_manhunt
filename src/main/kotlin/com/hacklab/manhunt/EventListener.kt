@@ -24,6 +24,7 @@ import org.bukkit.enchantments.Enchantment
 import org.bukkit.event.player.PlayerToggleSprintEvent
 import org.bukkit.event.player.PlayerAdvancementDoneEvent
 import org.bukkit.event.player.PlayerMoveEvent
+import org.bukkit.event.inventory.CraftItemEvent
 
 class EventListener(
     private val plugin: Main,
@@ -238,13 +239,24 @@ class EventListener(
             }, 1L)
         }
         
-        // ゲーム中ならショップアイテムを再付与
+        // ゲーム中ならショップアイテムを再付与とゲームモード設定
         if (gameManager.getGameState() == GameState.RUNNING) {
             val role = gameManager.getPlayerRole(player)
-            if (role == PlayerRole.HUNTER || role == PlayerRole.RUNNER) {
-                Bukkit.getScheduler().runTaskLater(gameManager.getPlugin(), Runnable {
-                    giveShopItem(player)
-                }, 1L)
+            when (role) {
+                PlayerRole.HUNTER, PlayerRole.RUNNER -> {
+                    Bukkit.getScheduler().runTaskLater(gameManager.getPlugin(), Runnable {
+                        player.gameMode = GameMode.SURVIVAL
+                        giveShopItem(player)
+                    }, 1L)
+                }
+                PlayerRole.SPECTATOR -> {
+                    Bukkit.getScheduler().runTaskLater(gameManager.getPlugin(), Runnable {
+                        player.gameMode = GameMode.SPECTATOR
+                    }, 1L)
+                }
+                null -> {
+                    // プレイヤーが役割を持っていない場合は何もしない
+                }
             }
         }
     }
@@ -442,5 +454,21 @@ class EventListener(
         val advancementReward = plugin.getConfigManager().getCurrencyConfig().advancementReward
         val advancementName = advancement.key.key
         economyManager.addMoney(player, advancementReward, com.hacklab.manhunt.economy.EarnReason.Advancement(advancementName))
+    }
+    
+    @EventHandler
+    fun onCraftItem(event: CraftItemEvent) {
+        // ゲーム中のコンパスクラフトを防止
+        if (gameManager.getGameState() != GameState.RUNNING) {
+            return
+        }
+        
+        val result = event.recipe.result
+        if (result.type == Material.COMPASS) {
+            event.isCancelled = true
+            val player = event.whoClicked as? Player
+            player?.sendMessage("§cゲーム中はコンパスをクラフトできません。")
+            plugin.logger.info("Prevented compass crafting by ${player?.name}")
+        }
     }
 }
