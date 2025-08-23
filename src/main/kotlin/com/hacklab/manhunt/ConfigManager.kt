@@ -27,6 +27,7 @@ class ConfigManager(private val plugin: Main) {
     fun isScoreboardEnabled(): Boolean = config.getBoolean("ui.scoreboard-enabled", true)
     fun isActionBarEnabled(): Boolean = config.getBoolean("ui.actionbar-enabled", true)
     fun isBossBarEnabled(): Boolean = config.getBoolean("ui.bossbar-enabled", true)
+    fun isDominanceBossBarEnabled(): Boolean = config.getBoolean("ui.dominance-bossbar-enabled", true)
     fun isTitleEnabled(): Boolean = config.getBoolean("ui.title-enabled", true)
     
     fun getScoreboardUpdateInterval(): Long = (config.getDouble("ui.scoreboard-update-interval", 1.0) * 20).toLong()

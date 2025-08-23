@@ -31,7 +31,12 @@ class UIManager(
     private var actionBarTask: BukkitTask? = null
     
     // BossBar管理
-    private val playerBossBars = mutableMapOf<Player, BossBar>()
+    enum class BossBarType {
+        DOMINANCE,  // 優勢度バー（時間制限モード用）
+        RESPAWN     // リスポンバー（無制限モード用）
+    }
+    
+    private val playerBossBars = mutableMapOf<Player, MutableMap<BossBarType, BossBar>>()
     
     // ActionBar表示用の状態
     private var currentActionBarMessage = ""
@@ -202,19 +207,13 @@ class UIManager(
             
             addPlayerScoreboardLine(playerObjective, "§r   ", line--) // 空行
             
-            // タイムモードの場合は残り時間と優勢度を表示
+            // タイムモードの場合は残り時間を表示
             if (configManager.isTimeLimitMode()) {
                 // 残り時間
                 val remainingTime = gameManager.getRemainingTime()
                 val remainingMinutes = remainingTime / 60
                 val remainingSeconds = remainingTime % 60
                 addPlayerScoreboardLine(playerObjective, messageManager.getMessage(player, "ui.scoreboard.remaining-time", "minutes" to remainingMinutes, "seconds" to String.format("%02d", remainingSeconds)), line--)
-                
-                // 優勢度
-                val dominancePercent = gameManager.getHunterDominancePercentage()
-                val runnerPercent = 100 - dominancePercent
-                val dominanceBar = createDominanceBar(dominancePercent)
-                addPlayerScoreboardLine(playerObjective, "§c" + dominancePercent + "% " + dominanceBar + " §a" + runnerPercent + "%", line--)
             } else {
                 // 通常モードは経過時間を表示
                 val elapsedTime = gameManager.getGameElapsedTime()
@@ -577,7 +576,10 @@ class UIManager(
     fun showRespawnBossBar(player: Player, remainingTime: Int, totalTime: Int) {
         if (!configManager.isBossBarEnabled()) return
         
-        removeBossBar(player)
+        // 時間制限モードではリスポンバーは表示しない（即座リスポンのため）
+        if (configManager.isTimeLimitMode()) return
+        
+        removeBossBar(player, BossBarType.RESPAWN)
         
         val title = messageManager.getMessage(player, "ui.bossbar.respawn-title", "time" to remainingTime)
         val progress = remainingTime.toDouble() / totalTime.toDouble()
@@ -587,26 +589,73 @@ class UIManager(
         bossBar.addPlayer(player)
         bossBar.isVisible = true
         
-        playerBossBars[player] = bossBar
+        playerBossBars.getOrPut(player) { mutableMapOf() }[BossBarType.RESPAWN] = bossBar
     }
     
-    fun updateBossBar(player: Player, title: String? = null, progress: Double? = null) {
-        playerBossBars[player]?.let { bossBar ->
+    fun updateBossBar(player: Player, type: BossBarType, title: String? = null, progress: Double? = null) {
+        playerBossBars[player]?.get(type)?.let { bossBar ->
             title?.let { bossBar.setTitle(it) }
             progress?.let { bossBar.progress = it.coerceIn(0.0, 1.0) }
         }
     }
     
-    fun removeBossBar(player: Player) {
-        playerBossBars[player]?.let { bossBar ->
-            bossBar.removeAll()
+    fun removeBossBar(player: Player, type: BossBarType? = null) {
+        if (type != null) {
+            playerBossBars[player]?.get(type)?.let { bossBar ->
+                bossBar.removeAll()
+                playerBossBars[player]?.remove(type)
+            }
+        } else {
+            // 全てのボスバーを削除
+            playerBossBars[player]?.values?.forEach { it.removeAll() }
             playerBossBars.remove(player)
         }
     }
     
     private fun clearAllBossBars() {
-        playerBossBars.values.forEach { it.removeAll() }
+        playerBossBars.values.forEach { bossBars ->
+            bossBars.values.forEach { it.removeAll() }
+        }
         playerBossBars.clear()
+    }
+    
+    // ======== 優勢度BossBarシステム ========
+    
+    fun showDominanceBossBar(player: Player) {
+        if (!configManager.isDominanceBossBarEnabled()) return
+        if (!configManager.isTimeLimitMode()) return
+        
+        removeBossBar(player, BossBarType.DOMINANCE)
+        
+        val dominancePercent = gameManager.getHunterDominancePercentage()
+        val runnerPercent = 100 - dominancePercent
+        val title = messageManager.getMessage(player, "ui.bossbar.dominance.title", 
+            "hunterPercent" to dominancePercent, 
+            "runnerPercent" to runnerPercent)
+        
+        val progress = dominancePercent / 100.0
+        val bossBar = Bukkit.createBossBar(title, BarColor.RED, BarStyle.SOLID)
+        bossBar.progress = progress.coerceIn(0.0, 1.0)
+        bossBar.addPlayer(player)
+        bossBar.isVisible = true
+        
+        playerBossBars.getOrPut(player) { mutableMapOf() }[BossBarType.DOMINANCE] = bossBar
+    }
+    
+    fun updateAllDominanceBossBars() {
+        if (!configManager.isDominanceBossBarEnabled()) return
+        if (!configManager.isTimeLimitMode()) return
+        
+        val dominancePercent = gameManager.getHunterDominancePercentage()
+        val runnerPercent = 100 - dominancePercent
+        val progress = dominancePercent / 100.0
+        
+        Bukkit.getOnlinePlayers().forEach { player ->
+            val title = messageManager.getMessage(player, "ui.bossbar.dominance.title", 
+                "hunterPercent" to dominancePercent, 
+                "runnerPercent" to runnerPercent)
+            updateBossBar(player, BossBarType.DOMINANCE, title, progress)
+        }
     }
     
     // ======== リセットカウントダウンBossBar ========
@@ -731,26 +780,4 @@ class UIManager(
         }
     }
     
-    /**
-     * 優勢度を視覚的なバーで表現
-     */
-    private fun createDominanceBar(hunterPercent: Int): String {
-        val totalLength = 10
-        val hunterBars = (hunterPercent * totalLength) / 100
-        val runnerBars = totalLength - hunterBars
-        
-        val bar = StringBuilder()
-        // ハンター側（赤）
-        bar.append("§c")
-        for (i in 0 until hunterBars) {
-            bar.append("█")
-        }
-        // ランナー側（緑）
-        bar.append("§a")
-        for (i in 0 until runnerBars) {
-            bar.append("█")
-        }
-        
-        return bar.toString()
-    }
 }

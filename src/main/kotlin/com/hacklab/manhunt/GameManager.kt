@@ -1450,6 +1450,13 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
         // UIにゲーム実行状態を通知
         try {
             plugin.getUIManager().showGameStateChange(GameState.RUNNING)
+            
+            // 時間制限モードの場合は優勢度ボスバーを表示
+            if (configManager.isTimeLimitMode()) {
+                Bukkit.getOnlinePlayers().forEach { player ->
+                    plugin.getUIManager().showDominanceBossBar(player)
+                }
+            }
         } catch (e: Exception) {
             plugin.logger.warning("UI通知でエラー: ${e.message}")
         }
@@ -1734,98 +1741,14 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
     
     private fun handleRunnerTimeModeRespawn(player: Player) {
         try {
-            // タイムモード用の短縮リスポン時間を使用
-            val timeModeRespawnTime = configManager.getTimeModeRunnerRespawnTime()
-            
-            // 通常のランナー死亡処理を使用（短縮時間で）
-            val currentTime = System.currentTimeMillis()
-            deadRunners[player.uniqueId] = currentTime
-            
-            // 既存のタスクをキャンセル
-            respawnTasks[player.uniqueId]?.let { task ->
-                when (task) {
-                    is BukkitRunnable -> task.cancel()
-                    is BukkitTask -> task.cancel()
-                }
-            }
-            countdownTasks[player.uniqueId]?.cancel()
-            
-            // 1tick後にスペクテーターモードに変更
+            // 時間制限モードではランナーも即座リスポン
             Bukkit.getScheduler().runTaskLater(plugin, Runnable {
                 if (player.isOnline && gameState == GameState.RUNNING) {
-                    player.gameMode = GameMode.SPECTATOR
-                    player.sendMessage(messageManager.getMessage(player, "respawn-system.runner-death", 
-                        "time" to timeModeRespawnTime))
-                    Bukkit.broadcastMessage(messageManager.getMessage("respawn-system.runner-death-broadcast", 
-                        "player" to player.name, "time" to timeModeRespawnTime))
-                    player.sendMessage(messageManager.getMessage(player, "respawn-system.waiting-spectator"))
-                    
-                    plugin.logger.info("Runner ${player.name} died in time mode, respawn in ${timeModeRespawnTime} seconds")
-                }
-            }, 1L)
-            
-            // カウントダウンタスクを開始
-            val countdownTask = object : BukkitRunnable() {
-                var remainingTime = timeModeRespawnTime
-                
-                override fun run() {
-                    if (!player.isOnline || gameState != GameState.RUNNING) {
-                        cancel()
-                        return
-                    }
-                    
-                    if (remainingTime <= 0) {
-                        cancel()
-                        return
-                    }
-                    
-                    // カウントダウン表示（タイトル）
-                    val title = messageManager.getMessage(player, "respawn-system.death-title")
-                    val subtitle = messageManager.getMessage(player, "respawn-system.death-subtitle", 
-                        "time" to remainingTime)
-                    player.sendTitle(title, subtitle, 0, 30, 10)
-                    
-                    // チャットメッセージ（5秒ごと、または最後の3秒）
-                    if (remainingTime % 5 == 0 || remainingTime <= 3) {
-                        if (remainingTime <= 3) {
-                            player.sendMessage(messageManager.getMessage(player, "respawn-system.countdown-emphasis", 
-                                "time" to remainingTime))
-                            player.playSound(player.location, Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.0f)
-                        } else {
-                            player.sendMessage(messageManager.getMessage(player, "respawn-system.countdown-chat", 
-                                "time" to remainingTime))
-                        }
-                    }
-                    
-                    remainingTime--
-                }
-            }
-            countdownTask.runTaskTimer(plugin, 0L, 20L)
-            countdownTasks[player.uniqueId] = countdownTask
-            
-            // リスポンタスクを設定
-            val respawnTask = Bukkit.getScheduler().runTaskLater(plugin, Runnable {
-                if (player.isOnline && gameState == GameState.RUNNING) {
-                    // 死亡リストから削除
-                    deadRunners.remove(player.uniqueId)
-                    
-                    // リスポン実行
                     player.spigot().respawn()
-                    player.gameMode = GameMode.SURVIVAL
-                    player.sendMessage(messageManager.getMessage(player, "respawn-system.runner-respawned"))
-                    Bukkit.broadcastMessage(messageManager.getMessage("respawn-system.runner-respawned-broadcast", 
-                        "player" to player.name))
-                    
-                    plugin.logger.info("Runner ${player.name} respawned after ${timeModeRespawnTime} seconds in time mode")
+                    player.sendMessage(messageManager.getMessage(player, "respawn-system.runner-instant-respawned"))
+                    plugin.logger.info("Runner ${player.name} respawned instantly in time mode")
                 }
-                
-                // タスクをクリーンアップ
-                respawnTasks.remove(player.uniqueId)
-                countdownTasks[player.uniqueId]?.cancel()
-                countdownTasks.remove(player.uniqueId)
-            }, (timeModeRespawnTime * 20).toLong())
-            
-            respawnTasks[player.uniqueId] = respawnTask
+            }, 1L) // 1tick後にリスポン
             
         } catch (e: Exception) {
             plugin.logger.warning("Error in runner time mode respawn process for ${player.name}: ${e.message}")
@@ -2302,6 +2225,9 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
                             }
                         }
                     }
+                    
+                    // 優勢度ボスバーを更新（毎秒）
+                    plugin.getUIManager().updateAllDominanceBossBars()
                 }
             }
         }

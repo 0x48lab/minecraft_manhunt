@@ -126,6 +126,9 @@ ui:
   # BossBar表示の有効/無効
   bossbar-enabled: true
   
+  # 優勢度BossBar表示の有効/無効（時間制限モード用）
+  dominance-bossbar-enabled: true
+  
   # タイトル表示の有効/無効
   title-enabled: true
   

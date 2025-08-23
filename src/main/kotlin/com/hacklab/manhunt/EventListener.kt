@@ -293,7 +293,7 @@ class EventListener(
             return
         }
         
-        val item = ItemStack(Material.WRITABLE_BOOK)
+        val item = ItemStack(Material.NETHER_STAR)
         val meta = item.itemMeta!!
         meta.setDisplayName(messageManager.getMessage(player, "item.role-change.name"))
         meta.lore = listOf(
@@ -310,7 +310,7 @@ class EventListener(
     }
     
     private fun isRoleChangeItem(item: ItemStack): Boolean {
-        if (item.type != Material.WRITABLE_BOOK) return false
+        if (item.type != Material.NETHER_STAR) return false
         val meta = item.itemMeta ?: return false
         val displayName = meta.displayName ?: return false
         

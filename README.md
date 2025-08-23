@@ -1,11 +1,9 @@
-# 🏃 Minecraft Manhunt Latest
+# 🏃 Minecraft Manhunt Latest - Project Summary
 
 [![Modrinth Downloads](https://img.shields.io/modrinth/dt/man-hunt-latest?label=Downloads&logo=modrinth)](https://modrinth.com/plugin/man-hunt-latest)
 [![GitHub Release](https://img.shields.io/github/v/release/0x48lab/minecraft_manhunt?label=Latest%20Release)](https://github.com/0x48lab/minecraft_manhunt/releases)
 [![Minecraft Version](https://img.shields.io/badge/Minecraft-1.21.4-green.svg)](https://www.minecraft.net/)
 [![Platform](https://img.shields.io/badge/Platform-Spigot%20%7C%20Paper-orange.svg)](https://papermc.io/)
-
-[日本語版 README はこちら](README.ja.md)
 
 A comprehensive multiplayer Manhunt plugin for Minecraft servers featuring advanced tracking systems, economy integration, and full internationalization support.
 
@@ -13,15 +11,29 @@ A comprehensive multiplayer Manhunt plugin for Minecraft servers featuring advan
 
 ### 🎯 Core Manhunt Gameplay
 - **Dynamic Role System**: Players can be Hunters, Runners, or Spectators
-- **Advanced Compass Tracking**: Physical compass-based tracking with target switching
+- **Advanced Compass Tracking**: Virtual compass-based tracking with target switching
 - **Proximity Warning System**: Tiered warning system for Runners when Hunters approach
 - **Automatic Game Management**: Smart game state handling with reconnection support
+
+### ⏱️ Game Modes
+- **Time Limit Mode** (default 40 minutes)
+  - Game ends when time expires
+  - Winner determined by proximity/escape time ratio
+  - Kill bonus adds 5 minutes to killer's team time
+  - Real-time dominance percentage display
+  - Instant runner respawn in this mode
+- **Endless Mode** (time-limit: 0)
+  - Traditional Manhunt gameplay
+  - Game continues until victory conditions are met
+  - Runner respawn with 300-second wait time
+  - No time pressure, strategic gameplay focus
 
 ### 💰 Economy & Shop System
 - **In-Game Currency**: Earn coins through gameplay actions
 - **Comprehensive Shop**: 40+ items across 6 categories (Weapons, Armor, Tools, Consumables, Food, Special)
 - **Role-Based Rewards**: Different earning methods for Hunters and Runners
 - **Purchase Restrictions**: Item limits, cooldowns, and role-specific restrictions
+- **Movement Bonus**: Sprint movement rewards when enemies are within 3 chunks
 
 ### 🌍 Full Internationalization
 - **Multi-Language Support**: Complete English and Japanese localization
@@ -45,31 +57,11 @@ A comprehensive multiplayer Manhunt plugin for Minecraft servers featuring advan
 - **Automatic Night Skip**: Skip to dawn when night falls
 - **Achievement Reset**: Fresh start for each game
 
-### ⏱️ Game Modes
-- **Time Limit Mode** (default 40 minutes)
-  - Game ends when time expires
-  - Winner determined by proximity/escape time ratio
-  - Kill bonus adds 5 minutes to killer's team time
-  - Real-time dominance percentage display
-  - Instant runner respawn in this mode
-- **Endless Mode** (time-limit: 0)
-  - Traditional Manhunt gameplay
-  - Game continues until victory conditions are met
-  - Runner respawn with 300-second wait time
-  - No time pressure, strategic gameplay focus
-
 ## 🎯 Game Objectives
 
 - **🏃 Runners**: Defeat the Ender Dragon to achieve victory
 - **🗡 Hunters**: Eliminate all Runners before they complete their objective
 - **👁 Spectators**: Observe the game with full mobility and teleportation options
-
-## 🛠 Installation
-
-1. Download the latest release from [Modrinth](https://modrinth.com/plugin/man-hunt-latest)
-2. Place the JAR file in your server's `plugins` folder
-3. Restart your server
-4. Configure the plugin using `/manhunt reload` after editing `config.yml`
 
 ## 📋 Requirements
 
@@ -101,8 +93,6 @@ game:
   start-countdown: 10              # Countdown before game start
   reset-advancements: true         # Reset achievements on game start
   time-limit: 40                   # Game time limit in minutes (0 for endless)
-  night-skip:
-    enabled: true                  # Auto-skip to dawn
   
   # Time Mode Settings (only active when time-limit > 0)
   time-mode:
@@ -115,12 +105,15 @@ game:
 economy:
   starting-balance: 0              # Starting money (0G)
   currency-unit: "G"               # Currency symbol
+  earn-multiplier: 2.0             # Earning rate multiplier
   hunter:
     damage-reward: 5               # Reward per damage point
     kill-reward: 150               # Reward per kill
+    tracking-reward: 30            # Continuous tracking bonus
   runner:
     survival-bonus: 0.05           # Survival bonus per second
     nether-reward: 200             # Nether entry reward
+    end-reward: 500                # End entry reward
 ```
 
 ## 🎯 Commands
@@ -169,7 +162,8 @@ economy:
 - 300G for finding a fortress
 - 500G for reaching the End
 - 25G per diamond collected
-- 20G for successful escapes
+- 20G for successful escapes (100m+ distance)
+- Movement bonus when sprinting with enemies nearby
 
 ### Shop Categories
 - **⚔️ Weapons**: Swords, axes, tridents
@@ -196,12 +190,15 @@ economy:
 - **Red Alert**: Hunter within 1 chunk
 - **Orange Alert**: Hunter within 2 chunks  
 - **Yellow Alert**: Hunter within 3 chunks
+- **Frequency Control**: Warnings limited to prevent spam
 
-### Compass Tracking System
-- Physical compass required for tracking
-- Target switching with right-click
-- Distance and direction indicators
-- Cross-dimensional tracking support
+### Virtual Compass Tracking System
+- Physical compass item or empty hand right-click
+- Target switching with right-click (cycles through runners)
+- Distance and direction indicators with particles
+- Same-world tracking only
+- Death state awareness (dead runners not tracked)
+- 1-second cooldown between uses
 
 ### Team Coordination
 - Private team chat with `/r <message>`
@@ -217,6 +214,20 @@ economy:
 - Mutual consent required for buddy relationships
 - Automatic cleanup on game end or player disconnect
 
+### Respawn System
+- **Hunters**: Instant respawn (1 tick delay)
+- **Runners**: 
+  - Endless mode: 300-second wait in spectator mode
+  - Time mode: Instant respawn
+  - Real-time countdown display
+  - Full spectator capabilities during wait
+
+### Encounter Notifications
+- Automatic notification when hunter finds runner
+- Configurable cooldown between notifications
+- Sound and title effects
+- Prevents duplicate notifications for continuous proximity
+
 ## 🔧 Technical Details
 
 - **Language**: Kotlin 1.9.24
@@ -224,6 +235,16 @@ economy:
 - **Target JVM**: Java 21
 - **API**: Spigot/Paper 1.21.4
 - **Architecture**: Event-driven with comprehensive manager classes
+
+### Core Components
+- `Main.kt` - Plugin main class
+- `GameManager.kt` - Game state and player management
+- `VirtualCompass.kt` - Virtual compass tracking system
+- `EventListener.kt` - Event handling
+- `UIManager.kt` - User interface management
+- `EconomyManager.kt` - Currency system
+- `MessageManager.kt` - Internationalization
+- `ProximityTimeTracker.kt` - Time mode tracking
 
 ### Building
 
@@ -254,6 +275,8 @@ If any keys are missing, the build will fail and provide suggestions for the mis
 - Fixed runner respawn visibility bug where dead runners appeared in survival mode instead of spectator mode
 - Fixed compass tracking continuing for dead runners during respawn wait time
 - Fixed distance display showing actual distance for dead runners (now shows 0m)
+- Fixed economy bonus payouts for dead runners
+- Prevented duplicate encounter notifications
 - Fixed role selector GUI not working after game reset
 - Fixed various hardcoded language strings throughout the codebase
 - Removed unnecessary game reset countdown for instant reset after results display

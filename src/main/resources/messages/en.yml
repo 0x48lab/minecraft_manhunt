@@ -175,6 +175,8 @@ ui:
       subtitle: '§7Good game!'
     progress: '§6🏃 Manhunt Game In Progress'
     respawn-title: '§c💀 Respawn in: {time}s'
+    dominance:
+      title: '§c🗡 {hunterPercent}% §7vs §a🏃 {runnerPercent}%'
   playerlist:
     title: '§6Player Info'
   actionbar:
@@ -505,6 +507,7 @@ game-start-role:
 # Respawn system
 respawn-system:
   hunter-respawned: '§c[Hunter] Respawned! Continue the chase.'
+  runner-instant-respawned: '§a[Runner] Respawned! Defeat the Ender Dragon.'
   runner-death: '§c[Runner] You died. Respawning in {time} seconds...'
   runner-death-broadcast: '§e{player} (Runner) died. Respawning in {time} seconds.'
   waiting-spectator: '§7[Waiting] You can spectate in spectator mode.'

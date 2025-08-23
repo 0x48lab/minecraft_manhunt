@@ -175,6 +175,8 @@ ui:
       subtitle: '§7お疲れ様でした'
     progress: '§6🏃 Manhunt Game 進行中'
     respawn-title: '§c💀 復活まで: {time}秒'
+    dominance:
+      title: '§c🗡 {hunterPercent}% §7vs §a🏃 {runnerPercent}%'
   playerlist:
     title: '§6プレイヤー情報'
   actionbar:
@@ -506,6 +508,7 @@ game-start-role:
 # Respawn system
 respawn-system:
   hunter-respawned: '§c[ハンター] リスポンしました！追跡を続けてください。'
+  runner-instant-respawned: '§a[ランナー] リスポンしました！エンダードラゴンを倒してください。'
   runner-death: '§c[ランナー] 死亡しました。{time}秒後にリスポンします...'
   runner-death-broadcast: '§e{player} (ランナー) が死亡しました。{time}秒後にリスポンします。'
   waiting-spectator: '§7[リスポン待ち] スペクテーターモードでゲームを観戦できます。'
