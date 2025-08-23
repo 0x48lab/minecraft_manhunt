@@ -5,19 +5,19 @@ game:
   end: '§6[Manhunt] Game Ended!'
   reset: '§6[Manhunt] New game is ready!'
   compass-craft-prevented: '§cCannot craft compass during the game!'
-  reset-warning-1min: '§e[Manhunt] Next game starts in 1 minute!'
-  reset-warning-30sec: '§e[Manhunt] Next game starts in 30 seconds!'
+  reset-warning-1min: '§2[Manhunt] Next game starts in 1 minute!'
+  reset-warning-30sec: '§2[Manhunt] Next game starts in 30 seconds!'
   reset-countdown: '§c[Manhunt] Next game starts in {seconds} seconds...'
   force-reset: '§6[Manhunt] Game forcibly reset by administrator!'
   force-stopped-by-admin: '§c[Manhunt] Game force stopped by admin {admin}!'
   end-title: '§6§lGood Game!'
-  end-subtitle: '§eEnjoy the next game'
+  end-subtitle: '§2Enjoy the next game'
   hunter-win: '§cHunters Win! All runners have been eliminated!'
   runner-win: '§aRunners Win! The Ender Dragon has been defeated!'
   hunter-start: '§c[Hunter] Chase the runners!'
   runner-start: '§a[Runner] Defeat the Ender Dragon!'
   spectator-start: '§7[Spectator] Please spectate the game.'
-  auto-start-notification: '§e§lRequired players reached! Starting game automatically...'
+  auto-start-notification: '§2§lRequired players reached! Starting game automatically...'
 role:
   changed: '§aRole changed to {role}!'
   runner: 'Runner'
@@ -27,41 +27,41 @@ role:
   game-running: '§cCannot change role after the game has started.'
 compass:
   activated: '§6[Tracking Compass] §aActivated!'
-  usage: '§eUsage: §7Hold compass and right-click to track runners'
-  slot-hint: '§e§l※Compass required (no duplicates allowed)'
+  usage: '§2Usage: §7Hold compass and right-click to track runners'
+  slot-hint: '§2§l※Compass required (no duplicates allowed)'
   hunter-only: '§cOnly hunters can use the compass!'
   game-only: '§cCompass can only be used during the game.'
   cooldown: '§cCompass on cooldown... ({time}s)'
   no-target: '§cNo runner targets found.'
-  different-world: '§cRunner is in a different world: §e{world}'
-  tracking: '§6[Compass] §e{player} §7- {distance}'
-  target-switched: '§b[Target Switch] §7[{index}/{total}] §e{player} §7- {distance}'
+  different-world: '§cRunner is in a different world: §2{world}'
+  tracking: '§6[Compass] §2{player} §7- {distance}'
+  target-switched: '§b[Target Switch] §7[{index}/{total}] §2{player} §7- {distance}'
   title-target-name: '§6§l{name}'
   subtitle-distance-direction: '{distance} §7| {direction}'
   title-target-switch: '§b§l[{index}/{total}] §6§l{name}'
   subtitle-switch-info: '{distance} §7| {direction} §8| Right-click to switch'
-  hint: '§6[Hint] §eHold compass and right-click to track runners!'
-  actionbar-hint: '§e§lCompass right-click to track runners'
-  actionbar-use: '§e§lCompass right-click to start tracking'
+  hint: '§6[Hint] §2Hold compass and right-click to track runners!'
+  actionbar-hint: '§2§lCompass right-click to track runners'
+  actionbar-use: '§2§lCompass right-click to start tracking'
   title-activated: '§6§lVirtual Compass'
-  subtitle-activated: '§eRight-click to start tracking'
-  already-have: '§eYou already have a tracking compass'
-  inventory-full: '§eCould not place compass due to full inventory'
+  subtitle-activated: '§2Right-click to start tracking'
+  already-have: '§2You already have a tracking compass'
+  inventory-full: '§2Could not place compass due to full inventory'
 item:
   role-selector:
     name: '§6§lRole Selection §7(Right-click)'
     lore1: '§7Right-click to open role selection menu'
-    lore2: '§eChoose your role!'
+    lore2: '§2Choose your role!'
   cannot-drop-role-selector: '§cCannot drop the role selector item!'
   role-change:
     name: '§6§lChange Role §7(Right-click)'
     lore1: '§7Right-click to open role change menu'
-    lore2: '§eSelect your role'
+    lore2: '§2Select your role'
   cannot-drop-role-change: '§cCannot drop the role change item!'
   shop:
     name: '§6§lShop §7(Right-click)'
     lore1: '§7Right-click to open shop'
-    lore2: '§eBuy items!'
+    lore2: '§2Buy items!'
   cannot-drop-shop: '§cCannot drop the shop item!'
 buddy:
   only-during-game: '§cBuddy system can only be used during the game.'
@@ -71,44 +71,44 @@ buddy:
   target-has-buddy: '§c{player} already has a buddy with {buddy}.'
   invite-already-sent: '§cInvitation already sent to {player}.'
   invite-sent: '§aBuddy invitation sent to {player}.'
-  invite-received: '§eBuddy invitation received from {sender}!'
-  invite-instructions: '§e§l/buddy accept {sender} to accept, /buddy decline {sender} to decline'
+  invite-received: '§2Buddy invitation received from {sender}!'
+  invite-instructions: '§2§l/buddy accept {sender} to accept, /buddy decline {sender} to decline'
   no-invite-from: '§cNo invitation from {player}.'
   someone-has-buddy: '§cEither player already has a buddy.'
   paired-success: '§aYou are now buddies with {buddy}!'
   no-buddy: '§cYou currently have no buddy set.'
-  removed: '§eBuddy relationship with {buddy} removed.'
-  partner-removed: '§e{partner} has removed the buddy relationship.'
+  removed: '§2Buddy relationship with {buddy} removed.'
+  partner-removed: '§2{partner} has removed the buddy relationship.'
   invite-declined: '§c{player} declined your buddy invitation.'
-  invite-declined-by-you: '§eYou declined the buddy invitation from {player}.'
+  invite-declined-by-you: '§2You declined the buddy invitation from {player}.'
   not-in-same-world: '§cIn different world'
   coordinate-error: '§cCoordinate error'
   partner-left: '§c{partner} left the game, buddy relationship removed.'
   player-not-found: '§cPlayer {player} not found.'
   no-pending-invites: '§cNo pending buddy invitations.'
-  pending-invites-header: '§e== Pending Buddy Invitations =='
-  pending-invite-item: '§e- Invitation from {player}'
+  pending-invites-header: '§2== Pending Buddy Invitations =='
+  pending-invite-item: '§2- Invitation from {player}'
   status-has-buddy: '§aBuddy: {buddy} ({coordinates})'
   status-no-buddy: '§7No buddy'
-  status-pending-sent: '§eInvitation sent: {player}'
-  status-pending-received: '§eReceived invitations: {count}'
+  status-pending-sent: '§2Invitation sent: {player}'
+  status-pending-received: '§2Received invitations: {count}'
   command:
     help-header: '§6== Buddy Commands =='
-    help-invite: '§e/buddy invite <player> §7- Send buddy invitation'
-    help-accept: '§e/buddy accept <player> §7- Accept buddy invitation'
-    help-decline: '§e/buddy decline <player> §7- Decline buddy invitation'
-    help-remove: '§e/buddy remove §7- Remove buddy relationship'
-    help-status: '§e/buddy status §7- Check buddy status'
+    help-invite: '§2/buddy invite <player> §7- Send buddy invitation'
+    help-accept: '§2/buddy accept <player> §7- Accept buddy invitation'
+    help-decline: '§2/buddy decline <player> §7- Decline buddy invitation'
+    help-remove: '§2/buddy remove §7- Remove buddy relationship'
+    help-status: '§2/buddy status §7- Check buddy status'
     invite-usage: '§cUsage: /buddy invite <player>'
     accept-usage: '§cUsage: /buddy accept <player>'
     decline-usage: '§cUsage: /buddy decline <player>'
     lore1: '§7Right-click to open role selection menu'
-    lore2: '§eSelect your role'
+    lore2: '§2Select your role'
   cannot-drop-role-change: '§cCannot drop the role change item!'
   shop:
     name: '§a§lShop §7(Right-click)'
     lore1: '§7Right-click to open the shop'
-    lore2: '§ePurchase items!'
+    lore2: '§2Purchase items!'
   cannot-drop-shop: '§cCannot drop the shop item!'
   tracking-compass:
     name: '§6§lTracking Compass'
@@ -122,8 +122,8 @@ spectate:
   lore:
     role: '§7Role: {roleColor}{role}'
     health: '§7Health: §c{health}§7/§c20.0'
-    world: '§7World: §e{world}'
-    click-teleport: '§eClick to teleport!'
+    world: '§7World: §2{world}'
+    click-teleport: '§2Click to teleport!'
   button:
     previous-page: '§a◀ Previous Page'
     next-page: '§aNext Page ▶'
@@ -148,25 +148,25 @@ ui:
     hunters-dead: '§c💀Dead §f{count}'
     runners-alive: '§a🏃Alive §f{count}'
     runners-dead: '§a💀Dead §f{count}'
-    runners-respawning: '§e⏳Respawn §f{count}'
-    respawn-time: '§e⏳Respawn in: §f{time}s'
+    runners-respawning: '§2⏳Respawn §f{count}'
+    respawn-time: '§2⏳Respawn in: §f{time}s'
     elapsed-time: '§b⏱ time: §f{minutes}:{seconds}'
     remaining-time: '§b⏱ Remaining: §f{minutes}:{seconds}'
     hunters-total: '§c🗡Hunter §f{count}'
     runners-total: '§a🏃Runner §f{count}'
     spectators-total: '§7👁Watch §f{count}'
-    required-players: '§eNeed: §f{current}/{min}'
+    required-players: '§2Need: §f{current}/{min}'
     separator: '§7━━━━━━━━━━━━━'
     help-command: '§f/manhunt help'
     help-text: '§7for commands'
     buddy-title: '§6🤝 Buddy: {buddy}'
-    balance: '§6💰 : §e{balance}{unit}'
+    balance: '§6💰 : §2{balance}{unit}'
     self-suffix: ' §f(you)'
   bossbar:
     reset-countdown: '§6Next game starts in: §f{time}'
     starting:
       title: '§6Game Starting'
-      subtitle: '§eGet ready...'
+      subtitle: '§2Get ready...'
     running:
       title: '§a🏃 MANHUNT'
       subtitle: '§fGame Started!'
@@ -180,23 +180,23 @@ ui:
   playerlist:
     title: '§6Player Info'
   actionbar:
-    join-game: '§e/manhunt join to join the game!'
-    waiting: '§7Role: {role} §8| §eWaiting for game start...'
-    starting: '§e⚡ Game starting...'
+    join-game: '§2/manhunt join to join the game!'
+    waiting: '§7Role: {role} §8| §2Waiting for game start...'
+    starting: '§2⚡ Game starting...'
     hunter-with-target: '§fNearest Target: §a{target} §7({distance}m)'
     hunter-no-target: '§7No targets found'
     runner: '§a🏃 Runner Mode §8| §7Defeat the Ender Dragon!'
     runner-objective: '§7Defeat the Ender Dragon!'
-    spectator: '§7👁 Spectator Mode §8| §eSpectating the game...'
+    spectator: '§7👁 Spectator Mode §8| §2Spectating the game...'
     default: '§7Game Info: /manhunt status'
     role:
       hunter: '§c🗡 Hunter'
       runner: '§a🏃 Runner'
       spectator: '§7👁 Spectator'
-    respawning: '§e⏳ Respawning ({time}s)'
+    respawning: '§2⏳ Respawning ({time}s)'
     dead: '§c💀 Dead'
   gamestate:
-    waiting: '§eWaiting'
+    waiting: '§2Waiting'
     starting: '§6Starting'
     running: '§aRunning'
     ended: '§cEnded'
@@ -207,15 +207,15 @@ ui:
   coordinate-error: 'Coordinate Error'
   title:
     manhunt: '§6🏃 MANHUNT'
-    manhunt-welcome: '§e🎮 MANHUNT'
+    manhunt-welcome: '§2🎮 MANHUNT'
     game-running-spectator: '§7Game in progress - Spectator mode'
     role-selection: '§fUse /manhunt role to select your role!'
 
 # Virtual Compass Messages
 virtual-compass:
-  target-switch: '§eTarget Switch'
+  target-switch: '§2Target Switch'
   compass-restored: '§aTracking compass has been restored'
-  already-have-pickup: '§eCannot pick up compass - you already have one'
+  already-have-pickup: '§2Cannot pick up compass - you already have one'
   name: '§6Virtual Tracking Compass'
   lore:
     - '§7Right-click to switch targets'
@@ -230,30 +230,30 @@ command:
   reset-success: '§aGame has been forcibly reset!'
 status:
   header: '§6=== Manhunt Game Status ==='
-  state: '§eGame State: {state}'
-  min-players: '§eMinimum Players: {count}'
+  state: '§2Game State: {state}'
+  min-players: '§2Minimum Players: {count}'
   runners: '§aRunners: {count} players {players}'
   hunters: '§cHunters: {count} players {players}'
   spectators: '§7Spectators: {count} players {players}'
-  total-players: '§eTotal Players: {count}'
-  can-start: '§eCan Auto-start: {status}'
+  total-players: '§2Total Players: {count}'
+  can-start: '§2Can Auto-start: {status}'
 join:
   game-running: '§7Joined as spectator because the game is in progress.'
-  next-game: '§eYou can select a role for the next game.'
+  next-game: '§2You can select a role for the next game.'
   welcome: '§6[Manhunt] Joined the game!'
-  role-select: '§eUse /manhunt roles to open menu and select your role.'
+  role-select: '§2Use /manhunt roles to open menu and select your role.'
   spectator: '§7Joined as spectator.'
 proximity:
   level-1: '§c§l[WARNING] Hunter within 1 chunk!'
   level-2: '§6§l[WARNING] Hunter within 2 chunks!'
-  level-3: '§e§l[WARNING] Hunter within 3 chunks!'
+  level-3: '§2§l[WARNING] Hunter within 3 chunks!'
 help:
   header: '§6=== Manhunt Commands ==='
-  role: '§e/manhunt role <runner|hunter|spectator> - Change role'
-  roles: '§e/manhunt roles - Open role selection menu'
-  compass: '§e/manhunt compass - Activate virtual tracking compass'
-  status: '§e/manhunt status - Check game status'
-  spectate: '§e/manhunt spectate - Open spectator menu (spectators only)'
+  role: '§2/manhunt role <runner|hunter|spectator> - Change role'
+  roles: '§2/manhunt roles - Open role selection menu'
+  compass: '§2/manhunt compass - Activate virtual tracking compass'
+  status: '§2/manhunt status - Check game status'
+  spectate: '§2/manhunt spectate - Open spectator menu (spectators only)'
   note: '§7※ You automatically join the game when entering the server'
   virtual-compass: '§b=== Virtual Compass Usage ==='
   compass-usage: '§7• Right-click with empty hand = Track nearest runner'
@@ -281,7 +281,7 @@ position:
   format: '{prefix} §f{sender}: §bX:{x} Y:{y} Z:{z} §7({world})'
   sent-format: '{prefix} §f{sender}: §bX:{x} Y:{y} Z:{z} §7({world}) §7(Sent to {count} teammates)'
   relative: '§7  └→ Relative: X:{x} Y:{y} Z:{z} (Distance: {distance}m)'
-  different-world: '§7  └→ §eIn different world'
+  different-world: '§7  └→ §2In different world'
 quit:
   changed-to-spectator: '§7You became a spectator after leaving the game.'
 rejoin:
@@ -295,7 +295,7 @@ respawn:
   waiting: '§7[Waiting] You can spectate in spectator mode.'
   runner-success: '§a[Runner] Respawned! Defeat the Ender Dragon.'
   countdown: '§c[Respawn] {time} seconds remaining...'
-  countdown-final: '§e§l{time}...'
+  countdown-final: '§2§l{time}...'
 
 # ManhuntCommand related
 admin:
@@ -314,7 +314,7 @@ admin:
   respawntime-usage: '§cUsage: /manhunt respawntime <player> <seconds>'
   invalid-time: '§cInvalid time. Please specify an integer of 0 or greater.'
   respawntime-set: '§aSet {player}''s respawn time to {time} seconds.'
-  respawntime-changed: '§eYour respawn time has been changed to {time} seconds.'
+  respawntime-changed: '§2Your respawn time has been changed to {time} seconds.'
   min-players-change: '§cTo change: /manhunt minplayers <number>'
   input-required: '§cPlease specify a number.'
   player-name-required: '§cPlease specify a player name.'
@@ -333,16 +333,16 @@ reload:
   all-start: '§7Reloading all configuration files...'
   all-complete: '§aAll configuration files reload completed.'
   usage: '§cUsage: /manhunt reload [config|shop|all]'
-  note: '§eNote: Some settings take effect after game restart.'
+  note: '§2Note: Some settings take effect after game restart.'
   failed: '§cConfiguration reload failed: {error}'
 
 # UI settings related
 ui-settings:
   header: '§6=== UI Display Settings ==='
-  scoreboard: '§eScoreboard: {status}'
-  actionbar: '§eActionBar: {status}'
-  bossbar: '§eBossBar: {status}'
-  title: '§eTitle: {status}'
+  scoreboard: '§2Scoreboard: {status}'
+  actionbar: '§2ActionBar: {status}'
+  bossbar: '§2BossBar: {status}'
+  title: '§2Title: {status}'
   enabled: '§aEnabled'
   disabled: '§cDisabled'
   config-note: '§7Current UI display settings can be changed in config.yml.'
@@ -374,12 +374,12 @@ shop:
   game-only: '§cShop can only be used during the game.'
   player-only: '§cThis command can only be used by players.'
   balance-header: '§6==============================='
-  balance-display: '§eBalance: §f{balance}{unit}'
+  balance-display: '§2Balance: §f{balance}{unit}'
   balance-footer: '§6==============================='
   help-header: '§6=== Shop Command Help ==='
-  help-open: '§e/shop §7- Open shop'
-  help-balance: '§e/shop balance §7- Check balance'
-  help-help: '§e/shop help §7- Show this help'
+  help-open: '§2/shop §7- Open shop'
+  help-balance: '§2/shop balance §7- Check balance'
+  help-help: '§2/shop help §7- Show this help'
   help-description1: '§7Earn coins during the game and'
   help-description2: '§7purchase various items.'
   help-hunter-header: '§c[Hunter] Coin earning methods:'
@@ -417,9 +417,9 @@ role-selector:
   game-running: '§cCannot change role during the game.'
   not-in-game: '§cYou are not in the game.'
   change-failed: '§cFailed to change role.'
-  already-selected: '§e{role} is already selected.'
+  already-selected: '§2{role} is already selected.'
   currently-selected: '§a§lCurrently Selected'
-  click-to-select: '§eClick to select'
+  click-to-select: '§2Click to select'
   current-count: '§7Current count: §f{count} players'
   
   runner:
@@ -438,8 +438,8 @@ role-selector:
     title: '§6ℹ Game Info'
     description-1: '§7Right-click to select your role'
     description-2: '§7Can be changed until game starts'
-    waiting-state: '§eStatus: Waiting to start'
-    min-players: '§eMin players: {count} players'
+    waiting-state: '§2Status: Waiting to start'
+    min-players: '§2Min players: {count} players'
   
   button:
     close: '§cClose'
@@ -455,22 +455,22 @@ game-progress:
 
 # Compass additional
 compass-additional:
-  already-has: '§eAlready have tracking compass'
-  inventory-full: '§eInventory full, cannot place compass'
+  already-has: '§2Already have tracking compass'
+  inventory-full: '§2Inventory full, cannot place compass'
   restored: '§aTracking compass has been restored'
-  cannot-pickup: '§eCannot pickup compass, already have one'
+  cannot-pickup: '§2Cannot pickup compass, already have one'
 
 # Game management messages
 game-management:
-  player-left-spectator: '§e{player} left the game and became a spectator.'
-  player-disconnected: '§e{player} disconnected from the server.'
+  player-left-spectator: '§2{player} left the game and became a spectator.'
+  player-disconnected: '§2{player} disconnected from the server.'
   network-recovery: '§aRecovered from network error! Role: {role}'
-  network-recovery-broadcast: '§e{player} recovered from network error!'
+  network-recovery-broadcast: '§2{player} recovered from network error!'
   hunter-shortage-assign: '§cAutomatically assigned as Hunter due to shortage!'
   runner-shortage-assign: '§aAutomatically assigned as Runner due to shortage!'
   start-cancelled-roles: '§cAt least 1 hunter and 1 runner required. Game start cancelled.'
   players-teleported: '§6Players have been teleported to starting positions!'
-  preparing-teleport: '§ePreparing player spawn positions...'
+  preparing-teleport: '§2Preparing player spawn positions...'
   teleport-progress: '§aTeleporting: {current}/{total} ({percent}%)'
   inventory-cleared: '§6[Manhunt] Player inventories have been cleared!'
   advancements-reset: '§6[Manhunt] Advancements have been reset!'
@@ -478,8 +478,8 @@ game-management:
   start-countdown: '§6[Manhunt] Game starting in {time} seconds...'
   start-title: '§6🎮 Game Start'
   start-subtitle: '§fStarting in {time} seconds'
-  countdown-final: '§e§l{time}...'
-  reset-warning-1min: '§e[Manhunt] Next game starts in 1 minute!'
+  countdown-final: '§2§l{time}...'
+  reset-warning-1min: '§2[Manhunt] Next game starts in 1 minute!'
   reset-warning-30sec: '§c[Manhunt] Next game starts in 30 seconds!'
   reset-countdown: '§c§l[Manhunt] Next game starts in {seconds} seconds...'
   force-reset: '§6[Manhunt] Game forcibly reset by administrator!'
@@ -509,14 +509,14 @@ respawn-system:
   hunter-respawned: '§c[Hunter] Respawned! Continue the chase.'
   runner-instant-respawned: '§a[Runner] Respawned! Defeat the Ender Dragon.'
   runner-death: '§c[Runner] You died. Respawning in {time} seconds...'
-  runner-death-broadcast: '§e{player} (Runner) died. Respawning in {time} seconds.'
+  runner-death-broadcast: '§2{player} (Runner) died. Respawning in {time} seconds.'
   waiting-spectator: '§7[Waiting] You can spectate in spectator mode.'
   runner-respawned: '§a[Runner] Respawned! Defeat the Ender Dragon.'
-  runner-respawned-broadcast: '§e{player} (Runner) has respawned.'
+  runner-respawned-broadcast: '§2{player} (Runner) has respawned.'
   death-title: '§c💀 Dead'
   death-subtitle: '§fRespawning in {time} seconds'
   countdown-chat: '§c[Respawn] {time} seconds remaining...'
-  countdown-emphasis: '§e§l{time}...'
+  countdown-emphasis: '§2§l{time}...'
 
 # Command interface messages
 command-interface:
@@ -525,13 +525,13 @@ command-interface:
   status-running: 'Running'
   status-ended: 'Ended'
   status-game-header: '§6=== Manhunt Game Status ==='
-  status-game-state: '§eGame State: {state}'
-  status-min-players: '§eMinimum Players: {count}'
+  status-game-state: '§2Game State: {state}'
+  status-min-players: '§2Minimum Players: {count}'
   status-runners-list: '§aRunners: {count} players {players}'
   status-hunters-list: '§cHunters: {count} players {players}'
   status-spectators-list: '§7Spectators: {count} players {players}'
-  status-total-players: '§eTotal Players: {count}'
-  status-can-start: '§eCan Auto-start: {status}'
+  status-total-players: '§2Total Players: {count}'
+  status-can-start: '§2Can Auto-start: {status}'
   admin-no-permission: '§cYou don''t have admin permission.'
   sethunter-usage: '§cUsage: /manhunt sethunter <player_name>'
   sethunter-success: '§a{player} has been set as hunter.'
@@ -547,11 +547,11 @@ command-interface:
   minplayers-change: '§cTo change: /manhunt minplayers <number>'
   minplayers-set: '§aMinimum players set to {count}.'
   help-commands-header: '§6=== Manhunt Commands ==='
-  help-role-change: '§e/manhunt role <runner|hunter|spectator> - Change role'
-  help-role-menu: '§e/manhunt roles - Open role selection menu'
-  help-compass-activate: '§e/manhunt compass - Activate virtual tracking compass'
-  help-status-check: '§e/manhunt status - Check game status'
-  help-spectate-menu: '§e/manhunt spectate - Open spectator menu (spectators only)'
+  help-role-change: '§2/manhunt role <runner|hunter|spectator> - Change role'
+  help-role-menu: '§2/manhunt roles - Open role selection menu'
+  help-compass-activate: '§2/manhunt compass - Activate virtual tracking compass'
+  help-status-check: '§2/manhunt status - Check game status'
+  help-spectate-menu: '§2/manhunt spectate - Open spectator menu (spectators only)'
   help-note: '§7※ You automatically join the game when entering the server'
   help-virtual-compass: '§b=== Virtual Compass Usage ==='
   help-compass-usage: '§7• Right-click with empty hand = Track nearest runner'
@@ -578,6 +578,74 @@ command-interface:
   help-admin-give: '§c/manhunt give <player> <amount> - Give money to player'
   help-admin-validate: '§c/manhunt validate-messages - Check for missing message keys'
   help-admin-diagnose: '§c/manhunt diagnose - Output diagnostic information'
+  help-guide: '§2/manhunt guide - Get command guide book'
+
+# Guide book messages
+guide-book:
+  title: '§6Manhunt Guide Book'
+  author: 'Server'
+  already-have: '§2You already have a guide book.'
+  received: '§aReceived guide book!'
+  dropped: '§2Inventory full, guide book dropped at your feet.'
+  
+  page1:
+    title: '§6Basic Commands'
+    content1: '§0/manhunt role <runner|hunter>\nChange role'
+    content2: '§0/manhunt roles\nRole selection menu'
+    content3: '§0/manhunt status\nCheck game status'
+    content4: '§0/manhunt compass\nActivate tracking compass'
+    
+  page2:
+    title: '§6Team Coordination'
+    content1: '§0/r <message>\nTeam chat only'
+    content2: '§0/pos\nShare coordinates with team'
+    content3: '§0/warp <player>\nTeleport to teammate (100G)'
+    note: '§4※Only available during game'
+    
+  page3:
+    title: '§6Buddy System'
+    content1: '§0/buddy invite <player>\nInvite buddy'
+    content2: '§0/buddy accept <player>\nAccept invitation'
+    content3: '§0/buddy remove\nRemove relationship'
+    content4: '§0/buddy status\nCheck status'
+    note: '§2Shows buddy location'
+    
+  page4:
+    title: '§6Shop System'
+    content1: '§0/shop\nOpen shop'
+    content2: '§0/shop balance\nCheck balance'
+    hunter-title: '§c[Hunter] Earn coins:'
+    hunter-earn: '§0・Damage, Kills, Time'
+    runner-title: '§a[Runner] Earn coins:'
+    runner-earn: '§0・Survival, Progress, Diamonds'
+    
+  page5:
+    title: '§6Spectator Commands'
+    content1: '§0/manhunt spectate\nOpen spectate menu'
+    content2: '§0/manhunt tp <player>\nTeleport to player'
+    note: '§7※Spectators only'
+    
+  page6:
+    title: '§6Game Rules'
+    hunter-goal: '§cHunters: Eliminate runners'
+    runner-goal: '§aRunners: Defeat Ender Dragon'
+    time-mode: '§2Time Limit: 40min dominance'
+    endless-mode: '§bEndless: No time limit'
+    
+  page7:
+    title: '§6Virtual Compass'
+    content1: '§0Right-click empty hand\nTrack nearest runner'
+    content2: '§0Right-click with compass\nSwitch targets'
+    content3: '§0Shows direction with particles'
+    note: '§4※Hunter exclusive feature'
+    
+  page8:
+    title: '§6Tips'
+    tip1: '§0・Sneak to hide name'
+    tip2: '§0・Coordinate with buddy'
+    tip3: '§0・Save coins for equipment'
+    tip4: '§0・/help for detailed help'
+    footer: '§6Good Luck!'
 
 # Game result and MVP system
 result:
@@ -611,7 +679,7 @@ result:
   
   # Detailed statistics section
   stats:
-    header: '§e§l=== Game Statistics ==='
+    header: '§2§l=== Game Statistics ==='
     game-duration: '§6⏱ Game Duration: §f{duration}'
     hunter-stats-header: '§c§l🗡 Hunter Statistics:'
     runner-stats-header: '§a§l🏃 Runner Statistics:'
@@ -624,7 +692,7 @@ result:
       other: '§f{rank}.'
     
     # Hunter statistics format
-    hunter-format: '{rank} §c{name}§f: §eKills {kills} §7| §cDamage {damage} §7| §6Earned {currency}G'
+    hunter-format: '{rank} §c{name}§f: §2Kills {kills} §7| §cDamage {damage} §7| §6Earned {currency}G'
     
     # Runner statistics format
     runner-format: '{rank} §a{name}§f: §bSurvival {survival} §7| §5Explored {dimensions} dimensions §7| §6Earned {currency}G'
@@ -639,12 +707,12 @@ result:
     announcement: '{color}§l{icon} {name}§6§l has been selected as MVP!'
     
     # MVP performance display
-    hunter-performance: '§7📊 Performance: §eKills {kills} §7| §cDamage {damage}'
+    hunter-performance: '§7📊 Performance: §2Kills {kills} §7| §cDamage {damage}'
     runner-performance: '§7📊 Performance: §bSurvival Time {survival} §7| §5Explored {dimensions} dimensions'
     
     # MVP title and effects
     title: '§6§l🌟 MVP! 🌟'
-    subtitle: '§eCongratulations!'
+    subtitle: '§2Congratulations!'
   
   # Personal statistics section
   personal:
@@ -653,15 +721,15 @@ result:
     
     # Hunter personal stats
     hunter:
-      kill-death: '  §7• Kills: §e{kills} §7| Deaths: §c{deaths} §7| K/D: §6{kd}'
+      kill-death: '  §7• Kills: §2{kills} §7| Deaths: §c{deaths} §7| K/D: §6{kd}'
       damage: '  §7• Damage Dealt: §c{dealt} §7| Damage Taken: §4{taken}'
-      currency: '  §7• Currency: §6Earned {earned}G §7| §eSpent {spent}G §7| §bPurchased {items} items'
+      currency: '  §7• Currency: §6Earned {earned}G §7| §2Spent {spent}G §7| §bPurchased {items} items'
     
     # Runner personal stats
     runner:
       survival: '  §7• Survival Time: §b{survival} §7| Deaths: §c{deaths}'
       exploration: '  §7• Exploration: §5{dimensions} dimensions §7| Diamonds: §b{diamonds} §7| Escapes: §a{escapes}'
-      currency: '  §7• Currency: §6Earned {earned}G §7| §eSpent {spent}G §7| §bPurchased {items} items'
+      currency: '  §7• Currency: §6Earned {earned}G §7| §2Spent {spent}G §7| §bPurchased {items} items'
     
     # Spectator stats
     spectator-stats: '  §7• Participated as spectator'
@@ -738,14 +806,14 @@ warp:
   insufficient-funds: '§cWarp costs {cost}{unit}. (Current: {balance}{unit})'
   already-warping: '§cAlready processing a warp.'
   cost-deducted: '§6Deducted {cost}{unit} for warp cost.'
-  starting: '§aStarting warp to {target}... §e({seconds}s)'
-  incoming: '§e{player} is warping to you.'
+  starting: '§aStarting warp to {target}... §2({seconds}s)'
+  incoming: '§2{player} is warping to you.'
   cancelled-offline: '§cWarp cancelled - player went offline.'
   cancelled-moved: '§cWarp cancelled - you moved.'
   countdown-title: '§6§lWarping'
-  countdown-subtitle: '§eTeleporting in {seconds}s'
+  countdown-subtitle: '§2Teleporting in {seconds}s'
   success: '§aSuccessfully warped to {target}!'
-  arrived: '§e{player} has warped to you!'
+  arrived: '§2{player} has warped to you!'
   
   # Reset related
   reset:
@@ -816,7 +884,7 @@ shop-extended:
     close: '§cClose'
     balance-title: '§6Balance'
     balance-amount: '§bBalance: §f{balance}{unit}'
-    toggle-item-title: '§e⚙ Shop Item Display'
+    toggle-item-title: '§2⚙ Shop Item Display'
     toggle-item-current: '§7Current: {status}'
     toggle-item-enabled: '§aEnabled'
     toggle-item-disabled: '§cDisabled'
@@ -1008,18 +1076,18 @@ shop-extended:
       name: '§5Elytra'
       description:
         - '§7Wings that allow flight'
-        - '§e※Requires firework rockets'
+        - '§2※Requires firework rockets'
         - '§c※Rare item'
     firework_rocket_8:
       name: '§6Firework Rocket ×8'
       description:
         - '§7Propellant for elytra flight'
-        - '§eRequired for acceleration & climbing'
+        - '§2Required for acceleration & climbing'
     firework_rocket_16:
       name: '§6Firework Rocket ×16'
       description:
         - '§7Propellant for elytra flight'
-        - '§eRequired for acceleration & climbing'
+        - '§2Required for acceleration & climbing'
         - '§aBulk pack'
     ender_pearl_4:
       name: '§5Ender Pearl ×4'
@@ -1051,7 +1119,7 @@ shop-extended:
         - '§74 minutes of water breathing'
         - '§7For extended underwater activity'
     night_vision_potion:
-      name: '§eNight Vision Potion'
+      name: '§2Night Vision Potion'
       description:
         - '§74 minutes of night vision'
         - '§7Clear vision in dark areas'
@@ -1148,7 +1216,7 @@ shop-extended:
     
     # Hunter Exclusive
     compass_upgrade:
-      name: '§eTracking Compass Upgrade'
+      name: '§2Tracking Compass Upgrade'
       description:
         - '§7More accurate tracking'
         - '§7Improved distance display precision'
@@ -1166,19 +1234,19 @@ shop-extended:
 
 # Time mode messages
 time-mode:
-  warning-10min: '§e⏰ Time remaining: 10 minutes'
-  warning-5min: '§e⏰ Time remaining: 5 minutes'
+  warning-10min: '§2⏰ Time remaining: 10 minutes'
+  warning-5min: '§2⏰ Time remaining: 5 minutes'
   warning-1min: '§c⏰ Time remaining: 1 minute'
   warning-30sec: '§c⏰ Time remaining: 30 seconds'
   countdown: '§c⏰ Time remaining: {seconds} seconds'
   victory-hunter: '§c🗡 Hunter Victory! (Dominance: {percent}%)'
   victory-runner: '§a🏃 Runner Victory! (Dominance: {percent}%)'
-  victory-draw: '§eDraw! (Dominance: 50% - 50%)'
+  victory-draw: '§2Draw! (Dominance: 50% - 50%)'
 
 # Encounter notification messages
 encounter:
-  notification: '§6[🔍] §e{hunter} §fhas found §a{runner}§f!'
+  notification: '§6[🔍] §2{hunter} §fhas found §a{runner}§f!'
   title: '§6🔍 Runner Found!'
-  subtitle: '§e{hunter} §f→ §a{runner}'
+  subtitle: '§2{hunter} §f→ §a{runner}'
 
 

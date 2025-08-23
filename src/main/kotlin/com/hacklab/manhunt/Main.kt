@@ -25,6 +25,7 @@ class Main : JavaPlugin() {
     private lateinit var spawnManager: SpawnManager
     private lateinit var warpCommand: WarpCommand
     private lateinit var proximityTimeTracker: ProximityTimeTracker
+    private lateinit var guideBookManager: GuideBookManager
     
     // Economy & Shop
     private lateinit var economyManager: EconomyManager
@@ -57,6 +58,7 @@ class Main : JavaPlugin() {
         spawnManager = SpawnManager(this, gameManager, configManager)
         gameManager.setSpawnManager(spawnManager) // SpawnManagerをGameManagerに設定
         compassTracker = CompassTracker(this, gameManager, configManager, messageManager)
+        guideBookManager = GuideBookManager(this)
         uiManager = UIManager(this, gameManager, configManager)
         
         // Initialize economy & shop
@@ -124,6 +126,7 @@ class Main : JavaPlugin() {
     fun getShopManager(): ShopManager = shopManager
     fun getBuddySystem(): BuddySystem = buddySystem
     fun getProximityTimeTracker(): ProximityTimeTracker = proximityTimeTracker
+    fun getGuideBookManager(): GuideBookManager = guideBookManager
 
     override fun onDisable() {
         compassTracker.stopTracking()

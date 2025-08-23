@@ -41,6 +41,14 @@ class EventListener(
         // UIManagerにプレイヤー参加を通知
         uiManager.onPlayerJoin(player)
         
+        // ガイドブックを持っていない場合は自動配布
+        val guideBookManager = plugin.getGuideBookManager()
+        if (!guideBookManager.hasGuideBook(player)) {
+            Bukkit.getScheduler().runTaskLater(plugin, Runnable {
+                guideBookManager.giveGuideBook(player)
+            }, 20L) // 1秒後に配布（ログイン処理完了後）
+        }
+        
         // ネットワークエラーで退出したプレイヤーの再参加処理
         if (gameManager.handleRejoin(player)) {
             return // 再参加処理が成功した場合は終了

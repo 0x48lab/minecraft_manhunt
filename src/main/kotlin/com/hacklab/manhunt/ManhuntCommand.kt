@@ -54,6 +54,7 @@ class ManhuntCommand(
                 true
             }
             "give" -> handleGive(sender, args)
+            "guide" -> handleGuide(sender)
             else -> {
                 sender.sendMessage(messageManager.getMessage(sender as? Player, "command.unknown"))
             }
@@ -637,7 +638,7 @@ class ManhuntCommand(
         try {
             return when (args.size) {
                 1 -> {
-                    val subcommands = mutableListOf("role", "roles", "compass", "status", "spectate", "help")
+                    val subcommands = mutableListOf("role", "roles", "compass", "status", "spectate", "help", "guide")
                     if (sender.hasPermission("manhunt.admin")) {
                         subcommands.addAll(listOf("start", "stop", "end", "sethunter", "setrunner", "setspectator", "minplayers", "ui", "reload", "respawntime", "reset", "validate-messages", "diagnose", "give"))
                     }
@@ -685,6 +686,7 @@ class ManhuntCommand(
                             }
                         }
                         "validate-messages" -> emptyList()
+                        "guide" -> emptyList()
                         else -> emptyList()
                     }
                 }
@@ -693,5 +695,15 @@ class ManhuntCommand(
         } catch (e: Exception) {
             return emptyList()
         }
+    }
+    
+    private fun handleGuide(sender: CommandSender) {
+        if (sender !is Player) {
+            sender.sendMessage(messageManager.getMessage(null, "command.player-only"))
+            return
+        }
+        
+        val guideBookManager = gameManager.getPlugin().getGuideBookManager()
+        guideBookManager.giveGuideBook(sender)
     }
 }

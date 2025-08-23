@@ -5,19 +5,19 @@ game:
   end: '§6[Manhunt] ゲーム終了！'
   reset: '§6[Manhunt] 新しいゲームの準備ができました！'
   compass-craft-prevented: '§cゲーム中はコンパスをクラフトできません。'
-  reset-warning-1min: '§e[Manhunt] 1分後に次のゲームが開始されます！'
-  reset-warning-30sec: '§e[Manhunt] 30秒後に次のゲームが開始されます！'
+  reset-warning-1min: '§2[Manhunt] 1分後に次のゲームが開始されます！'
+  reset-warning-30sec: '§2[Manhunt] 30秒後に次のゲームが開始されます！'
   reset-countdown: '§c[Manhunt] 次のゲーム開始まで{seconds}秒...'
   force-reset: '§6[Manhunt] 管理者により強制的にリセットされました！'
   force-stopped-by-admin: '§c[Manhunt] 管理者{admin}によりゲームが強制終了されました！'
   end-title: '§6§lお疲れ様でした！'
-  end-subtitle: '§e次のゲームをお楽しみください'
+  end-subtitle: '§2次のゲームをお楽しみください'
   hunter-win: '§c追う人の勝利！逃げる人を全員倒しました！'
   runner-win: '§a逃げる人の勝利！エンダードラゴンを倒しました！'
   hunter-start: '§c[ハンター] ランナーを追跡せよ！'
   runner-start: '§a[ランナー] エンダードラゴンを倒せ！'
   spectator-start: '§7[観戦者] ゲームを観戦してください。'
-  auto-start-notification: '§e§l必要人数が揃いました！ゲームを自動的に開始します...'
+  auto-start-notification: '§2§l必要人数が揃いました！ゲームを自動的に開始します...'
 role:
   changed: '§a役割が{role}に変更されました！'
   runner: 'ランナー'
@@ -27,41 +27,41 @@ role:
   game-running: '§cゲーム開始後は役割を変更できません。'
 compass:
   activated: '§6[追跡コンパス] §a有効化！'
-  usage: '§e使用法: §7コンパスを持って右クリックでランナーを追跡'
-  slot-hint: '§e§l※コンパス必須（重複不可）'
+  usage: '§2使用法: §7コンパスを持って右クリックでランナーを追跡'
+  slot-hint: '§2§l※コンパス必須（重複不可）'
   hunter-only: '§cハンターのみコンパスを使用できます！'
   game-only: '§cコンパスはゲーム中のみ使用できます。'
   cooldown: '§cコンパスはクールダウン中です... ({time}秒)'
   no-target: '§cランナーのターゲットが見つかりません。'
-  different-world: '§cランナーは異なるワールドにいます: §e{world}'
-  tracking: '§6[コンパス] §e{player} §7- {distance}'
-  target-switched: '§b[ターゲット切替] §7[{index}/{total}] §e{player} §7- {distance}'
+  different-world: '§cランナーは異なるワールドにいます: §2{world}'
+  tracking: '§6[コンパス] §2{player} §7- {distance}'
+  target-switched: '§b[ターゲット切替] §7[{index}/{total}] §2{player} §7- {distance}'
   title-target-name: '§6§l{name}'
   subtitle-distance-direction: '{distance} §7| {direction}'
   title-target-switch: '§b§l[{index}/{total}] §6§l{name}'
   subtitle-switch-info: '{distance} §7| {direction} §8| 右クリックで切替'
-  hint: '§6[ヒント] §eコンパスを持って右クリックでランナーを追跡！'
-  actionbar-hint: '§e§lコンパス右クリックでランナー追跡'
-  actionbar-use: '§e§lコンパス右クリックで追跡開始'
+  hint: '§6[ヒント] §2コンパスを持って右クリックでランナーを追跡！'
+  actionbar-hint: '§2§lコンパス右クリックでランナー追跡'
+  actionbar-use: '§2§lコンパス右クリックで追跡開始'
   title-activated: '§6§l仮想コンパス'
-  subtitle-activated: '§e右クリックで追跡開始'
-  already-have: '§e既に追跡コンパスを持っています'
-  inventory-full: '§eインベントリが満杯のため、コンパスを配置できませんでした'
+  subtitle-activated: '§2右クリックで追跡開始'
+  already-have: '§2既に追跡コンパスを持っています'
+  inventory-full: '§2インベントリが満杯のため、コンパスを配置できませんでした'
 item:
   role-selector:
     name: '§6§l役割選択 §7(右クリック)'
     lore1: '§7右クリックで役割選択メニューを開く'
-    lore2: '§e自分の役割を選択しよう！'
+    lore2: '§2自分の役割を選択しよう！'
   cannot-drop-role-selector: '§c役割選択アイテムは捨てられません！'
   role-change:
     name: '§6§lロール変更 §7(右クリック)'
     lore1: '§7右クリックでロール変更メニューを開く'
-    lore2: '§eあなたの役割を選択してください'
+    lore2: '§2あなたの役割を選択してください'
   cannot-drop-role-change: '§cロール変更アイテムは捨てられません！'
   shop:
     name: '§6§lショップ §7(右クリック)'
     lore1: '§7右クリックでショップを開く'
-    lore2: '§eアイテムを購入しよう！'
+    lore2: '§2アイテムを購入しよう！'
   cannot-drop-shop: '§cショップアイテムは捨てられません！'
 buddy:
   only-during-game: '§cバディー機能はゲーム中のみ使用できます。'
@@ -71,44 +71,44 @@ buddy:
   target-has-buddy: '§c{player}は既に{buddy}とバディーを組んでいます。'
   invite-already-sent: '§c{player}には既に招待を送信済みです。'
   invite-sent: '§a{player}にバディー招待を送信しました。'
-  invite-received: '§e{sender}からバディー招待が届きました！'
-  invite-instructions: '§e§l/buddy accept {sender}で承認、/buddy decline {sender}で拒否'
+  invite-received: '§2{sender}からバディー招待が届きました！'
+  invite-instructions: '§2§l/buddy accept {sender}で承認、/buddy decline {sender}で拒否'
   no-invite-from: '§c{player}からの招待はありません。'
   someone-has-buddy: '§cどちらかが既に他のバディーを持っています。'
   paired-success: '§a{buddy}とバディーになりました！'
   no-buddy: '§c現在バディーを設定していません。'
-  removed: '§e{buddy}とのバディー関係を解除しました。'
-  partner-removed: '§e{partner}がバディー関係を解除しました。'
+  removed: '§2{buddy}とのバディー関係を解除しました。'
+  partner-removed: '§2{partner}がバディー関係を解除しました。'
   invite-declined: '§c{player}がバディー招待を拒否しました。'
-  invite-declined-by-you: '§e{player}からのバディー招待を拒否しました。'
+  invite-declined-by-you: '§2{player}からのバディー招待を拒否しました。'
   not-in-same-world: '§c異なるワールドにいます'
   coordinate-error: '§c座標取得エラー'
   partner-left: '§c{partner}が退出したため、バディー関係が解除されました。'
   player-not-found: '§cプレイヤー{player}が見つかりません。'
   no-pending-invites: '§c未承認のバディー招待はありません。'
-  pending-invites-header: '§e== 未承認のバディー招待 =='
-  pending-invite-item: '§e- {player}からの招待'
+  pending-invites-header: '§2== 未承認のバディー招待 =='
+  pending-invite-item: '§2- {player}からの招待'
   status-has-buddy: '§aバディー: {buddy} ({coordinates})'
   status-no-buddy: '§7バディーなし'
-  status-pending-sent: '§e招待送信中: {player}'
-  status-pending-received: '§e受信した招待: {count}件'
+  status-pending-sent: '§2招待送信中: {player}'
+  status-pending-received: '§2受信した招待: {count}件'
   command:
     help-header: '§6== バディーコマンド =='
-    help-invite: '§e/buddy invite <プレイヤー> §7- バディー招待を送信'
-    help-accept: '§e/buddy accept <プレイヤー> §7- バディー招待を承認'
-    help-decline: '§e/buddy decline <プレイヤー> §7- バディー招待を拒否'
-    help-remove: '§e/buddy remove §7- バディー関係を解除'
-    help-status: '§e/buddy status §7- バディー状況を確認'
+    help-invite: '§2/buddy invite <プレイヤー> §7- バディー招待を送信'
+    help-accept: '§2/buddy accept <プレイヤー> §7- バディー招待を承認'
+    help-decline: '§2/buddy decline <プレイヤー> §7- バディー招待を拒否'
+    help-remove: '§2/buddy remove §7- バディー関係を解除'
+    help-status: '§2/buddy status §7- バディー状況を確認'
     invite-usage: '§c使用法: /buddy invite <プレイヤー>'
     accept-usage: '§c使用法: /buddy accept <プレイヤー>'
     decline-usage: '§c使用法: /buddy decline <プレイヤー>'
     lore1: '§7右クリックで役割選択メニューを開く'
-    lore2: '§eあなたの役割を選択してください'
+    lore2: '§2あなたの役割を選択してください'
   cannot-drop-role-change: '§cロール変更アイテムは捨てられません！'
   shop:
     name: '§a§lショップ §7(右クリック)'
     lore1: '§7右クリックでショップを開く'
-    lore2: '§eアイテムを購入しよう！'
+    lore2: '§2アイテムを購入しよう！'
   cannot-drop-shop: '§cショップアイテムは捨てられません！'
   tracking-compass:
     name: '§6§l追跡コンパス'
@@ -122,8 +122,8 @@ spectate:
   lore:
     role: '§7役割: {roleColor}{role}'
     health: '§7体力: §c{health}§7/§c20.0'
-    world: '§7ワールド: §e{world}'
-    click-teleport: '§eクリックでテレポート！'
+    world: '§7ワールド: §2{world}'
+    click-teleport: '§2クリックでテレポート！'
   button:
     previous-page: '§a◀ 前のページ'
     next-page: '§a次のページ ▶'
@@ -148,25 +148,25 @@ ui:
     hunters-dead: '§c🗡死亡 §f{count}'
     runners-alive: '§a🏃生存 §f{count}'
     runners-dead: '§a🏃死亡 §f{count}'
-    runners-respawning: '§e⏳復活 §f{count}人'
-    respawn-time: '§e⏳復活まで: §f{time}秒'
+    runners-respawning: '§2⏳復活 §f{count}人'
+    respawn-time: '§2⏳復活まで: §f{time}秒'
     elapsed-time: '§b⏱ 経過時間: §f{minutes}:{seconds}'
     remaining-time: '§b⏱ 残り時間: §f{minutes}:{seconds}'
     hunters-total: '§c🗡ハンター §f{count}'
     runners-total: '§a🏃ランナー §f{count}'
     spectators-total: '§7👁観戦 §f{count}'
-    required-players: '§e必要人数: §f{current}/{min}'
+    required-players: '§2必要人数: §f{current}/{min}'
     separator: '§7━━━━━━━━━━━━━'
     help-command: '§f/manhunt help'
     help-text: '§7でコマンド確認'
     buddy-title: '§6🤝 バディー: {buddy}'
-    balance: '§6💰 : §e{balance}{unit}'
+    balance: '§6💰 : §2{balance}{unit}'
     self-suffix: ' §f(自分)'
   bossbar:
     reset-countdown: '§6次のゲーム開始まで: §f{time}'
     starting:
       title: '§6ゲーム開始'
-      subtitle: '§e準備してください...'
+      subtitle: '§2準備してください...'
     running:
       title: '§a🏃 MANHUNT'
       subtitle: '§fゲーム開始！'
@@ -180,23 +180,23 @@ ui:
   playerlist:
     title: '§6プレイヤー情報'
   actionbar:
-    join-game: '§e/manhunt join でゲームに参加しよう！'
-    waiting: '§7役割: {role} §8| §eゲーム開始を待機中...'
-    starting: '§e⚡ ゲーム開始中...'
+    join-game: '§2/manhunt join でゲームに参加しよう！'
+    waiting: '§7役割: {role} §8| §2ゲーム開始を待機中...'
+    starting: '§2⚡ ゲーム開始中...'
     hunter-with-target: '§f最寄りターゲット: §a{target} §7({distance}m)'
     hunter-no-target: '§7ターゲットが見つかりません'
     runner: '§a🏃 ランナーモード §8| §7エンダードラゴンを倒そう！'
     runner-objective: '§7エンダードラゴンを倒そう！'
-    spectator: '§7👁 観戦モード §8| §eゲームを観戦中...'
+    spectator: '§7👁 観戦モード §8| §2ゲームを観戦中...'
     default: '§7ゲーム情報: /manhunt status'
     role:
       hunter: '§c🗡 ハンター'
       runner: '§a🏃 ランナー'
       spectator: '§7👁 観戦者'
-    respawning: '§e⏳ リスポン待ち ({time}秒)'
+    respawning: '§2⏳ リスポン待ち ({time}秒)'
     dead: '§c💀 死亡中'
   gamestate:
-    waiting: '§e待機中'
+    waiting: '§2待機中'
     starting: '§6開始中'
     running: '§a進行中'
     ended: '§c終了'
@@ -207,15 +207,15 @@ ui:
   coordinate-error: '座標取得エラー'
   title:
     manhunt: '§6🏃 MANHUNT'
-    manhunt-welcome: '§e🎮 MANHUNT'
+    manhunt-welcome: '§2🎮 MANHUNT'
     game-running-spectator: '§7ゲーム進行中 - 観戦モード'
     role-selection: '§f/manhunt role で役割を選択してください！'
 
 # 仮想コンパス用メッセージ  
 virtual-compass:
-  target-switch: '§eターゲット切り替え'
+  target-switch: '§2ターゲット切り替え'
   compass-restored: '§a追跡コンパスが復元されました'
-  already-have-pickup: '§e既に追跡コンパスを持っているため拾えません'
+  already-have-pickup: '§2既に追跡コンパスを持っているため拾えません'
   name: '§6仮想追跡コンパス'
   lore:
     - '§7右クリックでターゲット切り替え'
@@ -230,30 +230,30 @@ command:
   reset-success: '§aゲームが強制的にリセットされました！'
 status:
   header: '§6=== Manhunt ゲーム状況 ==='
-  state: '§eゲーム状態: {state}'
-  min-players: '§e最小プレイヤー数: {count}'
+  state: '§2ゲーム状態: {state}'
+  min-players: '§2最小プレイヤー数: {count}'
   runners: '§aランナー: {count}人 {players}'
   hunters: '§cハンター: {count}人 {players}'
   spectators: '§7観戦者: {count}人 {players}'
-  total-players: '§e総プレイヤー数: {count}'
-  can-start: '§e自動開始可能: {status}'
+  total-players: '§2総プレイヤー数: {count}'
+  can-start: '§2自動開始可能: {status}'
 join:
   game-running: '§7ゲーム進行中のため観戦者として参加しました。'
-  next-game: '§e次のゲームで役割を選択できます。'
+  next-game: '§2次のゲームで役割を選択できます。'
   welcome: '§6[Manhunt] ゲームに参加しました！'
-  role-select: '§e/manhunt roles でメニューを開いて役割を選択してください。'
+  role-select: '§2/manhunt roles でメニューを開いて役割を選択してください。'
   spectator: '§7観戦者として参加しました。'
 proximity:
   level-1: '§c§l[警告] ハンターが1チャンク以内にいます！'
   level-2: '§6§l[警告] ハンターが2チャンク以内にいます！'
-  level-3: '§e§l[警告] ハンターが3チャンク以内にいます！'
+  level-3: '§2§l[警告] ハンターが3チャンク以内にいます！'
 help:
   header: '§6=== Manhunt コマンド ==='
-  role: '§e/manhunt role <runner|hunter|spectator> - 役割変更'
-  roles: '§e/manhunt roles - 役割選択メニューを開く'
-  compass: '§e/manhunt compass - 仮想追跡コンパスを有効化'
-  status: '§e/manhunt status - ゲーム状況確認'
-  spectate: '§e/manhunt spectate - 観戦メニューを開く（観戦者のみ）'
+  role: '§2/manhunt role <runner|hunter|spectator> - 役割変更'
+  roles: '§2/manhunt roles - 役割選択メニューを開く'
+  compass: '§2/manhunt compass - 仮想追跡コンパスを有効化'
+  status: '§2/manhunt status - ゲーム状況確認'
+  spectate: '§2/manhunt spectate - 観戦メニューを開く（観戦者のみ）'
   note: '§7※ サーバー参加時に自動的にゲームに参加します'
   virtual-compass: '§b=== 仮想コンパス使用法 ==='
   compass-usage: '§7• 空手で右クリック = 最寄りランナーを追跡'
@@ -281,7 +281,7 @@ position:
   format: '{prefix} §f{sender}: §bX:{x} Y:{y} Z:{z} §7({world})'
   sent-format: '{prefix} §f{sender}: §bX:{x} Y:{y} Z:{z} §7({world}) §7({count}人の味方に送信)'
   relative: '§7  └→ 相対座標: X:{x} Y:{y} Z:{z} (距離: {distance}m)'
-  different-world: '§7  └→ §e異なるワールドにいます'
+  different-world: '§7  └→ §2異なるワールドにいます'
 quit:
   changed-to-spectator: '§7ゲームから退出したため観戦者になりました。'
 rejoin:
@@ -295,7 +295,7 @@ respawn:
   waiting: '§7[リスポン待ち] スペクテーターモードでゲームを観戦できます。'
   runner-success: '§a[ランナー] リスポンしました！エンダードラゴンを倒してください。'
   countdown: '§c[リスポン] あと{time}秒...'
-  countdown-final: '§e§l{time}...'
+  countdown-final: '§2§l{time}...'
 
 
 # ManhuntCommand関連
@@ -315,7 +315,7 @@ admin:
   respawntime-usage: '§c使用法: /manhunt respawntime <プレイヤー名> <秒数>'
   invalid-time: '§c無効な時間です。0以上の整数を指定してください。'
   respawntime-set: '§a{player}のリスポン時間を{time}秒に設定しました。'
-  respawntime-changed: '§eあなたのリスポン時間が{time}秒に変更されました。'
+  respawntime-changed: '§2あなたのリスポン時間が{time}秒に変更されました。'
   min-players-change: '§c変更するには: /manhunt minplayers <数値>'
   input-required: '§c数値を指定してください。'
   player-name-required: '§cプレイヤー名を指定してください。'
@@ -334,16 +334,16 @@ reload:
   all-start: '§7全設定ファイルをリロードしています...'
   all-complete: '§a全設定ファイルのリロードが完了しました。'
   usage: '§c使用法: /manhunt reload [config|shop|all]'
-  note: '§e注意: 一部の設定はゲーム再開始後に反映されます。'
+  note: '§2注意: 一部の設定はゲーム再開始後に反映されます。'
   failed: '§c設定ファイルのリロードに失敗しました: {error}'
 
 # UI設定関連
 ui-settings:
   header: '§6=== UI表示設定 ==='
-  scoreboard: '§eスコアボード: {status}'
-  actionbar: '§eActionBar: {status}'
-  bossbar: '§eBossBar: {status}'
-  title: '§eタイトル: {status}'
+  scoreboard: '§2スコアボード: {status}'
+  actionbar: '§2ActionBar: {status}'
+  bossbar: '§2BossBar: {status}'
+  title: '§2タイトル: {status}'
   enabled: '§a有効'
   disabled: '§c無効'
   config-note: '§7現在のUI表示設定はconfig.ymlで変更できます。'
@@ -375,12 +375,12 @@ shop:
   game-only: '§cショップはゲーム中のみ使用できます。'
   player-only: '§cこのコマンドはプレイヤーのみが使用できます。'
   balance-header: '§6==============================='
-  balance-display: '§e所持金: §f{balance}{unit}'
+  balance-display: '§2所持金: §f{balance}{unit}'
   balance-footer: '§6==============================='
   help-header: '§6=== ショップコマンド ヘルプ ==='
-  help-open: '§e/shop §7- ショップを開く'
-  help-balance: '§e/shop balance §7- 所持金を確認'
-  help-help: '§e/shop help §7- このヘルプを表示'
+  help-open: '§2/shop §7- ショップを開く'
+  help-balance: '§2/shop balance §7- 所持金を確認'
+  help-help: '§2/shop help §7- このヘルプを表示'
   help-description1: '§7ゲーム中にコインを獲得して'
   help-description2: '§7様々なアイテムを購入できます。'
   help-hunter-header: '§c[ハンター] コイン獲得方法:'
@@ -418,9 +418,9 @@ role-selector:
   game-running: '§cゲーム中は役割を変更できません。'
   not-in-game: '§cゲームに参加していません。'
   change-failed: '§c役割の変更に失敗しました。'
-  already-selected: '§e既に{role}が選択されています。'
+  already-selected: '§2既に{role}が選択されています。'
   currently-selected: '§a§l現在選択中'
-  click-to-select: '§eクリックして選択'
+  click-to-select: '§2クリックして選択'
   current-count: '§7現在の人数: §f{count}人'
   
   runner:
@@ -439,8 +439,8 @@ role-selector:
     title: '§6ℹ ゲーム情報'
     description-1: '§7右クリックで役割を選択できます'
     description-2: '§7ゲーム開始まで変更可能です'
-    waiting-state: '§e状態: 開始待機中'
-    min-players: '§e最小人数: {count}人'
+    waiting-state: '§2状態: 開始待機中'
+    min-players: '§2最小人数: {count}人'
   
   button:
     close: '§c閉じる'
@@ -456,22 +456,22 @@ game-progress:
 
 # コンパス追加
 compass-additional:
-  already-has: '§e追跡コンパスを既に持っています'
-  inventory-full: '§eインベントリが満杯でコンパスを配置できません'
+  already-has: '§2追跡コンパスを既に持っています'
+  inventory-full: '§2インベントリが満杯でコンパスを配置できません'
   restored: '§a追跡コンパスが復元されました'
-  cannot-pickup: '§eコンパスを拾得できません。既に1個持っています'
+  cannot-pickup: '§2コンパスを拾得できません。既に1個持っています'
 
 # Game management messages
 game-management:
-  player-left-spectator: '§e{player}がゲームから退出し、観戦者になりました。'
-  player-disconnected: '§e{player}がサーバーから切断しました。'
+  player-left-spectator: '§2{player}がゲームから退出し、観戦者になりました。'
+  player-disconnected: '§2{player}がサーバーから切断しました。'
   network-recovery: '§aネットワークエラーから復帰しました！役割: {role}'
-  network-recovery-broadcast: '§e{player}がネットワークエラーから復帰しました！'
+  network-recovery-broadcast: '§2{player}がネットワークエラーから復帰しました！'
   hunter-shortage-assign: '§cハンターが不足のため、自動的にハンターに割り当てられました！'
   runner-shortage-assign: '§aランナーが不足のため、自動的にランナーに割り当てられました！'
   start-cancelled-roles: '§cハンターとランナーが最低1人ずつ必要です。ゲーム開始を中止しました。'
   players-teleported: '§6プレイヤーが各開始地点に転送されました！'
-  preparing-teleport: '§eプレイヤーのスポーン位置を準備しています...'
+  preparing-teleport: '§2プレイヤーのスポーン位置を準備しています...'
   teleport-progress: '§a転送中: {current}/{total} ({percent}%)'
   inventory-cleared: '§6[Manhunt] プレイヤーのインベントリがクリアされました！'
   advancements-reset: '§6[Manhunt] 実績がリセットされました！'
@@ -479,8 +479,8 @@ game-management:
   start-countdown: '§6[Manhunt] ゲーム開始まで {time}秒...'
   start-title: '§6🎮 ゲーム開始'
   start-subtitle: '§f{time}秒後に開始'
-  countdown-final: '§e§l{time}...'
-  reset-warning-1min: '§e[Manhunt] 次のゲーム開始まで残り1分です！'
+  countdown-final: '§2§l{time}...'
+  reset-warning-1min: '§2[Manhunt] 次のゲーム開始まで残り1分です！'
   reset-warning-30sec: '§c[Manhunt] 次のゲーム開始まで残り30秒です！'
   reset-countdown: '§c§l[Manhunt] 次のゲーム開始まで{seconds}秒...'
   force-reset: '§6[Manhunt] 管理者により強制的にリセットされました！'
@@ -510,14 +510,14 @@ respawn-system:
   hunter-respawned: '§c[ハンター] リスポンしました！追跡を続けてください。'
   runner-instant-respawned: '§a[ランナー] リスポンしました！エンダードラゴンを倒してください。'
   runner-death: '§c[ランナー] 死亡しました。{time}秒後にリスポンします...'
-  runner-death-broadcast: '§e{player} (ランナー) が死亡しました。{time}秒後にリスポンします。'
+  runner-death-broadcast: '§2{player} (ランナー) が死亡しました。{time}秒後にリスポンします。'
   waiting-spectator: '§7[リスポン待ち] スペクテーターモードでゲームを観戦できます。'
   runner-respawned: '§a[ランナー] リスポンしました！エンダードラゴンを倒してください。'
-  runner-respawned-broadcast: '§e{player} (ランナー) がリスポンしました。'
+  runner-respawned-broadcast: '§2{player} (ランナー) がリスポンしました。'
   death-title: '§c💀 死亡中'
   death-subtitle: '§f{time}秒後にリスポン'
   countdown-chat: '§c[リスポン] あと {time}秒...'
-  countdown-emphasis: '§e§l{time}...'
+  countdown-emphasis: '§2§l{time}...'
 
 # Command interface messages
 command-interface:
@@ -526,13 +526,13 @@ command-interface:
   status-running: '進行中'
   status-ended: '終了'
   status-game-header: '§6=== Manhunt ゲーム状況 ==='
-  status-game-state: '§eゲーム状態: {state}'
-  status-min-players: '§e最小プレイヤー数: {count}'
+  status-game-state: '§2ゲーム状態: {state}'
+  status-min-players: '§2最小プレイヤー数: {count}'
   status-runners-list: '§aランナー: {count}人 {players}'
   status-hunters-list: '§cハンター: {count}人 {players}'
   status-spectators-list: '§7観戦者: {count}人 {players}'
-  status-total-players: '§e総プレイヤー数: {count}'
-  status-can-start: '§e自動開始可能: {status}'
+  status-total-players: '§2総プレイヤー数: {count}'
+  status-can-start: '§2自動開始可能: {status}'
   admin-no-permission: '§c管理者権限がありません。'
   sethunter-usage: '§c使用法: /manhunt sethunter <プレイヤー名>'
   sethunter-success: '§a{player}をハンターに設定しました。'
@@ -548,11 +548,11 @@ command-interface:
   minplayers-change: '§c変更するには: /manhunt minplayers <数値>'
   minplayers-set: '§a最小プレイヤー数を{count}に設定しました。'
   help-commands-header: '§6=== Manhunt コマンド ==='
-  help-role-change: '§e/manhunt role <runner|hunter|spectator> - 役割変更'
-  help-role-menu: '§e/manhunt roles - 役割選択メニューを開く'
-  help-compass-activate: '§e/manhunt compass - 仮想追跡コンパスを有効化'
-  help-status-check: '§e/manhunt status - ゲーム状況確認'
-  help-spectate-menu: '§e/manhunt spectate - 観戦メニューを開く（観戦者のみ）'
+  help-role-change: '§2/manhunt role <runner|hunter|spectator> - 役割変更'
+  help-role-menu: '§2/manhunt roles - 役割選択メニューを開く'
+  help-compass-activate: '§2/manhunt compass - 仮想追跡コンパスを有効化'
+  help-status-check: '§2/manhunt status - ゲーム状況確認'
+  help-spectate-menu: '§2/manhunt spectate - 観戦メニューを開く（観戦者のみ）'
   help-note: '§7※ サーバー参加時に自動的にゲームに参加します'
   help-virtual-compass: '§b=== 仮想コンパス使用法 ==='
   help-compass-usage: '§7• 空手で右クリック = 最寄りランナーを追跡'
@@ -579,6 +579,74 @@ command-interface:
   help-admin-give: '§c/manhunt give <プレイヤー> <金額> - お金を付与'
   help-admin-validate: '§c/manhunt validate-messages - メッセージキーの不足をチェック'
   help-admin-diagnose: '§c/manhunt diagnose - 診断情報を出力'
+  help-guide: '§2/manhunt guide - コマンドガイドブックを入手'
+
+# Guide book messages
+guide-book:
+  title: '§6Manhunt ガイドブック'
+  author: 'サーバー'
+  already-have: '§2既にガイドブックを持っています。'
+  received: '§aガイドブックを受け取りました！'
+  dropped: '§2インベントリがいっぱいのため、ガイドブックを足元にドロップしました。'
+  
+  page1:
+    title: '§6基本コマンド'
+    content1: '§0/manhunt role <runner|hunter>\n役割を変更'
+    content2: '§0/manhunt roles\n役割選択メニュー'
+    content3: '§0/manhunt status\nゲーム状況確認'
+    content4: '§0/manhunt compass\n追跡コンパス有効化'
+    
+  page2:
+    title: '§6チーム連携'
+    content1: '§0/r <メッセージ>\n味方のみにチャット'
+    content2: '§0/pos\n座標を味方に共有'
+    content3: '§0/warp <プレイヤー>\n100Gで味方へテレポート'
+    note: '§4※ゲーム中のみ使用可能'
+    
+  page3:
+    title: '§6バディーシステム'
+    content1: '§0/buddy invite <プレイヤー>\nバディー招待'
+    content2: '§0/buddy accept <プレイヤー>\n招待を承認'
+    content3: '§0/buddy remove\n関係を解除'
+    content4: '§0/buddy status\n状況確認'
+    note: '§2バディーの位置が表示されます'
+    
+  page4:
+    title: '§6ショップシステム'
+    content1: '§0/shop\nショップを開く'
+    content2: '§0/shop balance\n所持金確認'
+    hunter-title: '§c[ハンター]コイン獲得:'
+    hunter-earn: '§0・ダメージ、キル、時間'
+    runner-title: '§a[ランナー]コイン獲得:'
+    runner-earn: '§0・生存、進歩、ダイヤ'
+    
+  page5:
+    title: '§6観戦者コマンド'
+    content1: '§0/manhunt spectate\n観戦メニューを開く'
+    content2: '§0/manhunt tp <プレイヤー>\nプレイヤーへテレポート'
+    note: '§7※観戦者のみ使用可能'
+    
+  page6:
+    title: '§6ゲームルール'
+    hunter-goal: '§cハンター: ランナーを倒す'
+    runner-goal: '§aランナー: エンダードラゴンを倒す'
+    time-mode: '§2時間制限: 40分で優勢度判定'
+    endless-mode: '§b無制限: 時間制限なし'
+    
+  page7:
+    title: '§6仮想コンパス'
+    content1: '§0空手で右クリック\n最寄りランナーを追跡'
+    content2: '§0コンパスを持って右クリック\nターゲット切り替え'
+    content3: '§0パーティクルと矢印で方向表示'
+    note: '§4※ハンター専用機能'
+    
+  page8:
+    title: '§6ヒント'
+    tip1: '§0・スニークで名前を隠せます'
+    tip2: '§0・バディーと連携しよう'
+    tip3: '§0・コインを貯めて装備を購入'
+    tip4: '§0・/help で詳細ヘルプ'
+    footer: '§6Good Luck!'
 
 # Game result and MVP system
 result:
@@ -612,7 +680,7 @@ result:
   
   # Detailed statistics section
   stats:
-    header: '§e§l=== ゲーム統計 ==='
+    header: '§2§l=== ゲーム統計 ==='
     game-duration: '§6⏱ ゲーム時間: §f{duration}'
     hunter-stats-header: '§c§l🗡 ハンター統計:'
     runner-stats-header: '§a§l🏃 ランナー統計:'
@@ -625,7 +693,7 @@ result:
       other: '§f{rank}.'
     
     # Hunter statistics format
-    hunter-format: '{rank} §c{name}§f: §eキル {kills} §7| §cダメージ {damage} §7| §6収入 {currency}G'
+    hunter-format: '{rank} §c{name}§f: §2キル {kills} §7| §cダメージ {damage} §7| §6収入 {currency}G'
     
     # Runner statistics format
     runner-format: '{rank} §a{name}§f: §b生存 {survival} §7| §5探索 {dimensions}次元 §7| §6収入 {currency}G'
@@ -640,12 +708,12 @@ result:
     announcement: '{color}§l{icon} {name}§6§l が MVP に選ばれました！'
     
     # MVP performance display
-    hunter-performance: '§7📊 成績: §eキル数 {kills} §7| §cダメージ {damage}'
+    hunter-performance: '§7📊 成績: §2キル数 {kills} §7| §cダメージ {damage}'
     runner-performance: '§7📊 成績: §b生存時間 {survival} §7| §5探索 {dimensions}次元'
     
     # MVP title and effects
     title: '§6§l🌟 MVP! 🌟'
-    subtitle: '§eおめでとうございます！'
+    subtitle: '§2おめでとうございます！'
   
   # Personal statistics section
   personal:
@@ -654,15 +722,15 @@ result:
     
     # Hunter personal stats
     hunter:
-      kill-death: '  §7• キル: §e{kills} §7| デス: §c{deaths} §7| K/D: §6{kd}'
+      kill-death: '  §7• キル: §2{kills} §7| デス: §c{deaths} §7| K/D: §6{kd}'
       damage: '  §7• 与ダメージ: §c{dealt} §7| 被ダメージ: §4{taken}'
-      currency: '  §7• 通貨: §6獲得 {earned}G §7| §e消費 {spent}G §7| §b購入 {items}個'
+      currency: '  §7• 通貨: §6獲得 {earned}G §7| §2消費 {spent}G §7| §b購入 {items}個'
     
     # Runner personal stats
     runner:
       survival: '  §7• 生存時間: §b{survival} §7| デス: §c{deaths}'
       exploration: '  §7• 探索: §5{dimensions}次元 §7| ダイヤ: §b{diamonds}個 §7| 逃走: §a{escapes}回'
-      currency: '  §7• 通貨: §6獲得 {earned}G §7| §e消費 {spent}G §7| §b購入 {items}個'
+      currency: '  §7• 通貨: §6獲得 {earned}G §7| §2消費 {spent}G §7| §b購入 {items}個'
     
     # Spectator stats
     spectator-stats: '  §7• 観戦者として参加'
@@ -739,14 +807,14 @@ warp:
   insufficient-funds: '§cワープには{cost}{unit}が必要です。（現在: {balance}{unit}）'
   already-warping: '§c既にワープ処理中です。'
   cost-deducted: '§6ワープ費用として{cost}{unit}を消費しました。'
-  starting: '§a{target}へのワープを開始します... §e({seconds}秒)'
-  incoming: '§e{player}があなたの元へワープしてきます。'
+  starting: '§a{target}へのワープを開始します... §2({seconds}秒)'
+  incoming: '§2{player}があなたの元へワープしてきます。'
   cancelled-offline: '§cプレイヤーがオフラインになったため、ワープがキャンセルされました。'
   cancelled-moved: '§c移動したため、ワープがキャンセルされました。'
   countdown-title: '§6§lワープ中'
-  countdown-subtitle: '§e{seconds}秒後にテレポート'
+  countdown-subtitle: '§2{seconds}秒後にテレポート'
   success: '§a{target}へのワープに成功しました！'
-  arrived: '§e{player}がワープしてきました！'
+  arrived: '§2{player}がワープしてきました！'
   
   # リセット関連
   reset:
@@ -817,7 +885,7 @@ shop-extended:
     close: '§c閉じる'
     balance-title: '§6所持金'
     balance-amount: '§b残高: §f{balance}{unit}'
-    toggle-item-title: '§e⚙ ショップアイテム表示設定'
+    toggle-item-title: '§2⚙ ショップアイテム表示設定'
     toggle-item-current: '§7現在: {status}'
     toggle-item-enabled: '§a表示'
     toggle-item-disabled: '§c非表示'
@@ -1009,18 +1077,18 @@ shop-extended:
       name: '§5エリトラ'
       description:
         - '§7空を飛べる翼'
-        - '§e※花火ロケットが必要'
+        - '§2※花火ロケットが必要'
         - '§c※貴重品'
     firework_rocket_8:
       name: '§6花火ロケット ×8'
       description:
         - '§7エリトラ飛行用の推進剤'
-        - '§e飛行時の加速・上昇に必要'
+        - '§2飛行時の加速・上昇に必要'
     firework_rocket_16:
       name: '§6花火ロケット ×16'
       description:
         - '§7エリトラ飛行用の推進剤'
-        - '§e飛行時の加速・上昇に必要'
+        - '§2飛行時の加速・上昇に必要'
         - '§a大容量パック'
     ender_pearl_4:
       name: '§5エンダーパール ×4'
@@ -1052,7 +1120,7 @@ shop-extended:
         - '§74分間の水中呼吸'
         - '§7水中での長時間活動に'
     night_vision_potion:
-      name: '§e暗視のポーション'
+      name: '§2暗視のポーション'
       description:
         - '§74分間の暗視効果'
         - '§7暗い場所での視界確保'
@@ -1149,7 +1217,7 @@ shop-extended:
     
     # ハンター専用
     compass_upgrade:
-      name: '§e追跡コンパス強化'
+      name: '§2追跡コンパス強化'
       description:
         - '§7より正確な追跡'
         - '§7距離表示の精度向上'
@@ -1167,19 +1235,19 @@ shop-extended:
 
 # タイムモード用メッセージ
 time-mode:
-  warning-10min: '§e⏰ 残り時間: 10分'
-  warning-5min: '§e⏰ 残り時間: 5分'
+  warning-10min: '§2⏰ 残り時間: 10分'
+  warning-5min: '§2⏰ 残り時間: 5分'
   warning-1min: '§c⏰ 残り時間: 1分'
   warning-30sec: '§c⏰ 残り時間: 30秒'
   countdown: '§c⏰ 残り時間: {seconds}秒'
   victory-hunter: '§c🗡 ハンターの勝利！（優勢度: {percent}%）'
   victory-runner: '§a🏃 ランナーの勝利！（優勢度: {percent}%）'
-  victory-draw: '§e引き分け！（優勢度: 50% - 50%）'
+  victory-draw: '§2引き分け！（優勢度: 50% - 50%）'
 
 # エンカウント通知メッセージ
 encounter:
-  notification: '§6[🔍] §e{hunter} §fが §a{runner} §fを発見！'
+  notification: '§6[🔍] §2{hunter} §fが §a{runner} §fを発見！'
   title: '§6🔍 ランナー発見！'
-  subtitle: '§e{hunter} §f→ §a{runner}'
+  subtitle: '§2{hunter} §f→ §a{runner}'
 
 

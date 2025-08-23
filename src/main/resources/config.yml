@@ -17,7 +17,7 @@ game:
   
   # ゲームモード設定
   # time-limit: ゲーム制限時間（分）。0でエンドレスモード
-  time-limit: 40
+  time-limit: 15
   
   # タイムモード設定（time-limitが0以外の場合のみ有効）
   time-mode:

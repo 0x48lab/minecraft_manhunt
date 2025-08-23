@@ -235,6 +235,9 @@ class MessageManager(private val plugin: Main) {
             result = result.replace("{$key}", value.toString())
         }
         
+        // ガイドブック用に\nを実際の改行に変換
+        result = result.replace("\\n", "\n")
+        
         return result
     }
     
