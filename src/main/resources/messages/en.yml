@@ -323,6 +323,31 @@ admin:
   amount-must-be-positive: '§cAmount must be 1 or greater.'
   amount-too-large: '§cAmount too large. Maximum is {max}.'
   give-success: '§aGave {amount}{unit} to {player}. (Current balance: {balance}{unit})'
+  
+  # Force join command
+  forcejoin-usage: '§cUsage: /manhunt forcejoin <player> <hunter|runner>'
+  forcejoin-not-running: '§cCannot force join - game is not running.'
+  forcejoin-invalid-role: '§cInvalid role. Please specify hunter or runner.'
+  forcejoin-success: '§aForce joined {player} as {role}.'
+  forcejoin-failed: '§cFailed to force join player.'
+  forcejoin-broadcast: '§6{player} has been added to the game as {role} by an admin!'
+  forcejoin-notify-hunter: '§cYou have been added to the game as a Hunter by an admin!'
+  forcejoin-notify-runner: '§aYou have been added to the game as a Runner by an admin!'
+  forcejoin-title-hunter: '§c§lJoined as Hunter!'
+  forcejoin-subtitle-hunter: '§7Track down the runners'
+  forcejoin-title-runner: '§a§lJoined as Runner!'
+  forcejoin-subtitle-runner: '§7Defeat the Ender Dragon'
+  
+  # Force role change command
+  forcerole-usage: '§cUsage: /manhunt forcerole <player> <hunter|runner|spectator>'
+  forcerole-not-running: '§cCannot change role - game is not running.'
+  forcerole-invalid-role: '§cInvalid role. Please specify hunter, runner, or spectator.'
+  forcerole-same-role: '§cPlayer is already that role.'
+  forcerole-success: '§aChanged {player}''s role from {old_role} to {new_role}.'
+  forcerole-failed: '§cFailed to change role.'
+  forcerole-broadcast: '§6{player}''s role has been changed from {old_role} to {new_role}!'
+  forcerole-notify: '§6Your role has been changed from {old_role} to {new_role}!'
+  forcerole-title: '§e§lRole Changed!'
 
 # Reload related
 reload:
@@ -564,7 +589,7 @@ command-interface:
   help-shop-open: '§a/shop - Open shop'
   help-shop-balance: '§a/shop balance - Check balance'
   help-buddy: '§a/buddy help - Show buddy commands'
-  help-warp: '§a/warp <player> - Teleport to teammate for 100G (5s delay)'
+  help-warp: '§a/warp <player> - Teleport to teammate for 50G (5s delay)'
   help-admin-start: '§c/manhunt start - Force start game'
   help-admin-stop: '§c/manhunt stop - Force stop game'
   help-admin-sethunter: '§c/manhunt sethunter <player> - Set player as hunter'
@@ -578,6 +603,8 @@ command-interface:
   help-admin-give: '§c/manhunt give <player> <amount> - Give money to player'
   help-admin-validate: '§c/manhunt validate-messages - Check for missing message keys'
   help-admin-diagnose: '§c/manhunt diagnose - Output diagnostic information'
+  help-admin-forcejoin: '§c/manhunt forcejoin <player> <role> - Force join during game'
+  help-admin-forcerole: '§c/manhunt forcerole <player> <role> - Change role during game'
   help-guide: '§2/manhunt guide - Get command guide book'
 
 # Guide book messages
@@ -599,7 +626,7 @@ guide-book:
     title: '§6Team Coordination'
     content1: '§0/r <message>\nTeam chat only'
     content2: '§0/pos\nShare coordinates with team'
-    content3: '§0/warp <player>\nTeleport to teammate (100G)'
+    content3: '§0/warp <player>\nTeleport to teammate (50G)'
     note: '§4※Only available during game'
     
   page3:
@@ -727,6 +754,7 @@ result:
     
     # Runner personal stats
     runner:
+      kill-death: '  §7• Kills: §2{kills} §7| Deaths: §c{deaths} §7| K/D: §6{kd}'
       survival: '  §7• Survival Time: §b{survival} §7| Deaths: §c{deaths}'
       exploration: '  §7• Exploration: §5{dimensions} dimensions §7| Diamonds: §b{diamonds} §7| Escapes: §a{escapes}'
       currency: '  §7• Currency: §6Earned {earned}G §7| §2Spent {spent}G §7| §bPurchased {items} items'

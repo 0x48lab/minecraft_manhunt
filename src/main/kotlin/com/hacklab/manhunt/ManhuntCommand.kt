@@ -55,6 +55,8 @@ class ManhuntCommand(
             }
             "give" -> handleGive(sender, args)
             "guide" -> handleGuide(sender)
+            "forcejoin" -> handleForceJoin(sender, args)
+            "forcerole" -> handleForceRole(sender, args)
             else -> {
                 sender.sendMessage(messageManager.getMessage(sender as? Player, "command.unknown"))
             }
@@ -626,6 +628,8 @@ class ManhuntCommand(
             sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-admin-give"))
             sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-admin-validate"))
             sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-admin-diagnose"))
+            sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-admin-forcejoin"))
+            sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-admin-forcerole"))
         }
     }
     
@@ -640,7 +644,7 @@ class ManhuntCommand(
                 1 -> {
                     val subcommands = mutableListOf("role", "roles", "compass", "status", "spectate", "help", "guide")
                     if (sender.hasPermission("manhunt.admin")) {
-                        subcommands.addAll(listOf("start", "stop", "end", "sethunter", "setrunner", "setspectator", "minplayers", "ui", "reload", "respawntime", "reset", "validate-messages", "diagnose", "give"))
+                        subcommands.addAll(listOf("start", "stop", "end", "sethunter", "setrunner", "setspectator", "minplayers", "ui", "reload", "respawntime", "reset", "validate-messages", "diagnose", "give", "forcejoin", "forcerole"))
                     }
                     val input = args.getOrNull(0)?.lowercase() ?: ""
                     subcommands.filter { it.startsWith(input) }
@@ -685,8 +689,36 @@ class ManhuntCommand(
                                 emptyList()
                             }
                         }
+                        "forcejoin", "forcerole" -> {
+                            if (sender.hasPermission("manhunt.admin")) {
+                                Bukkit.getOnlinePlayers().mapNotNull { it?.name }.filter { it.lowercase().startsWith(input) }
+                            } else {
+                                emptyList()
+                            }
+                        }
                         "validate-messages" -> emptyList()
                         "guide" -> emptyList()
+                        else -> emptyList()
+                    }
+                }
+                3 -> {
+                    val subcommand = args.getOrNull(0)?.lowercase() ?: return emptyList()
+                    val input = args.getOrNull(2)?.lowercase() ?: ""
+                    when (subcommand) {
+                        "forcejoin" -> {
+                            if (sender.hasPermission("manhunt.admin")) {
+                                listOf("hunter", "runner").filter { it.startsWith(input) }
+                            } else {
+                                emptyList()
+                            }
+                        }
+                        "forcerole" -> {
+                            if (sender.hasPermission("manhunt.admin")) {
+                                listOf("hunter", "runner", "spectator").filter { it.startsWith(input) }
+                            } else {
+                                emptyList()
+                            }
+                        }
                         else -> emptyList()
                     }
                 }
@@ -705,5 +737,118 @@ class ManhuntCommand(
         
         val guideBookManager = gameManager.getPlugin().getGuideBookManager()
         guideBookManager.giveGuideBook(sender)
+    }
+    
+    private fun handleForceJoin(sender: CommandSender, args: Array<out String>) {
+        if (!sender.hasPermission("manhunt.admin")) {
+            sender.sendMessage(messageManager.getMessage(sender as? Player, "command.no-permission"))
+            return
+        }
+        
+        if (args.size < 3) {
+            sender.sendMessage(messageManager.getMessage(sender as? Player, "admin.forcejoin-usage"))
+            return
+        }
+        
+        val targetPlayer = Bukkit.getPlayer(args[1])
+        if (targetPlayer == null || !targetPlayer.isOnline) {
+            sender.sendMessage(messageManager.getMessage(sender as? Player, "admin.player-not-found", "player" to args[1]))
+            return
+        }
+        
+        if (gameManager.getGameState() != GameState.RUNNING) {
+            sender.sendMessage(messageManager.getMessage(sender as? Player, "admin.forcejoin-not-running"))
+            return
+        }
+        
+        val role = when (args[2].lowercase()) {
+            "hunter" -> PlayerRole.HUNTER
+            "runner" -> PlayerRole.RUNNER
+            else -> {
+                sender.sendMessage(messageManager.getMessage(sender as? Player, "admin.forcejoin-invalid-role"))
+                return
+            }
+        }
+        
+        val success = gameManager.forceJoinGame(targetPlayer, role)
+        if (success) {
+            sender.sendMessage(messageManager.getMessage(sender as? Player, "admin.forcejoin-success", 
+                "player" to targetPlayer.name, 
+                "role" to messageManager.getMessage("role.${role.name.lowercase()}")))
+            
+            // 全体通知（設定で有効な場合）
+            if (gameManager.configManager.getForceJoinNotifyAll()) {
+                Bukkit.getOnlinePlayers().forEach { player ->
+                    if (player != targetPlayer) {
+                        player.sendMessage(messageManager.getMessage(player, "admin.forcejoin-broadcast",
+                            "player" to targetPlayer.name,
+                            "role" to messageManager.getMessage(player, "role.${role.name.lowercase()}")))
+                    }
+                }
+            }
+        } else {
+            sender.sendMessage(messageManager.getMessage(sender as? Player, "admin.forcejoin-failed"))
+        }
+    }
+    
+    private fun handleForceRole(sender: CommandSender, args: Array<out String>) {
+        if (!sender.hasPermission("manhunt.admin")) {
+            sender.sendMessage(messageManager.getMessage(sender as? Player, "command.no-permission"))
+            return
+        }
+        
+        if (args.size < 3) {
+            sender.sendMessage(messageManager.getMessage(sender as? Player, "admin.forcerole-usage"))
+            return
+        }
+        
+        val targetPlayer = Bukkit.getPlayer(args[1])
+        if (targetPlayer == null || !targetPlayer.isOnline) {
+            sender.sendMessage(messageManager.getMessage(sender as? Player, "admin.player-not-found", "player" to args[1]))
+            return
+        }
+        
+        if (gameManager.getGameState() != GameState.RUNNING) {
+            sender.sendMessage(messageManager.getMessage(sender as? Player, "admin.forcerole-not-running"))
+            return
+        }
+        
+        val role = when (args[2].lowercase()) {
+            "hunter" -> PlayerRole.HUNTER
+            "runner" -> PlayerRole.RUNNER
+            "spectator" -> PlayerRole.SPECTATOR
+            else -> {
+                sender.sendMessage(messageManager.getMessage(sender as? Player, "admin.forcerole-invalid-role"))
+                return
+            }
+        }
+        
+        val oldRole = gameManager.getPlayerRole(targetPlayer)
+        if (oldRole == role) {
+            sender.sendMessage(messageManager.getMessage(sender as? Player, "admin.forcerole-same-role"))
+            return
+        }
+        
+        val success = gameManager.forceChangeRole(targetPlayer, role)
+        if (success) {
+            sender.sendMessage(messageManager.getMessage(sender as? Player, "admin.forcerole-success",
+                "player" to targetPlayer.name,
+                "old_role" to messageManager.getMessage("role.${oldRole?.name?.lowercase() ?: "spectator"}"),
+                "new_role" to messageManager.getMessage("role.${role.name.lowercase()}")))
+            
+            // 全体通知（設定で有効な場合）
+            if (gameManager.configManager.getForceJoinNotifyAll()) {
+                Bukkit.getOnlinePlayers().forEach { player ->
+                    if (player != targetPlayer) {
+                        player.sendMessage(messageManager.getMessage(player, "admin.forcerole-broadcast",
+                            "player" to targetPlayer.name,
+                            "old_role" to messageManager.getMessage(player, "role.${oldRole?.name?.lowercase() ?: "spectator"}"),
+                            "new_role" to messageManager.getMessage(player, "role.${role.name.lowercase()}")))
+                    }
+                }
+            }
+        } else {
+            sender.sendMessage(messageManager.getMessage(sender as? Player, "admin.forcerole-failed"))
+        }
     }
 }

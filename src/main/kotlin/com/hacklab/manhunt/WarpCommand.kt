@@ -25,7 +25,7 @@ class WarpCommand(
 ) : CommandExecutor, TabCompleter {
     
     companion object {
-        private const val WARP_COST = 100
+        private const val WARP_COST = 50
         private const val WARP_DELAY_SECONDS = 5
         private const val MOVEMENT_THRESHOLD = 0.1
     }
@@ -119,7 +119,7 @@ class WarpCommand(
             PlayerRole.RUNNER -> gameManager.getAllRunners()
             PlayerRole.SPECTATOR -> emptyList()
         }.filter { 
-            it.isOnline && it != sender && it.name.toLowerCase().startsWith(args[0].toLowerCase())
+            it.isOnline && it != sender && it.name.lowercase().startsWith(args[0].lowercase())
         }.map { it.name }
         
         return teammates

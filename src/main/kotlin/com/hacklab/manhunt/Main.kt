@@ -22,7 +22,7 @@ class Main : JavaPlugin() {
     private lateinit var positionShareCommand: PositionShareCommand
     private lateinit var buddySystem: BuddySystem
     private lateinit var buddyCommand: BuddyCommand
-    private lateinit var spawnManager: SpawnManager
+    private lateinit var spawnManager: SpawnManagerSimple
     private lateinit var warpCommand: WarpCommand
     private lateinit var proximityTimeTracker: ProximityTimeTracker
     private lateinit var guideBookManager: GuideBookManager
@@ -55,7 +55,7 @@ class Main : JavaPlugin() {
         // Initialize managers
         gameManager = GameManager(this, configManager, messageManager)
         gameManager.initialize() // 統計とリザルトシステムを初期化
-        spawnManager = SpawnManager(this, gameManager, configManager)
+        spawnManager = SpawnManagerSimple(this, gameManager, configManager)
         gameManager.setSpawnManager(spawnManager) // SpawnManagerをGameManagerに設定
         compassTracker = CompassTracker(this, gameManager, configManager, messageManager)
         guideBookManager = GuideBookManager(this)

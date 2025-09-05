@@ -320,6 +320,31 @@ admin:
   input-required: '§c数値を指定してください。'
   player-name-required: '§cプレイヤー名を指定してください。'
   give-usage: '§c使用法: /manhunt give <プレイヤー名> <金額>'
+  
+  # 強制参加コマンド
+  forcejoin-usage: '§c使用法: /manhunt forcejoin <プレイヤー> <hunter|runner>'
+  forcejoin-not-running: '§cゲームが実行中でないため、強制参加できません。'
+  forcejoin-invalid-role: '§c無効な役割です。hunter または runner を指定してください。'
+  forcejoin-success: '§a{player} を {role} として強制参加させました。'
+  forcejoin-failed: '§c強制参加に失敗しました。'
+  forcejoin-broadcast: '§6{player} が管理者により {role} として参加しました！'
+  forcejoin-notify-hunter: '§c管理者によりハンターとしてゲームに参加させられました！'
+  forcejoin-notify-runner: '§a管理者によりランナーとしてゲームに参加させられました！'
+  forcejoin-title-hunter: '§c§lハンター参戦！'
+  forcejoin-subtitle-hunter: '§7ランナーを追跡してください'
+  forcejoin-title-runner: '§a§lランナー参戦！'
+  forcejoin-subtitle-runner: '§7エンダードラゴンを倒してください'
+  
+  # 強制役割変更コマンド
+  forcerole-usage: '§c使用法: /manhunt forcerole <プレイヤー> <hunter|runner|spectator>'
+  forcerole-not-running: '§cゲームが実行中でないため、役割を変更できません。'
+  forcerole-invalid-role: '§c無効な役割です。hunter、runner、spectator を指定してください。'
+  forcerole-same-role: '§cプレイヤーは既にその役割です。'
+  forcerole-success: '§a{player} の役割を {old_role} から {new_role} に変更しました。'
+  forcerole-failed: '§c役割変更に失敗しました。'
+  forcerole-broadcast: '§6{player} の役割が {old_role} から {new_role} に変更されました！'
+  forcerole-notify: '§6あなたの役割が {old_role} から {new_role} に変更されました！'
+  forcerole-title: '§e§l役割変更！'
   invalid-amount: '§c無効な金額です。整数を指定してください。'
   amount-must-be-positive: '§c金額は1以上である必要があります。'
   amount-too-large: '§c金額が大きすぎます。最大金額は{max}です。'
@@ -565,7 +590,7 @@ command-interface:
   help-shop-open: '§a/shop - ショップを開く'
   help-shop-balance: '§a/shop balance - 所持金確認'
   help-buddy: '§a/buddy help - バディーコマンドのヘルプを表示'
-  help-warp: '§a/warp <プレイヤー> - 100Gで味方にテレポート（5秒後）'
+  help-warp: '§a/warp <プレイヤー> - 50Gで味方にテレポート（5秒後）'
   help-admin-start: '§c/manhunt start - ゲーム強制開始'
   help-admin-stop: '§c/manhunt stop - ゲーム強制終了'
   help-admin-sethunter: '§c/manhunt sethunter <プレイヤー> - 指定プレイヤーをハンターに設定'
@@ -579,6 +604,8 @@ command-interface:
   help-admin-give: '§c/manhunt give <プレイヤー> <金額> - お金を付与'
   help-admin-validate: '§c/manhunt validate-messages - メッセージキーの不足をチェック'
   help-admin-diagnose: '§c/manhunt diagnose - 診断情報を出力'
+  help-admin-forcejoin: '§c/manhunt forcejoin <プレイヤー> <役割> - ゲーム中に強制参加'
+  help-admin-forcerole: '§c/manhunt forcerole <プレイヤー> <役割> - ゲーム中に役割変更'
   help-guide: '§2/manhunt guide - コマンドガイドブックを入手'
 
 # Guide book messages
@@ -600,7 +627,7 @@ guide-book:
     title: '§6チーム連携'
     content1: '§0/r <メッセージ>\n味方のみにチャット'
     content2: '§0/pos\n座標を味方に共有'
-    content3: '§0/warp <プレイヤー>\n100Gで味方へテレポート'
+    content3: '§0/warp <プレイヤー>\n50Gで味方へテレポート'
     note: '§4※ゲーム中のみ使用可能'
     
   page3:
@@ -728,6 +755,7 @@ result:
     
     # Runner personal stats
     runner:
+      kill-death: '  §7• キル: §2{kills} §7| デス: §c{deaths} §7| K/D: §6{kd}'
       survival: '  §7• 生存時間: §b{survival} §7| デス: §c{deaths}'
       exploration: '  §7• 探索: §5{dimensions}次元 §7| ダイヤ: §b{diamonds}個 §7| 逃走: §a{escapes}回'
       currency: '  §7• 通貨: §6獲得 {earned}G §7| §2消費 {spent}G §7| §b購入 {items}個'

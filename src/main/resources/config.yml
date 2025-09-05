@@ -22,7 +22,7 @@ game:
   # タイムモード設定（time-limitが0以外の場合のみ有効）
   time-mode:
     # キルボーナス時間（分）
-    kill-bonus: 5
+    kill-bonus: 1
     # 接近判定距離（チャンク）
     proximity-distance: 3
     # ランナーの即時リスポン（タイムモード時のみ）
@@ -212,3 +212,16 @@ movement:
 shop:
   # ショップアイテムをインベントリに表示
   item-enabled: true
+
+# 管理者設定
+admin:
+  # 強制参加/役割変更機能
+  force-join:
+    # 機能の有効化
+    enabled: true
+    # 初期アイテムを付与するか
+    give-starter-items: false
+    # 安全な位置にテレポートするか
+    teleport-to-safe-location: true
+    # 全プレイヤーに通知するか
+    notify-all-players: true

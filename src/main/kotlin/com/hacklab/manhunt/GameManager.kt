@@ -33,11 +33,11 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
     private val runnerDeathCounts = mutableMapOf<UUID, Int>() // ランナーの死亡回数を記録
     
     // スポーン管理
-    private var spawnManager: SpawnManager? = null
+    private var spawnManager: SpawnManagerSimple? = null
     
     fun getPlugin(): Main = plugin
     
-    fun setSpawnManager(manager: SpawnManager) {
+    fun setSpawnManager(manager: SpawnManagerSimple) {
         spawnManager = manager
     }
     
@@ -963,9 +963,35 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
         // removeTeams()
         
         // プレイヤーの役割をリセット（プレイヤー自体は削除しない）
+        // 死亡中のランナーは除外（リスポンタスクで処理される）
         players.forEach { (uuid, player) ->
-            player.role = PlayerRole.SPECTATOR
+            // 死亡中のランナーかチェック
+            val isDeadRunner = deadRunners.containsKey(uuid)
+            if (!isDeadRunner) {
+                player.role = PlayerRole.SPECTATOR
+            } else {
+                plugin.logger.info("Keeping role for dead runner: ${player.player.name}")
+            }
         }
+        
+        // 死亡中のランナーのリスポンタスクをキャンセル
+        respawnTasks.forEach { (uuid, task) ->
+            when (task) {
+                is BukkitRunnable -> task.cancel()
+                is BukkitTask -> task.cancel()
+            }
+            plugin.logger.info("Cancelled respawn task for player: $uuid")
+        }
+        respawnTasks.clear()
+        
+        // カウントダウンタスクもキャンセル
+        countdownTasks.forEach { (uuid, task) ->
+            task.cancel()
+        }
+        countdownTasks.clear()
+        
+        // 死亡リストをクリア
+        deadRunners.clear()
         
         // オンラインプレイヤーがplayersマップに存在することを確認
         Bukkit.getOnlinePlayers().forEach { player ->
@@ -1112,6 +1138,17 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
             override fun run() {
                 try {
                     if (player.isOnline && gameState == GameState.RUNNING) {
+                        // 役割が変更されていないことを確認
+                        val currentRole = getPlayerRole(player)
+                        if (currentRole != PlayerRole.RUNNER) {
+                            plugin.logger.warning("Runner ${player.name} role changed during respawn wait (current: $currentRole)")
+                            // 役割を復元
+                            setPlayerRole(player, PlayerRole.RUNNER)
+                        }
+                        
+                        // サバイバルモードに戻す（リスポンイベント前に設定）
+                        player.gameMode = GameMode.SURVIVAL
+                        
                         // タスクとデータをクリア
                         deadRunners.remove(player.uniqueId)
                         respawnTasks.remove(player.uniqueId)
@@ -1119,9 +1156,6 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
                         countdownTasks.remove(player.uniqueId)
                         
                         player.spigot().respawn()
-                        
-                        // サバイバルモードに戻す
-                        player.gameMode = GameMode.SURVIVAL
                         
                         player.sendMessage(messageManager.getMessage(player, "respawn-system.runner-respawned"))
                         Bukkit.broadcastMessage(messageManager.getMessage("respawn-system.runner-respawned-broadcast", "player" to player.name))
@@ -1794,6 +1828,17 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
             override fun run() {
                 try {
                     if (player.isOnline && gameState == GameState.RUNNING) {
+                        // 役割が変更されていないことを確認
+                        val currentRole = getPlayerRole(player)
+                        if (currentRole != PlayerRole.RUNNER) {
+                            plugin.logger.warning("Runner ${player.name} role changed during respawn wait (current: $currentRole)")
+                            // 役割を復元
+                            setPlayerRole(player, PlayerRole.RUNNER)
+                        }
+                        
+                        // サバイバルモードに戻す（リスポンイベント前に設定）
+                        player.gameMode = GameMode.SURVIVAL
+                        
                         // タスクとデータをクリア
                         deadRunners.remove(player.uniqueId)
                         respawnTasks.remove(player.uniqueId)
@@ -1801,9 +1846,6 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
                         countdownTasks.remove(player.uniqueId)
                         
                         player.spigot().respawn()
-                        
-                        // サバイバルモードに戻す
-                        player.gameMode = GameMode.SURVIVAL
                         
                         player.sendMessage(messageManager.getMessage(player, "respawn-system.runner-respawned"))
                         Bukkit.broadcastMessage(messageManager.getMessage("respawn-system.runner-respawned-broadcast", "player" to player.name))
@@ -2282,6 +2324,208 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
             plugin.getProximityTimeTracker().getHunterDominancePercentage()
         } else {
             0
+        }
+    }
+    
+    /**
+     * ゲーム中にプレイヤーを強制参加させる
+     * @param player 参加させるプレイヤー
+     * @param role 割り当てる役割
+     * @return 成功した場合true
+     */
+    fun forceJoinGame(player: Player, role: PlayerRole): Boolean {
+        if (gameState != GameState.RUNNING) {
+            plugin.logger.warning("Cannot force join - game is not running")
+            return false
+        }
+        
+        try {
+            // プレイヤーが既に参加しているか確認
+            val currentRole = getPlayerRole(player)
+            if (currentRole != null && currentRole != PlayerRole.SPECTATOR) {
+                plugin.logger.info("Player ${player.name} is already in the game as ${currentRole}")
+                return false
+            }
+            
+            // プレイヤーを役割に設定
+            setPlayerRole(player, role)
+            
+            // ゲームモードを設定
+            player.gameMode = GameMode.SURVIVAL
+            
+            // 安全な位置へのテレポート（設定で有効な場合）
+            if (configManager.getForceJoinTeleportToSafe()) {
+                val safeLocation = findSafeLocationForPlayer(player, role)
+                if (safeLocation != null) {
+                    player.teleport(safeLocation)
+                    plugin.logger.info("Teleported ${player.name} to safe location")
+                }
+            }
+            
+            // 初期アイテム付与（設定で有効な場合）
+            if (configManager.getForceJoinGiveStarterItems()) {
+                giveStartingItems(player, role)
+                giveShopItemToPlayer(player)
+                plugin.logger.info("Gave starter items to ${player.name}")
+            }
+            
+            // 経済システムの初期化（現在の残高を0にリセット）
+            plugin.getEconomyManager().resetPlayerBalance(player)
+            
+            // UI更新
+            plugin.getUIManager().updateScoreboardImmediately()
+            
+            // プレイヤーに通知
+            when (role) {
+                PlayerRole.HUNTER -> {
+                    player.sendMessage(messageManager.getMessage(player, "admin.forcejoin-notify-hunter"))
+                    player.sendTitle(
+                        messageManager.getMessage(player, "admin.forcejoin-title-hunter"),
+                        messageManager.getMessage(player, "admin.forcejoin-subtitle-hunter"),
+                        10, 70, 20
+                    )
+                }
+                PlayerRole.RUNNER -> {
+                    player.sendMessage(messageManager.getMessage(player, "admin.forcejoin-notify-runner"))
+                    player.sendTitle(
+                        messageManager.getMessage(player, "admin.forcejoin-title-runner"),
+                        messageManager.getMessage(player, "admin.forcejoin-subtitle-runner"),
+                        10, 70, 20
+                    )
+                }
+                else -> {}
+            }
+            
+            plugin.logger.info("Successfully force joined ${player.name} as ${role}")
+            return true
+            
+        } catch (e: Exception) {
+            plugin.logger.severe("Error force joining player ${player.name}: ${e.message}")
+            e.printStackTrace()
+            return false
+        }
+    }
+    
+    /**
+     * ゲーム中にプレイヤーの役割を強制変更する
+     * @param player 対象プレイヤー
+     * @param newRole 新しい役割
+     * @return 成功した場合true
+     */
+    fun forceChangeRole(player: Player, newRole: PlayerRole): Boolean {
+        if (gameState != GameState.RUNNING) {
+            plugin.logger.warning("Cannot force change role - game is not running")
+            return false
+        }
+        
+        try {
+            val oldRole = getPlayerRole(player)
+            
+            // 同じ役割への変更は拒否
+            if (oldRole == newRole) {
+                plugin.logger.info("Player ${player.name} is already ${newRole}")
+                return false
+            }
+            
+            // 役割を変更
+            setPlayerRole(player, newRole)
+            
+            // ゲームモードを更新
+            when (newRole) {
+                PlayerRole.HUNTER, PlayerRole.RUNNER -> {
+                    player.gameMode = GameMode.SURVIVAL
+                    
+                    // アイテム付与（設定による）
+                    if (configManager.getForceJoinGiveStarterItems()) {
+                        giveStartingItems(player, newRole)
+                        giveShopItemToPlayer(player)
+                    }
+                }
+                PlayerRole.SPECTATOR -> {
+                    player.gameMode = GameMode.SPECTATOR
+                    player.inventory.clear()
+                }
+            }
+            
+            // UI更新
+            plugin.getUIManager().updateScoreboardImmediately()
+            
+            // プレイヤーに通知
+            val roleText = messageManager.getMessage(player, "role.${newRole.name.lowercase()}")
+            player.sendMessage(messageManager.getMessage(player, "admin.forcerole-notify",
+                "old_role" to messageManager.getMessage(player, "role.${oldRole?.name?.lowercase() ?: "spectator"}"),
+                "new_role" to roleText))
+            
+            player.sendTitle(
+                messageManager.getMessage(player, "admin.forcerole-title"),
+                roleText,
+                10, 70, 20
+            )
+            
+            plugin.logger.info("Successfully changed ${player.name}'s role from ${oldRole} to ${newRole}")
+            return true
+            
+        } catch (e: Exception) {
+            plugin.logger.severe("Error force changing role for ${player.name}: ${e.message}")
+            e.printStackTrace()
+            return false
+        }
+    }
+    
+    /**
+     * プレイヤーのための安全な位置を探す
+     */
+    private fun findSafeLocationForPlayer(player: Player, role: PlayerRole): Location? {
+        try {
+            val world = player.world
+            
+            // 敵チームのプレイヤーを取得
+            val enemies = when (role) {
+                PlayerRole.HUNTER -> getAllRunners()
+                PlayerRole.RUNNER -> getAllHunters()
+                else -> emptyList()
+            }
+            
+            // 味方チームのプレイヤーを取得
+            val allies = when (role) {
+                PlayerRole.HUNTER -> getAllHunters()
+                PlayerRole.RUNNER -> getAllRunners()
+                else -> emptyList()
+            }.filter { it != player }
+            
+            // 味方の近くの安全な位置を探す
+            if (allies.isNotEmpty()) {
+                val targetAlly = allies.random()
+                val baseLocation = targetAlly.location
+                
+                // 半径50ブロック以内でランダムな位置を探す
+                for (i in 1..10) {
+                    val angle = Math.random() * 2 * Math.PI
+                    val distance = 20 + Math.random() * 30
+                    
+                    val x = baseLocation.x + distance * Math.cos(angle)
+                    val z = baseLocation.z + distance * Math.sin(angle)
+                    val y = world.getHighestBlockYAt(x.toInt(), z.toInt()) + 1
+                    
+                    val location = Location(world, x, y.toDouble(), z)
+                    
+                    // 敵から十分離れているか確認
+                    val isSafe = enemies.all { enemy ->
+                        enemy.location.distance(location) > 100
+                    }
+                    
+                    if (isSafe) {
+                        return location
+                    }
+                }
+            }
+            
+            // 味方がいない、または安全な位置が見つからない場合はワールドスポーン
+            return world.spawnLocation
+            
+        } catch (e: Exception) {
+            plugin.logger.warning("Error finding safe location: ${e.message}")
+            return null
         }
     }
 }

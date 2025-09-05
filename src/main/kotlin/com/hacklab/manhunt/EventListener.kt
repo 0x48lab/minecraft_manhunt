@@ -277,7 +277,10 @@ class EventListener(
                     // ランナーが死亡中の場合は、GameManagerに処理を任せる
                     if (!gameManager.isRunnerDead(player)) {
                         Bukkit.getScheduler().runTaskLater(gameManager.getPlugin(), Runnable {
-                            player.gameMode = GameMode.SURVIVAL
+                            // 再度チェック（遅延実行のため状態が変わる可能性）
+                            if (!gameManager.isRunnerDead(player) && player.gameMode != GameMode.SURVIVAL) {
+                                player.gameMode = GameMode.SURVIVAL
+                            }
                             giveShopItem(player)
                         }, 1L)
                     }

@@ -39,7 +39,7 @@ class GameResultManager(
         
         // 4. MVP発表を6秒後に表示
         Bukkit.getScheduler().runTaskLater(plugin, Runnable {
-            showMVPAnnouncement(mvp, winningTeam)
+            showMVPAnnouncement(mvp)
         }, 120L) // 6秒後
         
         // 5. 個人成績を9秒後に表示
@@ -172,7 +172,7 @@ class GameResultManager(
     /**
      * MVP発表
      */
-    private fun showMVPAnnouncement(mvp: GameStats.PlayerStatistics?, winningTeam: PlayerRole?) {
+    private fun showMVPAnnouncement(mvp: GameStats.PlayerStatistics?) {
         if (mvp == null) return
         
         val starSeparator = messageManager.getMessage("result.mvp.header.separator")
@@ -281,7 +281,13 @@ class GameResultManager(
                     val survivalMinutes = (stats.survivalTime / 60000).toInt()
                     val survivalSeconds = ((stats.survivalTime % 60000) / 1000).toInt()
                     val survivalTime = "${survivalMinutes}:${String.format("%02d", survivalSeconds)}"
+                    val kd = if (stats.deaths > 0) String.format("%.2f", stats.kills.toDouble() / stats.deaths) else messageManager.getMessage("result.personal.kd-infinity")
                     
+                    val killDeathStats = messageManager.getMessage("result.personal.runner.kill-death",
+                        "kills" to stats.kills,
+                        "deaths" to stats.deaths,
+                        "kd" to kd
+                    )
                     val survivalStats = messageManager.getMessage("result.personal.runner.survival",
                         "survival" to survivalTime,
                         "deaths" to stats.deaths
@@ -297,6 +303,7 @@ class GameResultManager(
                         "items" to stats.itemsPurchased
                     )
                     
+                    Bukkit.broadcastMessage(killDeathStats)
                     Bukkit.broadcastMessage(survivalStats)
                     Bukkit.broadcastMessage(explorationStats)
                     Bukkit.broadcastMessage(currencyStats)

@@ -258,4 +258,21 @@ class ConfigManager(private val plugin: Main) {
             sprintRewardCooldown = movementSection.getInt("sprint-reward-cooldown", 1)
         )
     }
+    
+    // Force Join設定を取得
+    fun getForceJoinEnabled(): Boolean {
+        return config.getBoolean("admin.force-join.enabled", true)
+    }
+    
+    fun getForceJoinGiveStarterItems(): Boolean {
+        return config.getBoolean("admin.force-join.give-starter-items", false)
+    }
+    
+    fun getForceJoinTeleportToSafe(): Boolean {
+        return config.getBoolean("admin.force-join.teleport-to-safe-location", true)
+    }
+    
+    fun getForceJoinNotifyAll(): Boolean {
+        return config.getBoolean("admin.force-join.notify-all-players", true)
+    }
 }

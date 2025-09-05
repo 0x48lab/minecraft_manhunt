@@ -103,7 +103,7 @@ class SpawnManager(
         
         // 事前に候補位置を生成（並列処理可能）
         val candidateLocations = mutableListOf<Location>()
-        val numCandidates = runners.size * 5 // 各プレイヤーに対して5つの候補
+        val numCandidates = minOf(runners.size * 3, 30) // 候補数を削減（最大30）
         
         // 候補位置を事前計算
         for (i in 0 until numCandidates) {
@@ -125,9 +125,9 @@ class SpawnManager(
             var bestScore = -1.0
             
             // 候補位置から最適なものを選択
-            candidateLocations.forEach { candidate ->
+            candidateLocations.forEach candidate@{ candidate ->
                 if (locations.values.any { it.distance(candidate) < 50.0 }) {
-                    return@forEach // 近すぎる場合はスキップ
+                    return@candidate // 近すぎる場合はスキップ
                 }
                 
                 val score = evaluateLocation(candidate, locations.values.toList(), runnerSpread)
@@ -140,7 +140,7 @@ class SpawnManager(
             // 最適な位置が見つからない場合は新しく生成
             if (bestLocation == null) {
                 var attempts = 0
-                val maxAttempts = 20 // 試行回数を減らす
+                val maxAttempts = 10 // 試行回数をさらに削減
                 
                 do {
                     val distance = Random.nextDouble(minRadius, maxRadius)
@@ -165,36 +165,23 @@ class SpawnManager(
     }
     
     /**
-     * 位置の評価スコアを計算
+     * 位置の評価スコアを計算（簡略化版）
      */
     private fun evaluateLocation(
         location: Location,
         existingLocations: List<Location>,
-        targetSpread: Double
+        @Suppress("UNUSED_PARAMETER") targetSpread: Double
     ): Double {
         if (!isSafeLocation(location)) return -1.0
         
-        var score = 100.0
-        
-        // 既存位置との距離を評価
-        existingLocations.forEach { existing ->
-            val distance = location.distance(existing)
-            
-            if (targetSpread > 0) {
-                // 目標距離に近いほど高スコア
-                val diff = kotlin.math.abs(distance - targetSpread)
-                score -= diff * 0.1
-            } else {
-                // 近いほど高スコア（ただし最小距離は保つ）
-                if (distance < 50.0) {
-                    score -= 50.0
-                } else {
-                    score += 10.0 / distance
-                }
+        // 最小距離チェックのみ（高速化のため）
+        for (existing in existingLocations) {
+            if (location.distance(existing) < 50.0) {
+                return -1.0
             }
         }
         
-        return score
+        return 100.0 // 条件を満たせばOK
     }
     
     /**
@@ -222,7 +209,7 @@ class SpawnManager(
         
         // ランナーから十分離れた候補位置を事前計算
         val candidateLocations = mutableListOf<Location>()
-        val numCandidates = hunters.size * 8 // 各プレイヤーに対して8つの候補
+        val numCandidates = minOf(hunters.size * 4, 40) // 候補数を削減（最大40）
         
         for (i in 0 until numCandidates) {
             val distance = Random.nextDouble(minRadius, maxRadius)
@@ -246,9 +233,9 @@ class SpawnManager(
             var bestScore = -1.0
             
             // 候補位置から最適なものを選択
-            candidateLocations.forEach { candidate ->
+            candidateLocations.forEach candidate@{ candidate ->
                 if (locations.values.any { it.distance(candidate) < 50.0 }) {
-                    return@forEach // 近すぎる場合はスキップ
+                    return@candidate // 近すぎる場合はスキップ
                 }
                 
                 val score = evaluateHunterLocation(
@@ -268,7 +255,7 @@ class SpawnManager(
             // 最適な位置が見つからない場合は新しく生成（試行回数削減）
             if (bestLocation == null) {
                 var attempts = 0
-                val maxAttempts = 30 // 試行回数を減らす
+                val maxAttempts = 15 // 試行回数をさらに削減
                 
                 do {
                     val distance = Random.nextDouble(minRadius, maxRadius)
@@ -295,115 +282,69 @@ class SpawnManager(
     }
     
     /**
-     * ハンター位置の評価スコアを計算
+     * ハンター位置の評価スコアを計算（簡略化版）
      */
     private fun evaluateHunterLocation(
         location: Location,
         existingHunters: List<Location>,
         runnerLocations: List<Location>,
-        targetSpread: Double,
+        @Suppress("UNUSED_PARAMETER") targetSpread: Double,
         minEnemyDistance: Double
     ): Double {
         if (!isSafeLocation(location)) return -1.0
         
-        // ランナーとの最小距離チェック
-        val minRunnerDist = runnerLocations.minOfOrNull { it.distance(location) } ?: Double.MAX_VALUE
-        if (minRunnerDist < minEnemyDistance) return -1.0
-        
-        var score = 100.0
-        
-        // ランナーからの距離ボーナス（遠すぎず近すぎず）
-        val idealEnemyDistance = minEnemyDistance * 1.5
-        val enemyDistDiff = kotlin.math.abs(minRunnerDist - idealEnemyDistance)
-        score -= enemyDistDiff * 0.05
-        
-        // 既存ハンターとの距離を評価
-        existingHunters.forEach { existing ->
-            val distance = location.distance(existing)
-            
-            if (targetSpread > 0) {
-                // 目標距離に近いほど高スコア
-                val diff = kotlin.math.abs(distance - targetSpread)
-                score -= diff * 0.1
-            } else {
-                // 近いほど高スコア（ただし最小距離は保つ）
-                if (distance < 50.0) {
-                    score -= 50.0
-                } else {
-                    score += 10.0 / distance
-                }
+        // ランナーとの最小距離チェック（高速化）
+        for (runner in runnerLocations) {
+            if (location.distance(runner) < minEnemyDistance) {
+                return -1.0
             }
         }
         
-        return score
+        // 既存ハンターとの最小距離チェック
+        for (existing in existingHunters) {
+            if (location.distance(existing) < 50.0) {
+                return -1.0
+            }
+        }
+        
+        return 100.0 // 条件を満たせばOK
     }
     
     /**
-     * 地上の安全な位置を取得（最適化版）
+     * 地上の安全な位置を取得（高速化版）
      */
     private fun getGroundLocation(world: World, x: Double, z: Double): Location {
         val xInt = x.toInt()
         val zInt = z.toInt()
         
-        // チャンクがロードされていない場合は先にロード
-        val chunk = world.getChunkAt(xInt shr 4, zInt shr 4)
-        if (!chunk.isLoaded) {
-            chunk.load()
-        }
-        
-        // 最高ブロックから開始
+        // 最高ブロックから開始（これが最も高速）
         val highestY = world.getHighestBlockYAt(xInt, zInt)
+        val highestBlock = world.getBlockAt(xInt, highestY, zInt)
         
-        // 最高点が十分低い場合は簡易チェック
-        if (highestY < 100) {
-            val highestBlock = world.getBlockAt(xInt, highestY, zInt)
-            if (highestBlock.type.isSolid && !isUnsafeBlock(highestBlock.type)) {
+        // 最高点が安全な場合は即座に返す
+        if (highestBlock.type.isSolid && !isUnsafeBlock(highestBlock.type)) {
+            // 上に2ブロック分の空間があるか確認
+            val above1 = world.getBlockAt(xInt, highestY + 1, zInt)
+            val above2 = world.getBlockAt(xInt, highestY + 2, zInt)
+            if (above1.type == Material.AIR && above2.type == Material.AIR) {
                 return Location(world, x, highestY + 1.0, z)
             }
         }
         
-        // 二分探索で効率的に安全な位置を探す
-        var minY = 60 // 通常の地表レベル付近から開始
-        var maxY = highestY
-        var safeY = -1
-        
-        while (minY <= maxY && safeY == -1) {
-            val midY = (minY + maxY) / 2
-            val block = world.getBlockAt(xInt, midY, zInt)
-            val below = world.getBlockAt(xInt, midY - 1, zInt)
-            val above = world.getBlockAt(xInt, midY + 1, zInt)
+        // 最高点から下方向に素早くスキャン（最大10ブロック）
+        for (y in highestY downTo maxOf(highestY - 10, 60)) {
+            val below = world.getBlockAt(xInt, y - 1, zInt)
+            val block = world.getBlockAt(xInt, y, zInt)
+            val above = world.getBlockAt(xInt, y + 1, zInt)
             
             if (below.type.isSolid && !isUnsafeBlock(below.type) &&
                 block.type == Material.AIR && 
                 above.type == Material.AIR) {
-                safeY = midY
-                // より高い安全な位置があるか確認
-                for (y in midY + 1..minOf(midY + 5, maxY)) {
-                    val checkBelow = world.getBlockAt(xInt, y - 1, zInt)
-                    val checkBlock = world.getBlockAt(xInt, y, zInt)
-                    val checkAbove = world.getBlockAt(xInt, y + 1, zInt)
-                    
-                    if (checkBelow.type.isSolid && !isUnsafeBlock(checkBelow.type) &&
-                        checkBlock.type == Material.AIR && 
-                        checkAbove.type == Material.AIR) {
-                        safeY = y
-                    } else {
-                        break
-                    }
-                }
-            } else if (!below.type.isSolid || below.type == Material.AIR) {
-                minY = midY + 1
-            } else {
-                maxY = midY - 1
+                return Location(world, x, y.toDouble(), z)
             }
         }
         
-        // 安全な位置が見つかった場合
-        if (safeY != -1) {
-            return Location(world, x, safeY.toDouble(), z)
-        }
-        
-        // 見つからない場合は最高点を使用
+        // 見つからない場合は最高点+1を使用（フォールバック）
         return Location(world, x, highestY + 1.0, z)
     }
     
