@@ -35,3 +35,10 @@ logs/
 *.zip
 *.tar.gz
 *.rar
+
+# Environment files
+.env*
+!.env.example
+.claude
+.specify
+specs

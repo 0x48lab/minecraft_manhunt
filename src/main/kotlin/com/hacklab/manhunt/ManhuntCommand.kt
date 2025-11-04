@@ -13,12 +13,17 @@ class ManhuntCommand(
     private val compassTracker: CompassTracker,
     private val spectatorMenu: SpectatorMenu,
     private val messageManager: MessageManager,
-    private val roleSelectorMenu: RoleSelectorMenu
+    private val roleSelectorMenu: RoleSelectorMenu,
+    private var roleTransitionHandler: RoleTransitionHandler? = null
 ) : CommandExecutor, TabCompleter {
     
     private val configManager: ConfigManager
         get() = gameManager.configManager
-    
+
+    fun setRoleTransitionHandler(handler: RoleTransitionHandler) {
+        this.roleTransitionHandler = handler
+    }
+
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
         if (args.isEmpty()) {
             showHelp(sender)
@@ -57,6 +62,7 @@ class ManhuntCommand(
             "guide" -> handleGuide(sender)
             "forcejoin" -> handleForceJoin(sender, args)
             "forcerole" -> handleForceRole(sender, args)
+            "settimelimit" -> handleSetTimeLimit(sender, args)
             else -> {
                 sender.sendMessage(messageManager.getMessage(sender as? Player, "command.unknown"))
             }
@@ -193,32 +199,49 @@ class ManhuntCommand(
             sender.sendMessage(messageManager.getMessage("command-interface.admin-no-permission"))
             return
         }
-        
+
         if (args.size < 2) {
             sender.sendMessage(messageManager.getMessage("command-interface.sethunter-usage"))
             return
         }
-        
+
         val playerName = args[1]
         if (playerName.isBlank()) {
             sender.sendMessage(messageManager.getMessage("admin.player-name-required"))
             return
         }
-        
+
         val targetPlayer = Bukkit.getPlayer(playerName)
         if (targetPlayer == null || !targetPlayer.isOnline) {
             sender.sendMessage(messageManager.getMessage("admin.player-not-found", "player" to playerName))
             return
         }
-        
-        if (gameManager.getGameState() != GameState.WAITING) {
-            sender.sendMessage(messageManager.getMessage("role.game-running"))
-            return
+
+        // Use RoleTransitionHandler if game is running
+        if (gameManager.getGameState() == GameState.RUNNING) {
+            val handler = roleTransitionHandler
+            if (handler == null) {
+                sender.sendMessage("§cRoleTransitionHandler not initialized")
+                return
+            }
+
+            val adminPlayer = if (sender is Player) sender else targetPlayer
+            val result = handler.transitionRole(targetPlayer, PlayerRole.HUNTER, adminPlayer)
+
+            when (result) {
+                is TransitionResult.Success -> {
+                    sender.sendMessage(messageManager.getMessage(sender as? Player, "commands.admin.role_changed"))
+                }
+                is TransitionResult.Error -> {
+                    sender.sendMessage(result.reason)
+                }
+            }
+        } else {
+            // Pre-game role change uses direct assignment
+            gameManager.setPlayerRole(targetPlayer, PlayerRole.HUNTER)
+            sender.sendMessage(messageManager.getMessage("command-interface.sethunter-success", "player" to targetPlayer.name))
+            targetPlayer.sendMessage(messageManager.getMessage(targetPlayer, "command-interface.sethunter-notify"))
         }
-        
-        gameManager.setPlayerRole(targetPlayer, PlayerRole.HUNTER)
-        sender.sendMessage(messageManager.getMessage("command-interface.sethunter-success", "player" to targetPlayer.name))
-        targetPlayer.sendMessage(messageManager.getMessage(targetPlayer, "command-interface.sethunter-notify"))
     }
     
     private fun handleSetRunner(sender: CommandSender, args: Array<out String>) {
@@ -226,32 +249,49 @@ class ManhuntCommand(
             sender.sendMessage(messageManager.getMessage("command-interface.admin-no-permission"))
             return
         }
-        
+
         if (args.size < 2) {
             sender.sendMessage(messageManager.getMessage("command-interface.setrunner-usage"))
             return
         }
-        
+
         val playerName = args[1]
         if (playerName.isBlank()) {
             sender.sendMessage(messageManager.getMessage("admin.player-name-required"))
             return
         }
-        
+
         val targetPlayer = Bukkit.getPlayer(playerName)
         if (targetPlayer == null || !targetPlayer.isOnline) {
             sender.sendMessage(messageManager.getMessage("admin.player-not-found", "player" to playerName))
             return
         }
-        
-        if (gameManager.getGameState() != GameState.WAITING) {
-            sender.sendMessage(messageManager.getMessage("role.game-running"))
-            return
+
+        // Use RoleTransitionHandler if game is running
+        if (gameManager.getGameState() == GameState.RUNNING) {
+            val handler = roleTransitionHandler
+            if (handler == null) {
+                sender.sendMessage("§cRoleTransitionHandler not initialized")
+                return
+            }
+
+            val adminPlayer = if (sender is Player) sender else targetPlayer
+            val result = handler.transitionRole(targetPlayer, PlayerRole.RUNNER, adminPlayer)
+
+            when (result) {
+                is TransitionResult.Success -> {
+                    sender.sendMessage(messageManager.getMessage(sender as? Player, "commands.admin.role_changed"))
+                }
+                is TransitionResult.Error -> {
+                    sender.sendMessage(result.reason)
+                }
+            }
+        } else {
+            // Pre-game role change uses direct assignment
+            gameManager.setPlayerRole(targetPlayer, PlayerRole.RUNNER)
+            sender.sendMessage(messageManager.getMessage("command-interface.setrunner-success", "player" to targetPlayer.name))
+            targetPlayer.sendMessage(messageManager.getMessage(targetPlayer, "command-interface.setrunner-notify"))
         }
-        
-        gameManager.setPlayerRole(targetPlayer, PlayerRole.RUNNER)
-        sender.sendMessage(messageManager.getMessage("command-interface.setrunner-success", "player" to targetPlayer.name))
-        targetPlayer.sendMessage(messageManager.getMessage(targetPlayer, "command-interface.setrunner-notify"))
     }
     
     private fun handleSetSpectator(sender: CommandSender, args: Array<out String>) {
@@ -259,32 +299,49 @@ class ManhuntCommand(
             sender.sendMessage(messageManager.getMessage("command-interface.admin-no-permission"))
             return
         }
-        
+
         if (args.size < 2) {
             sender.sendMessage(messageManager.getMessage("command-interface.setspectator-usage"))
             return
         }
-        
+
         val playerName = args[1]
         if (playerName.isBlank()) {
             sender.sendMessage(messageManager.getMessage("admin.player-name-required"))
             return
         }
-        
+
         val targetPlayer = Bukkit.getPlayer(playerName)
         if (targetPlayer == null || !targetPlayer.isOnline) {
             sender.sendMessage(messageManager.getMessage("admin.player-not-found", "player" to playerName))
             return
         }
-        
-        if (gameManager.getGameState() != GameState.WAITING) {
-            sender.sendMessage(messageManager.getMessage("role.game-running"))
-            return
+
+        // Use RoleTransitionHandler if game is running
+        if (gameManager.getGameState() == GameState.RUNNING) {
+            val handler = roleTransitionHandler
+            if (handler == null) {
+                sender.sendMessage("§cRoleTransitionHandler not initialized")
+                return
+            }
+
+            val adminPlayer = if (sender is Player) sender else targetPlayer
+            val result = handler.transitionRole(targetPlayer, PlayerRole.SPECTATOR, adminPlayer)
+
+            when (result) {
+                is TransitionResult.Success -> {
+                    sender.sendMessage(messageManager.getMessage(sender as? Player, "commands.admin.role_changed"))
+                }
+                is TransitionResult.Error -> {
+                    sender.sendMessage(result.reason)
+                }
+            }
+        } else {
+            // Pre-game role change uses direct assignment
+            gameManager.setPlayerRole(targetPlayer, PlayerRole.SPECTATOR)
+            sender.sendMessage(messageManager.getMessage("command-interface.setspectator-success", "player" to targetPlayer.name))
+            targetPlayer.sendMessage(messageManager.getMessage(targetPlayer, "command-interface.setspectator-notify"))
         }
-        
-        gameManager.setPlayerRole(targetPlayer, PlayerRole.SPECTATOR)
-        sender.sendMessage(messageManager.getMessage("command-interface.setspectator-success", "player" to targetPlayer.name))
-        targetPlayer.sendMessage(messageManager.getMessage(targetPlayer, "command-interface.setspectator-notify"))
     }
     
     private fun handleMinPlayers(sender: CommandSender, args: Array<out String>) {
@@ -621,6 +678,7 @@ class ManhuntCommand(
             sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-admin-setrunner"))
             sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-admin-setspectator"))
             sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-admin-minplayers"))
+            sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-admin-settimelimit"))
             sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-admin-reload"))
             sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-admin-ui"))
             sender.sendMessage(messageManager.getMessage(sender, "command-interface.help-admin-respawntime"))
@@ -644,7 +702,7 @@ class ManhuntCommand(
                 1 -> {
                     val subcommands = mutableListOf("role", "roles", "compass", "status", "spectate", "help", "guide")
                     if (sender.hasPermission("manhunt.admin")) {
-                        subcommands.addAll(listOf("start", "stop", "end", "sethunter", "setrunner", "setspectator", "minplayers", "ui", "reload", "respawntime", "reset", "validate-messages", "diagnose", "give", "forcejoin", "forcerole"))
+                        subcommands.addAll(listOf("start", "stop", "end", "sethunter", "setrunner", "setspectator", "minplayers", "settimelimit", "ui", "reload", "respawntime", "reset", "validate-messages", "diagnose", "give", "forcejoin", "forcerole"))
                     }
                     val input = args.getOrNull(0)?.lowercase() ?: ""
                     subcommands.filter { it.startsWith(input) }
@@ -692,6 +750,14 @@ class ManhuntCommand(
                         "forcejoin", "forcerole" -> {
                             if (sender.hasPermission("manhunt.admin")) {
                                 Bukkit.getOnlinePlayers().mapNotNull { it?.name }.filter { it.lowercase().startsWith(input) }
+                            } else {
+                                emptyList()
+                            }
+                        }
+                        "settimelimit" -> {
+                            if (sender.hasPermission("manhunt.admin")) {
+                                // 一般的な時間の候補を提示
+                                listOf("10", "15", "20", "30", "45", "60", "90", "120").filter { it.startsWith(input) }
                             } else {
                                 emptyList()
                             }
@@ -849,6 +915,57 @@ class ManhuntCommand(
             }
         } else {
             sender.sendMessage(messageManager.getMessage(sender as? Player, "admin.forcerole-failed"))
+        }
+    }
+
+    private fun handleSetTimeLimit(sender: CommandSender, args: Array<out String>) {
+        // 管理者権限チェック
+        if (!sender.hasPermission("manhunt.admin")) {
+            sender.sendMessage(messageManager.getMessage(sender as? Player, "command.no-permission"))
+            return
+        }
+
+        // 引数チェック
+        if (args.size < 2) {
+            sender.sendMessage(messageManager.getMessage(sender as? Player, "admin.settimelimit-usage"))
+            return
+        }
+
+        // 分数をパース
+        val minutes = args[1].toIntOrNull()
+        if (minutes == null) {
+            sender.sendMessage(messageManager.getMessage(sender as? Player, "admin.invalid-number", "input" to args[1]))
+            return
+        }
+
+        // 範囲チェック（1〜999分）
+        if (minutes < 1 || minutes > 999) {
+            sender.sendMessage(messageManager.getMessage(sender as? Player, "admin.settimelimit-out-of-range"))
+            return
+        }
+
+        // GameManagerで制限時間を設定
+        val success = gameManager.setTimeLimit(minutes)
+
+        if (success) {
+            // 成功メッセージを送信者に送信
+            sender.sendMessage(messageManager.getMessage(sender as? Player, "admin.settimelimit-success", "minutes" to minutes))
+
+            // 全プレイヤーに通知
+            Bukkit.getOnlinePlayers().forEach { player ->
+                player.sendMessage(messageManager.getMessage(player, "admin.settimelimit-broadcast",
+                    "admin" to sender.name,
+                    "minutes" to minutes))
+            }
+        } else {
+            // 失敗メッセージ
+            if (gameManager.getGameState() != GameState.RUNNING) {
+                sender.sendMessage(messageManager.getMessage(sender as? Player, "admin.settimelimit-not-running"))
+            } else if (!configManager.isTimeLimitMode()) {
+                sender.sendMessage(messageManager.getMessage(sender as? Player, "admin.settimelimit-not-timemode"))
+            } else {
+                sender.sendMessage(messageManager.getMessage(sender as? Player, "admin.settimelimit-failed"))
+            }
         }
     }
 }
