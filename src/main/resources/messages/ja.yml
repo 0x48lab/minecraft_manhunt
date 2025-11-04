@@ -79,6 +79,7 @@ buddy:
   no-buddy: '§c現在バディーを設定していません。'
   removed: '§2{buddy}とのバディー関係を解除しました。'
   partner-removed: '§2{partner}がバディー関係を解除しました。'
+  removed-due-to-role-change: '§cロール変更により異なるチームになったため、バディー関係が解除されました。'
   invite-declined: '§c{player}がバディー招待を拒否しました。'
   invite-declined-by-you: '§2{player}からのバディー招待を拒否しました。'
   not-in-same-world: '§c異なるワールドにいます'
@@ -228,6 +229,14 @@ command:
   usage: '§c使用法: {usage}'
   reset-only-ended: '§cリセットコマンドはゲーム終了後のみ使用できます。'
   reset-success: '§aゲームが強制的にリセットされました！'
+commands:
+  admin:
+    role_changed: '§aロールが正常に変更されました。'
+    role_change_broadcast: '§e[管理者] {admin} が {player} のロールを {oldRole} から {newRole} に変更しました。'
+errors:
+  player_not_found: '§cプレイヤーが見つかりません。'
+  player_not_in_game: '§cプレイヤーはゲームに参加していません。'
+  same_role: '§cプレイヤーは既にそのロールです。'
 status:
   header: '§6=== Manhunt ゲーム状況 ==='
   state: '§2ゲーム状態: {state}'
@@ -349,6 +358,15 @@ admin:
   amount-must-be-positive: '§c金額は1以上である必要があります。'
   amount-too-large: '§c金額が大きすぎます。最大金額は{max}です。'
   give-success: '§a{player}に{amount}{unit}を付与しました。（現在の残高: {balance}{unit}）'
+
+  # 制限時間設定コマンド
+  settimelimit-usage: '§c使用法: /manhunt settimelimit <分数>'
+  settimelimit-not-running: '§c制限時間を設定できません - ゲームが進行中ではありません。'
+  settimelimit-not-timemode: '§c制限時間を設定できません - 時間制限モードが有効になっていません。'
+  settimelimit-out-of-range: '§c制限時間は1分から999分の間で設定してください。'
+  settimelimit-success: '§aゲームの制限時間を{minutes}分に設定しました。'
+  settimelimit-failed: '§c制限時間の設定に失敗しました。'
+  settimelimit-broadcast: '§6[管理者] {admin}がゲームの制限時間を{minutes}分に変更しました！'
 
 # リロード関連
 reload:
@@ -597,6 +615,7 @@ command-interface:
   help-admin-setrunner: '§c/manhunt setrunner <プレイヤー> - 指定プレイヤーをランナーに設定'
   help-admin-setspectator: '§c/manhunt setspectator <プレイヤー> - 指定プレイヤーを観戦者に設定'
   help-admin-minplayers: '§c/manhunt minplayers [数値] - 最小プレイヤー数設定'
+  help-admin-settimelimit: '§c/manhunt settimelimit <分数> - ゲームの制限時間を変更 (1-999)'
   help-admin-reload: '§c/manhunt reload [config|shop|all] - 設定ファイルをリロード'
   help-admin-ui: '§c/manhunt ui <toggle|status> - UI表示制御'
   help-admin-respawntime: '§c/manhunt respawntime <プレイヤー> <秒> - リスポン時間変更'

@@ -79,6 +79,7 @@ buddy:
   no-buddy: '§cYou currently have no buddy set.'
   removed: '§2Buddy relationship with {buddy} removed.'
   partner-removed: '§2{partner} has removed the buddy relationship.'
+  removed-due-to-role-change: '§cBuddy relationship removed due to role change to different team.'
   invite-declined: '§c{player} declined your buddy invitation.'
   invite-declined-by-you: '§2You declined the buddy invitation from {player}.'
   not-in-same-world: '§cIn different world'
@@ -228,6 +229,14 @@ command:
   usage: '§cUsage: {usage}'
   reset-only-ended: '§cReset command can only be used after game ends.'
   reset-success: '§aGame has been forcibly reset!'
+commands:
+  admin:
+    role_changed: '§aRole changed successfully.'
+    role_change_broadcast: '§e[Admin] {admin} changed {player}''s role from {oldRole} to {newRole}.'
+errors:
+  player_not_found: '§cPlayer not found.'
+  player_not_in_game: '§cPlayer is not in the game.'
+  same_role: '§cPlayer already has that role.'
 status:
   header: '§6=== Manhunt Game Status ==='
   state: '§2Game State: {state}'
@@ -348,6 +357,15 @@ admin:
   forcerole-broadcast: '§6{player}''s role has been changed from {old_role} to {new_role}!'
   forcerole-notify: '§6Your role has been changed from {old_role} to {new_role}!'
   forcerole-title: '§e§lRole Changed!'
+
+  # Set time limit command
+  settimelimit-usage: '§cUsage: /manhunt settimelimit <minutes>'
+  settimelimit-not-running: '§cCannot set time limit - game is not running.'
+  settimelimit-not-timemode: '§cCannot set time limit - time limit mode is not enabled.'
+  settimelimit-out-of-range: '§cTime limit must be between 1 and 999 minutes.'
+  settimelimit-success: '§aGame time limit set to {minutes} minutes.'
+  settimelimit-failed: '§cFailed to set time limit.'
+  settimelimit-broadcast: '§6[Admin] {admin} changed the game time limit to {minutes} minutes!'
 
 # Reload related
 reload:
@@ -596,6 +614,7 @@ command-interface:
   help-admin-setrunner: '§c/manhunt setrunner <player> - Set player as runner'
   help-admin-setspectator: '§c/manhunt setspectator <player> - Set player as spectator'
   help-admin-minplayers: '§c/manhunt minplayers [number] - Set minimum players'
+  help-admin-settimelimit: '§c/manhunt settimelimit <minutes> - Change game time limit (1-999)'
   help-admin-reload: '§c/manhunt reload [config|shop|all] - Reload configuration files'
   help-admin-ui: '§c/manhunt ui <toggle|status> - UI display controls'
   help-admin-respawntime: '§c/manhunt respawntime <player> <seconds> - Change respawn time'

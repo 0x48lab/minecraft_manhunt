@@ -34,11 +34,18 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
     
     // スポーン管理
     private var spawnManager: SpawnManagerSimple? = null
-    
+
+    // チーム管理
+    private var teamManager: TeamManager? = null
+
     fun getPlugin(): Main = plugin
-    
+
     fun setSpawnManager(manager: SpawnManagerSimple) {
         spawnManager = manager
+    }
+
+    fun setTeamManager(manager: TeamManager) {
+        teamManager = manager
     }
     
     // 統計とリザルト管理の初期化
@@ -163,12 +170,19 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
         players[player.uniqueId] = ManhuntPlayer(player, role)
         invalidateCache()
         checkStartConditions()
-        
+
         // 統計情報にプレイヤーを追加
         if (gameState == GameState.RUNNING) {
             gameStats.addPlayer(player, role)
+
+            // ゲーム進行中の場合、チームに割り当て
+            try {
+                teamManager?.assignTeam(player, role)
+            } catch (e: Exception) {
+                plugin.logger.warning("Error assigning team for ${player.name}: ${e.message}")
+            }
         }
-        
+
         // UIの即座更新
         try {
             plugin.getUIManager().updateScoreboardImmediately()
@@ -180,14 +194,12 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
     fun removePlayer(player: Player, isIntentionalLeave: Boolean = false) {
         val wasInGame = players.containsKey(player.uniqueId)
         val playerRole = players[player.uniqueId]?.role
-        
+
         // チームから削除
-        if (playerRole != null) {
-            when (playerRole) {
-                PlayerRole.HUNTER -> hunterTeam?.removeEntry(player.name)
-                PlayerRole.RUNNER -> runnerTeam?.removeEntry(player.name)
-                PlayerRole.SPECTATOR -> {} // 観戦者はチームに入っていない
-            }
+        try {
+            teamManager?.removeFromAllTeams(player)
+        } catch (e: Exception) {
+            plugin.logger.warning("Error removing ${player.name} from teams: ${e.message}")
         }
         
         if (gameState == GameState.RUNNING && wasInGame) {
@@ -236,7 +248,7 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
     // ネットワークエラーで退出したプレイヤーの再参加処理
     fun handleRejoin(player: Player): Boolean {
         val disconnectedRole = disconnectedPlayers[player.uniqueId]
-        
+
         if (disconnectedRole != null && gameState == GameState.RUNNING) {
             // 元の役割で再参加
             players[player.uniqueId] = ManhuntPlayer(player, disconnectedRole)
@@ -244,21 +256,28 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
                 fixedHunters.add(player.uniqueId)
             }
             disconnectedPlayers.remove(player.uniqueId)
-            
+
+            // チームに再割り当て
+            try {
+                teamManager?.assignTeam(player, disconnectedRole)
+            } catch (e: Exception) {
+                plugin.logger.warning("Error reassigning team for ${player.name}: ${e.message}")
+            }
+
             // ゲームモードをSpectatorに設定
             player.gameMode = GameMode.SPECTATOR
-            
+
             val roleText = when (disconnectedRole) {
                 PlayerRole.RUNNER -> messageManager.getMessage(player, "role-display.runner")
                 PlayerRole.HUNTER -> messageManager.getMessage(player, "role-display.hunter")
                 PlayerRole.SPECTATOR -> messageManager.getMessage(player, "role-display.spectator")
             }
-            
+
             player.sendMessage(messageManager.getMessage(player, "game-management.network-recovery", "role" to roleText))
-            Bukkit.broadcastMessage(messageManager.getMessage("game-management.network-recovery-broadcast", "player" to player.name))
+            Bukkit.broadcastMessage(messageManager.getMessage("game-management.network-recovery-broadcast", "player" to player.name"))
             return true
         }
-        
+
         return false
     }
     
@@ -808,7 +827,19 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
         } catch (e: Exception) {
             plugin.logger.warning("バディーシステムのクリーンアップでエラー: ${e.message}")
         }
-        
+
+        // プレイヤーをすべてのチームから削除
+        players.keys.forEach { uuid ->
+            val player = Bukkit.getPlayer(uuid)
+            if (player != null) {
+                try {
+                    teamManager?.removeFromAllTeams(player)
+                } catch (e: Exception) {
+                    plugin.logger.warning("Error removing ${player.name} from teams: ${e.message}")
+                }
+            }
+        }
+
         // UIにゲーム終了を通知
         try {
             plugin.getUIManager().showGameStateChange(GameState.ENDED)
@@ -1521,7 +1552,19 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
         
         // ロール変更アイテムを削除
         removeRoleChangeItems()
-        
+
+        // プレイヤーをチームに割り当て
+        players.values.forEach { manhuntPlayer ->
+            try {
+                val player = Bukkit.getPlayer(manhuntPlayer.player.uniqueId)
+                if (player != null && player.isOnline) {
+                    teamManager?.assignTeam(player, manhuntPlayer.role)
+                }
+            } catch (e: Exception) {
+                plugin.logger.warning("Error assigning team for ${manhuntPlayer.player.name}: ${e.message}")
+            }
+        }
+
         // ハンターに仮想コンパスの使い方を自動通知
         getAllHunters().forEach { hunter ->
             if (hunter.isOnline) {
@@ -2315,7 +2358,38 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
             0
         }
     }
-    
+
+    /**
+     * ゲーム中の制限時間を変更する（管理者用）
+     * @param minutes 新しい制限時間（分）
+     * @return 変更成功した場合true
+     */
+    fun setTimeLimit(minutes: Int): Boolean {
+        // ゲームが進行中でない場合は失敗
+        if (gameState != GameState.RUNNING) {
+            return false
+        }
+
+        // タイムリミットモードでない場合は失敗
+        if (!configManager.isTimeLimitMode()) {
+            return false
+        }
+
+        // 制限時間の妥当性チェック（1分〜999分）
+        if (minutes < 1 || minutes > 999) {
+            return false
+        }
+
+        // 新しい終了時刻を計算（現在時刻 + 指定分数）
+        gameEndTime = System.currentTimeMillis() + (minutes * 60 * 1000L)
+
+        // タイムリミットタスクを再起動
+        startTimeLimitTask()
+
+        plugin.logger.info("Game time limit changed to $minutes minutes")
+        return true
+    }
+
     /**
      * 優勢度を取得（タイムモード用）
      */

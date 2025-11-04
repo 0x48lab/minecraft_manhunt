@@ -26,7 +26,9 @@ class Main : JavaPlugin() {
     private lateinit var warpCommand: WarpCommand
     private lateinit var proximityTimeTracker: ProximityTimeTracker
     private lateinit var guideBookManager: GuideBookManager
-    
+    private lateinit var teamManager: TeamManager
+    private lateinit var roleTransitionHandler: RoleTransitionHandler
+
     // Economy & Shop
     private lateinit var economyManager: EconomyManager
     private lateinit var currencyConfig: CurrencyConfig
@@ -51,10 +53,15 @@ class Main : JavaPlugin() {
         // Initialize message manager
         messageManager = MessageManager(this)
         messageManager.initialize()
-        
+
+        // Initialize TeamManager before GameManager
+        teamManager = TeamManager(this)
+        teamManager.initialize()
+
         // Initialize managers
         gameManager = GameManager(this, configManager, messageManager)
         gameManager.initialize() // 統計とリザルトシステムを初期化
+        gameManager.setTeamManager(teamManager) // TeamManagerをGameManagerに設定
         spawnManager = SpawnManagerSimple(this, gameManager, configManager)
         gameManager.setSpawnManager(spawnManager) // SpawnManagerをGameManagerに設定
         compassTracker = CompassTracker(this, gameManager, configManager, messageManager)
@@ -78,9 +85,13 @@ class Main : JavaPlugin() {
         buddyCommand = BuddyCommand(this, gameManager, buddySystem, messageManager)
         warpCommand = WarpCommand(gameManager, messageManager, economyManager)
         proximityTimeTracker = ProximityTimeTracker(this, gameManager, messageManager)
-        
+
+        // Initialize RoleTransitionHandler after TeamManager and GameManager
+        roleTransitionHandler = RoleTransitionHandler(this, gameManager, teamManager, uiManager, messageManager)
+
         // Register commands
         val manhuntCommand = ManhuntCommand(gameManager, compassTracker, spectatorMenu, messageManager, roleSelectorMenu)
+        manhuntCommand.setRoleTransitionHandler(roleTransitionHandler)
         getCommand("manhunt")?.setExecutor(manhuntCommand)
         getCommand("manhunt")?.tabCompleter = manhuntCommand
         
@@ -133,14 +144,21 @@ class Main : JavaPlugin() {
         uiManager.stopDisplaySystem()
         spectatorMenu.cleanup()
         roleSelectorMenu.cleanup()
-        
+
         // ProximityTimeTrackerを停止
         try {
             proximityTimeTracker.stopTracking()
         } catch (e: Exception) {
             logger.warning("ProximityTimeTrackerの停止でエラー: ${e.message}")
         }
-        
+
+        // TeamManagerのクリーンアップ
+        try {
+            teamManager.cleanup()
+        } catch (e: Exception) {
+            logger.warning("TeamManagerのクリーンアップでエラー: ${e.message}")
+        }
+
         // ゲーム結果マネージャーのクリーンアップ
         try {
             gameManager.cleanup()
