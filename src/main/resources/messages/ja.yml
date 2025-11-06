@@ -18,6 +18,10 @@ game:
   runner-start: '§a[ランナー] エンダードラゴンを倒せ！'
   spectator-start: '§7[観戦者] ゲームを観戦してください。'
   auto-start-notification: '§2§l必要人数が揃いました！ゲームを自動的に開始します...'
+  runner:
+    respawn:
+      title: '§a✓ リスポン完了'
+      subtitle: '§fエンダードラゴンを倒そう！'
 role:
   changed: '§a役割が{role}に変更されました！'
   runner: 'ランナー'

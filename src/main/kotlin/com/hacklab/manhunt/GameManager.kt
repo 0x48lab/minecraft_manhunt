@@ -1193,7 +1193,12 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
                         
                         // UIManager経由でタイトルクリアとボスバー削除
                         try {
-                            plugin.getUIManager().showTitle(player, "§a✓ リスポン完了", "§fエンダードラゴンを倒そう！", 10, 30, 10)
+                            plugin.getUIManager().showTitle(
+                                player,
+                                messageManager.getMessage(player, "game.runner.respawn.title"),
+                                messageManager.getMessage(player, "game.runner.respawn.subtitle"),
+                                10, 30, 10
+                            )
                             plugin.getUIManager().removeBossBar(player)
                         } catch (e: Exception) {
                             plugin.logger.warning("UI表示でエラー: ${e.message}")
@@ -1895,7 +1900,12 @@ class GameManager(private val plugin: Main, val configManager: ConfigManager, pr
                         
                         // UIManager経由でタイトルクリアとボスバー削除
                         try {
-                            plugin.getUIManager().showTitle(player, "§a✓ リスポン完了", "§fエンダードラゴンを倒そう！", 10, 30, 10)
+                            plugin.getUIManager().showTitle(
+                                player,
+                                messageManager.getMessage(player, "game.runner.respawn.title"),
+                                messageManager.getMessage(player, "game.runner.respawn.subtitle"),
+                                10, 30, 10
+                            )
                             plugin.getUIManager().removeBossBar(player)
                         } catch (e: Exception) {
                             plugin.logger.warning("UI表示でエラー: ${e.message}")

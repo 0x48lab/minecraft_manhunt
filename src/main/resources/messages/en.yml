@@ -18,6 +18,10 @@ game:
   runner-start: '§a[Runner] Defeat the Ender Dragon!'
   spectator-start: '§7[Spectator] Please spectate the game.'
   auto-start-notification: '§2§lRequired players reached! Starting game automatically...'
+  runner:
+    respawn:
+      title: '§a✓ Respawn Complete'
+      subtitle: '§fDefeat the Ender Dragon!'
 role:
   changed: '§aRole changed to {role}!'
   runner: 'Runner'
